@@ -7,7 +7,8 @@
     "start": "node dist/main.js",
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build:webpack": "npx nest build --webpack --webpackPath webpack.config.js"
   },
   "repository": {
     "type": "git",
@@ -28,7 +29,9 @@
     "@nestjs/cli": "^11.0.16",
     "@types/express": "^5.0.6",
     "@types/node": "^25.3.5",
+    "ts-loader": "^9.5.4",
     "ts-node": "^10.9.2",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "webpack-node-externals": "^3.0.0"
   }
 }
