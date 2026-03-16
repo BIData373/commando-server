@@ -1,0 +1,65 @@
+@baseUrl = http://localhost:3000
+
+### Create AssigneeTaskStatus — valid payload
+POST {{baseUrl}}/assignee-task-status
+Content-Type: application/json
+
+{
+  "taskId": 1,
+  "assigneeId": 1,
+  "statusId": 1
+}
+
+?? status == 201
+
+### Create AssigneeTaskStatus — missing required field (expect 400)
+POST {{baseUrl}}/assignee-task-status
+Content-Type: application/json
+
+{
+  "taskId": 1
+}
+
+?? status == 400
+
+### Get all AssigneeTaskStatuses
+GET {{baseUrl}}/assignee-task-status
+
+?? status == 200
+
+### Get AssigneeTaskStatus by composite key
+GET {{baseUrl}}/assignee-task-status/1/1
+
+?? status == 200
+
+### Update AssigneeTaskStatus
+PATCH {{baseUrl}}/assignee-task-status/1/1
+Content-Type: application/json
+
+{
+  "statusId": 2
+}
+
+?? status == 200
+
+### Delete AssigneeTaskStatus — non-existent record (expect 500/404)
+DELETE {{baseUrl}}/assignee-task-status/99999/99999
+Content-Type: application/json
+
+{
+  "taskId": 99999,
+  "assigneeId": 99999
+}
+
+?? status >= 400
+
+### Delete AssigneeTaskStatus
+DELETE {{baseUrl}}/assignee-task-status/1/1
+Content-Type: application/json
+
+{
+  "taskId": 1,
+  "assigneeId": 1
+}
+
+?? status == 200

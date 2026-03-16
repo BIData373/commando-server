@@ -1,0 +1,74 @@
+@baseUrl = http://localhost:3000
+
+### Create Workspace — valid payload
+POST {{baseUrl}}/workspace
+Content-Type: application/json
+
+{
+  "title": "Operations Center",
+  "urlName": "operations-center",
+  "icon": "ops-icon",
+  "assigneeStatusEditable": true,
+  "pikudId": 1,
+  "createdBy": 1,
+  "updatedBy": 1
+}
+
+{{@response
+  exports.workspaceId = response.parsedBody.id;
+}}
+
+?? status == 201
+
+### Create Workspace — missing required field (expect 400)
+POST {{baseUrl}}/workspace
+Content-Type: application/json
+
+{
+  "icon": "ops-icon"
+}
+
+?? status == 400
+
+### Get all Workspaces
+GET {{baseUrl}}/workspace
+
+?? status == 200
+
+### Get Workspace by id
+GET {{baseUrl}}/workspace/{{workspaceId}}
+
+?? status == 200
+
+### Update Workspace
+PATCH {{baseUrl}}/workspace/{{workspaceId}}
+Content-Type: application/json
+
+{
+  "title": "Operations Center Updated",
+  "updatedBy": 1
+}
+
+?? status == 200
+
+### Delete Workspace — non-existent id (expect 400 from @EntityExists)
+DELETE {{baseUrl}}/workspace/99999
+Content-Type: application/json
+
+{
+  "id": 99999,
+  "deletedBy": 1
+}
+
+?? status == 400
+
+### Delete Workspace
+DELETE {{baseUrl}}/workspace/{{workspaceId}}
+Content-Type: application/json
+
+{
+  "id": {{workspaceId}},
+  "deletedBy": 1
+}
+
+?? status == 200

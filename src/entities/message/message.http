@@ -1,0 +1,72 @@
+@baseUrl = http://localhost:3000
+
+### Create Message — valid payload
+POST {{baseUrl}}/message
+Content-Type: application/json
+
+{
+  "content": "Task has been acknowledged and is under review.",
+  "assigneeId": 1,
+  "taskId": 1,
+  "createdBy": 1,
+  "updatedBy": 1
+}
+
+{{@response
+  exports.messageId = response.parsedBody.id;
+}}
+
+?? status == 201
+
+### Create Message — missing required field (expect 400)
+POST {{baseUrl}}/message
+Content-Type: application/json
+
+{
+  "assigneeId": 1
+}
+
+?? status == 400
+
+### Get all Messages
+GET {{baseUrl}}/message
+
+?? status == 200
+
+### Get Message by id
+GET {{baseUrl}}/message/{{messageId}}
+
+?? status == 200
+
+### Update Message
+PATCH {{baseUrl}}/message/{{messageId}}
+Content-Type: application/json
+
+{
+  "content": "Task has been completed.",
+  "updatedBy": 1
+}
+
+?? status == 200
+
+### Delete Message — non-existent id (expect 400 from @EntityExists)
+DELETE {{baseUrl}}/message/99999
+Content-Type: application/json
+
+{
+  "id": 99999,
+  "deletedBy": 1
+}
+
+?? status == 400
+
+### Delete Message
+DELETE {{baseUrl}}/message/{{messageId}}
+Content-Type: application/json
+
+{
+  "id": {{messageId}},
+  "deletedBy": 1
+}
+
+?? status == 200

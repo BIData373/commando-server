@@ -1,0 +1,77 @@
+@baseUrl = http://localhost:3000
+
+### Create Task — valid payload
+POST {{baseUrl}}/task
+Content-Type: application/json
+
+{
+  "title": "Secure the perimeter",
+  "description": "Full perimeter check required",
+  "flagged": false,
+  "deadlineType": "hard",
+  "dueDate": "2026-04-01T12:00:00.000Z",
+  "workspaceId": 1,
+  "sourceId": 1,
+  "createdBy": 1,
+  "updatedBy": 1
+}
+
+{{@response
+  exports.taskId = response.parsedBody.id;
+}}
+
+?? status == 201
+
+### Create Task — missing required field (expect 400)
+POST {{baseUrl}}/task
+Content-Type: application/json
+
+{
+  "description": "Missing title and other fields"
+}
+
+?? status == 400
+
+### Get all Tasks
+GET {{baseUrl}}/task
+
+?? status == 200
+
+### Get Task by id
+GET {{baseUrl}}/task/{{taskId}}
+
+?? status == 200
+
+### Update Task
+PATCH {{baseUrl}}/task/{{taskId}}
+Content-Type: application/json
+
+{
+  "title": "Secure the perimeter — updated",
+  "flagged": true,
+  "updatedBy": 1
+}
+
+?? status == 200
+
+### Delete Task — non-existent id (expect 400 from @EntityExists)
+DELETE {{baseUrl}}/task/99999
+Content-Type: application/json
+
+{
+  "id": 99999,
+  "deletedBy": 1
+}
+
+?? status == 400
+
+### Delete Task
+DELETE {{baseUrl}}/task/{{taskId}}
+Content-Type: application/json
+
+{
+  "id": {{taskId}},
+  "deletedBy": 1
+}
+
+?? status == 200

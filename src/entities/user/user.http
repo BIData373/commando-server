@@ -1,0 +1,66 @@
+@baseUrl = http://localhost:3000
+
+### Create User — valid payload
+POST {{baseUrl}}/user
+Content-Type: application/json
+
+{
+  "upn": "john.doe@army.mil",
+  "info": { "rank": "Colonel", "unit": "HQ" }
+}
+
+{{@response
+  exports.userId = response.parsedBody.id;
+}}
+
+?? status == 201
+
+### Create User — missing required field (expect 400)
+POST {{baseUrl}}/user
+Content-Type: application/json
+
+{
+  "info": { "rank": "Colonel" }
+}
+
+?? status == 400
+
+### Get all Users
+GET {{baseUrl}}/user
+
+?? status == 200
+
+### Get User by id
+GET {{baseUrl}}/user/{{userId}}
+
+?? status == 200
+
+### Update User
+PATCH {{baseUrl}}/user/{{userId}}
+Content-Type: application/json
+
+{
+  "info": { "rank": "General", "unit": "HQ" }
+}
+
+?? status == 200
+
+### Delete User — non-existent id (expect 400 from @EntityExists)
+DELETE {{baseUrl}}/user/99999
+Content-Type: application/json
+
+{
+  "id": 99999
+}
+
+?? status == 400
+
+### Delete User
+DELETE {{baseUrl}}/user/{{userId}}
+Content-Type: application/json
+
+{
+  "id": {{userId}}
+}
+
+?? status == 200

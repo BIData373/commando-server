@@ -1,0 +1,24 @@
+model TaskHistory {
+  id        Int           @id @default(autoincrement())
+  action    HistoryAction
+  field     String
+  value     String?
+  timestamp DateTime      @default(now())
+
+  taskId      Int @map("task_id")
+  workspaceId Int @map("workspace_id")
+  userId      Int @map("user_id")
+
+  task      Task      @relation(fields: [taskId], references: [id])
+  workspace Workspace @relation(fields: [workspaceId], references: [id])
+  user      User      @relation(fields: [userId], references: [id])
+
+  @@map("tasks_history")
+}
+
+enum HistoryAction {
+  CREATE
+  UPDATE
+  DUPLICATE
+  DELETE
+}

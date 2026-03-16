@@ -1,0 +1,70 @@
+@baseUrl = http://localhost:3000
+
+### Create Source — valid payload
+POST {{baseUrl}}/source
+Content-Type: application/json
+
+{
+  "name": "Radio",
+  "createdBy": 1,
+  "updatedBy": 1
+}
+
+{{@response
+  exports.sourceId = response.parsedBody.id;
+}}
+
+?? status == 201
+
+### Create Source — missing required field (expect 400)
+POST {{baseUrl}}/source
+Content-Type: application/json
+
+{
+  "createdBy": 1
+}
+
+?? status == 400
+
+### Get all Sources
+GET {{baseUrl}}/source
+
+?? status == 200
+
+### Get Source by id
+GET {{baseUrl}}/source/{{sourceId}}
+
+?? status == 200
+
+### Update Source
+PATCH {{baseUrl}}/source/{{sourceId}}
+Content-Type: application/json
+
+{
+  "name": "Radio Updated",
+  "updatedBy": 1
+}
+
+?? status == 200
+
+### Delete Source — non-existent id (expect 400 from @EntityExists)
+DELETE {{baseUrl}}/source/99999
+Content-Type: application/json
+
+{
+  "id": 99999,
+  "deletedBy": 1
+}
+
+?? status == 400
+
+### Delete Source
+DELETE {{baseUrl}}/source/{{sourceId}}
+Content-Type: application/json
+
+{
+  "id": {{sourceId}},
+  "deletedBy": 1
+}
+
+?? status == 200

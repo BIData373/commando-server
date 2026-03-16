@@ -1,0 +1,13 @@
+model WorkspaceStatus {
+  id         Int    @id @default(autoincrement())
+  name       String
+  color      String
+  statusType String @map("status_type")
+
+  workspaceId Int       @map("workspace_id")
+  workspace   Workspace @relation(fields: [workspaceId], references: [id])
+
+  assigneeTaskStatuses AssigneeTaskStatus[]
+
+  @@map("workspace_statuses")
+}

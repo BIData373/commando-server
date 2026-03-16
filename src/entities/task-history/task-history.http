@@ -1,0 +1,44 @@
+@baseUrl = http://localhost:3000
+
+### Create TaskHistory — valid payload
+POST {{baseUrl}}/task-history
+Content-Type: application/json
+
+{
+  "action": "CREATE",
+  "field": "status",
+  "value": "open",
+  "taskId": 1,
+  "workspaceId": 1,
+  "userId": 1
+}
+
+{{@response
+  exports.taskHistoryId = response.parsedBody.id;
+}}
+
+?? status == 201
+
+### Create TaskHistory — invalid enum action (expect 400)
+POST {{baseUrl}}/task-history
+Content-Type: application/json
+
+{
+  "action": "INVALID_ACTION",
+  "field": "status",
+  "taskId": 1,
+  "workspaceId": 1,
+  "userId": 1
+}
+
+?? status == 400
+
+### Get all TaskHistories
+GET {{baseUrl}}/task-history
+
+?? status == 200
+
+### Get TaskHistory by id
+GET {{baseUrl}}/task-history/{{taskHistoryId}}
+
+?? status == 200

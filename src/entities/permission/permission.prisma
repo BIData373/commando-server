@@ -1,0 +1,16 @@
+model Permission {
+  userId      Int            @map("user_id")
+  workspaceId Int            @map("workspace_id")
+  type        PermissionType
+
+  user      User      @relation(fields: [userId], references: [id])
+  workspace Workspace @relation(fields: [workspaceId], references: [id])
+
+  @@id([userId, workspaceId])
+  @@map("permissions")
+}
+
+enum PermissionType {
+  VIEWER
+  MANAGER
+}

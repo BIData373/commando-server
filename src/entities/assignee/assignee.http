@@ -1,0 +1,71 @@
+@baseUrl = http://localhost:3000
+
+### Create Assignee — valid payload
+POST {{baseUrl}}/assignee
+Content-Type: application/json
+
+{
+  "name": "Alpha Team",
+  "color": "#E53935",
+  "createdBy": 1,
+  "updatedBy": 1
+}
+
+{{@response
+  exports.assigneeId = response.parsedBody.id;
+}}
+
+?? status == 201
+
+### Create Assignee — missing required field (expect 400)
+POST {{baseUrl}}/assignee
+Content-Type: application/json
+
+{
+  "color": "#E53935"
+}
+
+?? status == 400
+
+### Get all Assignees
+GET {{baseUrl}}/assignee
+
+?? status == 200
+
+### Get Assignee by id
+GET {{baseUrl}}/assignee/{{assigneeId}}
+
+?? status == 200
+
+### Update Assignee
+PATCH {{baseUrl}}/assignee/{{assigneeId}}
+Content-Type: application/json
+
+{
+  "name": "Alpha Team Updated",
+  "updatedBy": 1
+}
+
+?? status == 200
+
+### Delete Assignee — non-existent id (expect 400 from @EntityExists)
+DELETE {{baseUrl}}/assignee/99999
+Content-Type: application/json
+
+{
+  "id": 99999,
+  "deletedBy": 1
+}
+
+?? status == 400
+
+### Delete Assignee
+DELETE {{baseUrl}}/assignee/{{assigneeId}}
+Content-Type: application/json
+
+{
+  "id": {{assigneeId}},
+  "deletedBy": 1
+}
+
+?? status == 200

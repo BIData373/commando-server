@@ -1,0 +1,10 @@
+model AssigneeUser {
+  assigneeId Int @map("assignee_id")
+  userId     Int @map("user_id")
+
+  assignee Assignee @relation(fields: [assigneeId], references: [id])
+  user     User     @relation(fields: [userId], references: [id])
+
+  @@id([assigneeId, userId])
+  @@map("assignee_users")
+}

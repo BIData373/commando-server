@@ -1,0 +1,67 @@
+@baseUrl = http://localhost:3000
+
+### Create Permission — valid payload
+POST {{baseUrl}}/permission
+Content-Type: application/json
+
+{
+  "userId": 1,
+  "workspaceId": 1,
+  "type": "VIEWER"
+}
+
+?? status == 201
+
+### Create Permission — invalid enum value (expect 400)
+POST {{baseUrl}}/permission
+Content-Type: application/json
+
+{
+  "userId": 1,
+  "workspaceId": 1,
+  "type": "SUPER_ADMIN"
+}
+
+?? status == 400
+
+### Get all Permissions
+GET {{baseUrl}}/permission
+
+?? status == 200
+
+### Get Permission by composite key
+GET {{baseUrl}}/permission/1/1
+
+?? status == 200
+
+### Update Permission type
+PATCH {{baseUrl}}/permission/1/1
+Content-Type: application/json
+
+{
+  "type": "MANAGER"
+}
+
+?? status == 200
+
+### Delete Permission — non-existent record (expect error)
+DELETE {{baseUrl}}/permission/99999/99999
+Content-Type: application/json
+
+{
+  "userId": 99999,
+  "workspaceId": 99999
+}
+
+?? status >= 400
+
+### Delete Permission
+DELETE {{baseUrl}}/permission/1/1
+Content-Type: application/json
+
+{
+  "userId": 1,
+  "workspaceId": 1
+}
+
+?? status == 200
