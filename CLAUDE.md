@@ -124,8 +124,8 @@ export class DeleteXxxDto {
 ### Prisma Multi-file Schema
 
 Schema files live in two places:
-- `prisma/schema/` — flat directory that Prisma reads (canonical Prisma source)
-- `src/entities/[entity]/[entity].prisma` — co-located mirror for developer reference
+* `prisma/schema/` — flat directory that Prisma reads (canonical Prisma source)
+* `src/entities/[entity]/[entity].prisma` — co-located mirror for developer reference
 
 When adding a new model, create it in both locations.
 
@@ -136,10 +136,10 @@ When adding a new model, create it in both locations.
 Each entity folder contains a `[entity].http` file in httpYac format.
 
 Structure per file:
-- `@baseUrl = http://localhost:3000`
-- Requests separated by `###`
-- `{{@response exports.createdId = response.parsedBody.id; }}` to chain ids across requests
-- `?? status == 2xx` assertions after every request
-- Covers: create (valid, captures id), create (invalid — 400), findAll, findOne, update, delete (non-existent — 400), delete
-- Composite-PK entities export multiple ids and use compound path params (e.g. `GET /entity/:param1/:param2`)
-- Append-only entities (task-history) omit PATCH/DELETE
+* `@baseUrl = http://localhost:3000`
+* Requests separated by `###`
+* `{{@response exports.createdId = response.parsedBody.id; }}` to chain ids across requests
+* `?? status == 2xx` assertions after every request
+* Covers: create (valid, captures id), create (invalid — 400), findAll, findOne, update, delete (non-existent — 400), delete
+* Composite-PK entities export multiple ids and use compound path params (e.g. `GET /entity/:param1/:param2`)
+* Append-only entities (task-history) omit PATCH/DELETE

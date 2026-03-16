@@ -7,6 +7,6 @@
     "webpack": true
   },
   "generateOptions": {
-    "spec": : false
+    "spec": false
   }
 }

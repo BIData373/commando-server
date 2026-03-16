@@ -16,12 +16,13 @@ import { UserModule } from './entities/user/user.module';
 import { WorkspaceStatusModule } from './entities/workspace-status/workspace-status.module';
 import { WorkspaceModule } from './entities/workspace/workspace.module';
 import { SharedModule } from './shared/shared.module';
+import path from 'node:path';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: '.env',
+      envFilePath: path.join(__dirname, `../config`, process.env.ENV ?? '', '.env'),
     }),
     SharedModule,
     PikudModule,
@@ -41,4 +42,4 @@ import { SharedModule } from './shared/shared.module';
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule { }

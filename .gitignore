@@ -39,4 +39,4 @@ temp/
 .DS_Store
 Thumbs.db
 
-/src/generated/prisma
+/prisma/**

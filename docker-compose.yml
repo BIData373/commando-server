@@ -20,6 +20,6 @@ services:
     ports:
       - 5433:5432
     environment:
-      - POSTGRES_PASSWORD=chay-123-al-456
+      - POSTGRES_PASSWORD=matzpen-123-mefaked-456
       - POSTGRES_USER=admin
-      - POSTGRES_DB=chayal
+      - POSTGRES_DB=matzpen_mefaked

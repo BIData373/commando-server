@@ -5,10 +5,19 @@
   "scripts": {
     "build": "nest build",
     "start": "node dist/main.js",
+    "start:local": "ENV=local nest start --watch",
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build:webpack": "npx nest build --webpack --webpackPath webpack.config.js"
+    "build:webpack": "npx nest build --webpack --webpackPath webpack.config.js",
+    "prisma:repl": "prisma-repl",
+    "prisma:format": "prisma format",
+    "prisma:client:generate": "prisma generate",
+    "prisma:db:push": "prisma db push",
+    "prisma:migration:generate": "prisma migrate dev --create-only",
+    "prisma:migration:deploy": "prisma migrate deploy",
+    "prisma:migration:reset": "prisma migrate reset",
+    "prisma:studio": "prisma studio"
   },
   "repository": {
     "type": "git",
