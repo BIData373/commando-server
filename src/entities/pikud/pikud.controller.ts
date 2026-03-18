@@ -6,6 +6,8 @@ import { UpdatePikudDto } from './dto/request/update-pikud.dto';
 import { PikudDto } from './dto/response/pikud.dto';
 import { PikudService } from './pikud.service';
 
+// FIX Guards
+// FIX Use @TransfromPlainToInstance instead of plainToInstance
 @Controller('pikud')
 export class PikudController {
   constructor(private readonly pikudService: PikudService) {}
@@ -22,12 +24,14 @@ export class PikudController {
     return plainToInstance(PikudDto, records);
   }
 
+  // FIX Use GetIdDto
   @Get(':id')
   async findOne(@Param('id', ParseIntPipe) id: number): Promise<PikudDto> {
     const record = await this.pikudService.findOne(id);
     return plainToInstance(PikudDto, record);
   }
 
+  // FIX Use GetIdDto
   @Patch(':id')
   async update(
     @Param('id', ParseIntPipe) id: number,
@@ -37,6 +41,7 @@ export class PikudController {
     return plainToInstance(PikudDto, record);
   }
 
+  // FIX Use GetIdDto
   @Delete(':id')
   async remove(
     @Param('id', ParseIntPipe) id: number,

@@ -6,9 +6,11 @@ import { UpdateTagDto } from './dto/request/update-tag.dto';
 import { TagDto } from './dto/response/tag.dto';
 import { TagService } from './tag.service';
 
+// FIX Guards
+// FIX Use @TransfromPlainToInstance instead of plainToInstance
 @Controller('tag')
 export class TagController {
-  constructor(private readonly tagService: TagService) {}
+  constructor(private readonly tagService: TagService) { }
 
   @Post()
   async create(@Body() dto: CreateTagDto): Promise<TagDto> {
@@ -22,12 +24,14 @@ export class TagController {
     return plainToInstance(TagDto, records);
   }
 
+  // FIX Use GetIdDto
   @Get(':id')
   async findOne(@Param('id', ParseIntPipe) id: number): Promise<TagDto> {
     const record = await this.tagService.findOne(id);
     return plainToInstance(TagDto, record);
   }
 
+  // FIX Use GetIdDto
   @Patch(':id')
   async update(
     @Param('id', ParseIntPipe) id: number,
@@ -37,6 +41,7 @@ export class TagController {
     return plainToInstance(TagDto, record);
   }
 
+  // FIX Use GetIdDto
   @Delete(':id')
   async remove(
     @Param('id', ParseIntPipe) id: number,

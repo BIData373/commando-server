@@ -6,6 +6,8 @@ import { UpdateWorkspaceDto } from './dto/request/update-workspace.dto';
 import { WorkspaceDto } from './dto/response/workspace.dto';
 import { WorkspaceService } from './workspace.service';
 
+// FIX Guards
+// FIX Use @TransfromPlainToInstance instead of plainToInstance
 @Controller('workspace')
 export class WorkspaceController {
   constructor(private readonly workspaceService: WorkspaceService) {}
@@ -22,12 +24,14 @@ export class WorkspaceController {
     return plainToInstance(WorkspaceDto, records);
   }
 
+  // FIX Use GetIdDto
   @Get(':id')
   async findOne(@Param('id', ParseIntPipe) id: number): Promise<WorkspaceDto> {
     const record = await this.workspaceService.findOne(id);
     return plainToInstance(WorkspaceDto, record);
   }
 
+  // FIX Use GetIdDto
   @Patch(':id')
   async update(
     @Param('id', ParseIntPipe) id: number,
@@ -37,6 +41,7 @@ export class WorkspaceController {
     return plainToInstance(WorkspaceDto, record);
   }
 
+  // FIX Use GetIdDto
   @Delete(':id')
   async remove(
     @Param('id', ParseIntPipe) id: number,

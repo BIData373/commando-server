@@ -6,6 +6,8 @@ import { UpdatePermissionDto } from './dto/request/update-permission.dto';
 import { PermissionDto } from './dto/response/permission.dto';
 import { PermissionService } from './permission.service';
 
+// FIX Guards
+// FIX Use @TransfromPlainToInstance instead of plainToInstance
 @Controller('permission')
 export class PermissionController {
   constructor(private readonly permissionService: PermissionService) {}
@@ -22,6 +24,9 @@ export class PermissionController {
     return plainToInstance(PermissionDto, records);
   }
 
+  // FIX Get user from cookie middleware 
+  // FIX Get workspace from query
+  // FIX Use GetIdDto
   @Get(':userId/:workspaceId')
   async findOne(
     @Param('userId', ParseIntPipe) userId: number,
@@ -31,6 +36,9 @@ export class PermissionController {
     return plainToInstance(PermissionDto, record);
   }
 
+  // FIX Get user from cookie middleware 
+  // FIX Get workspace from query
+  // FIX Use GetIdDto
   @Patch(':userId/:workspaceId')
   async update(
     @Param('userId', ParseIntPipe) userId: number,
@@ -41,6 +49,9 @@ export class PermissionController {
     return plainToInstance(PermissionDto, record);
   }
 
+  // FIX Get user from cookie middleware 
+  // FIX Get workspace from query
+  // FIX Use GetIdDto
   @Delete(':userId/:workspaceId')
   async remove(
     @Param('userId', ParseIntPipe) userId: number,

@@ -6,6 +6,8 @@ import { UpdateTaskDto } from './dto/request/update-task.dto';
 import { TaskDto } from './dto/response/task.dto';
 import { TaskService } from './task.service';
 
+// FIX Guards
+// FIX Use @TransfromPlainToInstance instead of plainToInstance
 @Controller('task')
 export class TaskController {
   constructor(private readonly taskService: TaskService) {}
@@ -22,12 +24,14 @@ export class TaskController {
     return plainToInstance(TaskDto, records);
   }
 
+  // FIX Use GetIdDto
   @Get(':id')
   async findOne(@Param('id', ParseIntPipe) id: number): Promise<TaskDto> {
     const record = await this.taskService.findOne(id);
     return plainToInstance(TaskDto, record);
   }
 
+  // FIX Use GetIdDto
   @Patch(':id')
   async update(
     @Param('id', ParseIntPipe) id: number,
@@ -37,6 +41,7 @@ export class TaskController {
     return plainToInstance(TaskDto, record);
   }
 
+  // FIX Use GetIdDto
   @Delete(':id')
   async remove(
     @Param('id', ParseIntPipe) id: number,

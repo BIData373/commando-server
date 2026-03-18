@@ -6,6 +6,8 @@ import { DeleteAssigneeTaskStatusDto } from './dto/request/delete-assignee-task-
 import { UpdateAssigneeTaskStatusDto } from './dto/request/update-assignee-task-status.dto';
 import { AssigneeTaskStatusDto } from './dto/response/assignee-task-status.dto';
 
+// FIX Guards
+// FIX Use @TransfromPlainToInstance instead of plainToInstance
 @Controller('assignee-task-status')
 export class AssigneeTaskStatusController {
   constructor(private readonly assigneeTaskStatusService: AssigneeTaskStatusService) {}
@@ -22,6 +24,7 @@ export class AssigneeTaskStatusController {
     return plainToInstance(AssigneeTaskStatusDto, records);
   }
 
+  // FIX Use GetIdDto
   @Get(':taskId/:assigneeId')
   async findOne(
     @Param('taskId', ParseIntPipe) taskId: number,
@@ -31,6 +34,7 @@ export class AssigneeTaskStatusController {
     return plainToInstance(AssigneeTaskStatusDto, record);
   }
 
+  // FIX Use GetIdDto
   @Patch(':taskId/:assigneeId')
   async update(
     @Param('taskId', ParseIntPipe) taskId: number,
@@ -41,6 +45,7 @@ export class AssigneeTaskStatusController {
     return plainToInstance(AssigneeTaskStatusDto, record);
   }
 
+  // FIX Use GetIdDto
   @Delete(':taskId/:assigneeId')
   async remove(
     @Param('taskId', ParseIntPipe) taskId: number,

@@ -6,6 +6,8 @@ import { UpdateMessageDto } from './dto/request/update-message.dto';
 import { MessageDto } from './dto/response/message.dto';
 import { MessageService } from './message.service';
 
+// FIX Guards
+// FIX Use @TransfromPlainToInstance instead of plainToInstance
 @Controller('message')
 export class MessageController {
   constructor(private readonly messageService: MessageService) {}
@@ -22,12 +24,14 @@ export class MessageController {
     return plainToInstance(MessageDto, records);
   }
 
+  // FIX Use GetIdDto
   @Get(':id')
   async findOne(@Param('id', ParseIntPipe) id: number): Promise<MessageDto> {
     const record = await this.messageService.findOne(id);
     return plainToInstance(MessageDto, record);
   }
 
+  // FIX Use GetIdDto
   @Patch(':id')
   async update(
     @Param('id', ParseIntPipe) id: number,
@@ -37,6 +41,7 @@ export class MessageController {
     return plainToInstance(MessageDto, record);
   }
 
+  // FIX Use GetIdDto
   @Delete(':id')
   async remove(
     @Param('id', ParseIntPipe) id: number,

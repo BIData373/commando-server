@@ -1,5 +1,5 @@
 import { Exclude, Expose } from 'class-transformer';
-import { MetaFieldsDto } from '../../../../shared/dto/meta-fields.dto';
+import { MetaFieldsDto } from '../../../../shared/dto/response/meta-fields.dto';
 
 @Exclude()
 export class AssigneeDto extends MetaFieldsDto {

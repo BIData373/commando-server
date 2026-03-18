@@ -6,6 +6,8 @@ import { UpdateUserDto } from './dto/request/update-user.dto';
 import { UserDto } from './dto/response/user.dto';
 import { UserService } from './user.service';
 
+// FIX Guards
+// FIX Use @TransfromPlainToInstance instead of plainToInstance
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
@@ -22,12 +24,14 @@ export class UserController {
     return plainToInstance(UserDto, records);
   }
 
+  // FIX Use GetIdDto
   @Get(':id')
   async findOne(@Param('id', ParseIntPipe) id: number): Promise<UserDto> {
     const record = await this.userService.findOne(id);
     return plainToInstance(UserDto, record);
   }
 
+  // FIX Use GetIdDto
   @Patch(':id')
   async update(
     @Param('id', ParseIntPipe) id: number,
@@ -37,6 +41,7 @@ export class UserController {
     return plainToInstance(UserDto, record);
   }
 
+  // FIX Use GetIdDto
   @Delete(':id')
   async remove(
     @Param('id', ParseIntPipe) id: number,

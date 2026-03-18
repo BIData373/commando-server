@@ -6,6 +6,8 @@ import { DeleteAssigneeDto } from './dto/request/delete-assignee.dto';
 import { UpdateAssigneeDto } from './dto/request/update-assignee.dto';
 import { AssigneeDto } from './dto/response/assignee.dto';
 
+// FIX Guards
+// FIX Use @TransfromPlainToInstance instead of plainToInstance
 @Controller('assignee')
 export class AssigneeController {
   constructor(private readonly assigneeService: AssigneeService) {}
@@ -22,12 +24,14 @@ export class AssigneeController {
     return plainToInstance(AssigneeDto, records);
   }
 
+  // FIX Use GetIdDto
   @Get(':id')
   async findOne(@Param('id', ParseIntPipe) id: number): Promise<AssigneeDto> {
     const record = await this.assigneeService.findOne(id);
     return plainToInstance(AssigneeDto, record);
   }
 
+  // FIX Use GetIdDto
   @Patch(':id')
   async update(
     @Param('id', ParseIntPipe) id: number,
@@ -37,6 +41,7 @@ export class AssigneeController {
     return plainToInstance(AssigneeDto, record);
   }
 
+  // FIX Use GetIdDto
   @Delete(':id')
   async remove(
     @Param('id', ParseIntPipe) id: number,

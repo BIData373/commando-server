@@ -6,6 +6,8 @@ import { UpdateSourceDto } from './dto/request/update-source.dto';
 import { SourceDto } from './dto/response/source.dto';
 import { SourceService } from './source.service';
 
+// FIX Guards
+// FIX Use @TransfromPlainToInstance instead of plainToInstance
 @Controller('source')
 export class SourceController {
   constructor(private readonly sourceService: SourceService) {}
@@ -22,12 +24,14 @@ export class SourceController {
     return plainToInstance(SourceDto, records);
   }
 
+  // FIX Use GetIdDto
   @Get(':id')
   async findOne(@Param('id', ParseIntPipe) id: number): Promise<SourceDto> {
     const record = await this.sourceService.findOne(id);
     return plainToInstance(SourceDto, record);
   }
 
+  // FIX Use GetIdDto
   @Patch(':id')
   async update(
     @Param('id', ParseIntPipe) id: number,
@@ -37,6 +41,7 @@ export class SourceController {
     return plainToInstance(SourceDto, record);
   }
 
+  // FIX Use GetIdDto
   @Delete(':id')
   async remove(
     @Param('id', ParseIntPipe) id: number,

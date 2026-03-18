@@ -4,6 +4,8 @@ import { CreateTaskHistoryDto } from './dto/request/create-task-history.dto';
 import { TaskHistoryDto } from './dto/response/task-history.dto';
 import { TaskHistoryService } from './task-history.service';
 
+// FIX Guards
+// FIX Use @TransfromPlainToInstance instead of plainToInstance
 @Controller('task-history')
 export class TaskHistoryController {
   constructor(private readonly taskHistoryService: TaskHistoryService) {}
@@ -20,6 +22,8 @@ export class TaskHistoryController {
     return plainToInstance(TaskHistoryDto, records);
   }
 
+  // FIX Remove?
+  // FIX Use GetIdDto
   @Get(':id')
   async findOne(@Param('id', ParseIntPipe) id: number): Promise<TaskHistoryDto> {
     const record = await this.taskHistoryService.findOne(id);

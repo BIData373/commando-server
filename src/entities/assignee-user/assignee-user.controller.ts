@@ -5,6 +5,8 @@ import { CreateAssigneeUserDto } from './dto/request/create-assignee-user.dto';
 import { DeleteAssigneeUserDto } from './dto/request/delete-assignee-user.dto';
 import { AssigneeUserDto } from './dto/response/assignee-user.dto';
 
+// FIX Guards
+// FIX Use @TransfromPlainToInstance instead of plainToInstance
 @Controller('assignee-user')
 export class AssigneeUserController {
   constructor(private readonly assigneeUserService: AssigneeUserService) {}
@@ -21,6 +23,7 @@ export class AssigneeUserController {
     return plainToInstance(AssigneeUserDto, records);
   }
 
+  // FIX Use GetIdDto
   @Get(':assigneeId/:userId')
   async findOne(
     @Param('assigneeId', ParseIntPipe) assigneeId: number,
@@ -30,6 +33,7 @@ export class AssigneeUserController {
     return plainToInstance(AssigneeUserDto, record);
   }
 
+  // FIX Use GetIdDto
   @Delete(':assigneeId/:userId')
   async remove(
     @Param('assigneeId', ParseIntPipe) assigneeId: number,
