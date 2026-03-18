@@ -8,6 +8,7 @@ import {
 } from 'class-validator';
 import { PrismaService } from '../prisma.service';
 
+// FIX Make into mixin, add options
 @ValidatorConstraint({ name: 'EntityExists', async: true })
 @Injectable()
 export class EntityExistsConstraint implements ValidatorConstraintInterface {

@@ -1,7 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
+import path from 'node:path';
 import { AssigneeTaskStatusModule } from './entities/assignee-task-status/assignee-task-status.module';
 import { AssigneeUserModule } from './entities/assignee-user/assignee-user.module';
 import { AssigneeModule } from './entities/assignee/assignee.module';
@@ -16,8 +15,12 @@ import { UserModule } from './entities/user/user.module';
 import { WorkspaceStatusModule } from './entities/workspace-status/workspace-status.module';
 import { WorkspaceModule } from './entities/workspace/workspace.module';
 import { SharedModule } from './shared/shared.module';
-import path from 'node:path';
 
+// FIX Use CrudService on all services
+// FIX Use GetIdDto instead of all ParseIntPipe's
+// FIX Add & use read, edit, manager, bi guards
+// FIX Add cookie middleware
+// FIX Use types
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -39,7 +42,6 @@ import path from 'node:path';
     MessageModule,
     TaskHistoryModule,
   ],
-  controllers: [AppController],
-  providers: [AppService],
+  providers: []
 })
 export class AppModule { }

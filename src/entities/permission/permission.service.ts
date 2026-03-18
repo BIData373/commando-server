@@ -21,6 +21,7 @@ export class PermissionService {
     });
   }
 
+  // FIX Refactor
   update(userId: number, workspaceId: number, dto: UpdatePermissionDto) {
     return this.prisma.permission.update({
       where: { userId_workspaceId: { userId, workspaceId } },
