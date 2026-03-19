@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../../shared/prisma.service';
+import { PrismaService } from '../../common/prisma.service';
 import { CreatePikudDto } from './dto/request/create-pikud.dto';
 import { UpdatePikudDto } from './dto/request/update-pikud.dto';
 

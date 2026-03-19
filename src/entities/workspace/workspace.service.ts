@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../../shared/prisma.service';
+import { PrismaService } from '../../common/prisma.service';
 import { CreateWorkspaceDto } from './dto/request/create-workspace.dto';
 import { UpdateWorkspaceDto } from './dto/request/update-workspace.dto';
 

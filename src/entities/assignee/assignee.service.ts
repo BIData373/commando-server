@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../../shared/prisma.service';
+import { PrismaService } from '../../common/prisma.service';
 import { CreateAssigneeDto } from './dto/request/create-assignee.dto';
 import { UpdateAssigneeDto } from './dto/request/update-assignee.dto';
 
 @Injectable()
 export class AssigneeService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
 
   create(dto: CreateAssigneeDto) {
     return this.prisma.assignee.create({ data: dto });

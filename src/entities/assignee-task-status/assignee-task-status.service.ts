@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../../shared/prisma.service';
+import { PrismaService } from '../../common/prisma.service';
 import { CreateAssigneeTaskStatusDto } from './dto/request/create-assignee-task-status.dto';
 import { UpdateAssigneeTaskStatusDto } from './dto/request/update-assignee-task-status.dto';
 
