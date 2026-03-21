@@ -17,8 +17,8 @@ export class PikudService {
     });
   }
 
-  findAll() {
-    return this.prisma.pikud.findMany({ where: { deletedAt: null } });
+  async findAll() {
+    return await this.prisma.pikud.findMany({ where: { deletedAt: null } });
   }
 
   findOne(id: number) {

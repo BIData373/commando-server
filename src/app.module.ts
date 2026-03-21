@@ -1,6 +1,9 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule, ValidationPipe } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { APP_PIPE } from '@nestjs/core';
 import path from 'node:path';
+import { CookieMiddleware } from './common/middleware/cookie.middleware';
+import { SharedModule } from './common/shared.module';
 import { AssigneeTaskStatusModule } from './entities/assignee-task-status/assignee-task-status.module';
 import { AssigneeUserModule } from './entities/assignee-user/assignee-user.module';
 import { AssigneeModule } from './entities/assignee/assignee.module';
@@ -14,12 +17,10 @@ import { TaskModule } from './entities/task/task.module';
 import { UserModule } from './entities/user/user.module';
 import { WorkspaceStatusModule } from './entities/workspace-status/workspace-status.module';
 import { WorkspaceModule } from './entities/workspace/workspace.module';
-import { SharedModule } from './common/shared.module';
 
 // FIX Use CrudService on all services
 // FIX Use GetIdDto instead of all ParseIntPipe's
 // FIX Add & use read, edit, manager, bi guards
-// FIX Add cookie middleware
 // FIX Use types
 @Module({
   imports: [
@@ -42,6 +43,19 @@ import { SharedModule } from './common/shared.module';
     MessageModule,
     TaskHistoryModule,
   ],
-  providers: []
+  providers: [
+    {
+      provide: APP_PIPE,
+      useValue: new ValidationPipe({
+        whitelist: true,
+        stopAtFirstError: true,
+        transform: true
+      })
+    },
+  ]
 })
-export class AppModule { }
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer): void {
+    consumer.apply(CookieMiddleware).forRoutes('*');
+  }
+}

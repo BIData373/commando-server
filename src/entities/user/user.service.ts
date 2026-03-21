@@ -1,11 +1,20 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, OnModuleInit } from '@nestjs/common';
+import { admin } from '../../common/consts/admin';
 import { PrismaService } from '../../common/prisma.service';
 import { CreateUserDto } from './dto/request/create-user.dto';
 import { UpdateUserDto } from './dto/request/update-user.dto';
 
 @Injectable()
-export class UserService {
-  constructor(private readonly prisma: PrismaService) {}
+export class UserService implements OnModuleInit {
+  constructor(private readonly prisma: PrismaService) { }
+
+  async onModuleInit(): Promise<void> {
+    await this.prisma.user.upsert({
+      where: { upn: admin.upn },
+      create: admin,
+      update: {},
+    });
+  }
 
   create(dto: CreateUserDto) {
     return this.prisma.user.create({ data: dto });
