@@ -1,46 +1,44 @@
 import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post } from '@nestjs/common';
-import { plainToInstance } from 'class-transformer';
+import { TransformPlainToInstance } from 'class-transformer';
+import { GetUserIdFieldDto } from '../user/dto/request/get-user-id-field.dto';
 import { AssigneeUserService } from './assignee-user.service';
 import { CreateAssigneeUserDto } from './dto/request/create-assignee-user.dto';
-import { DeleteAssigneeUserDto } from './dto/request/delete-assignee-user.dto';
 import { AssigneeUserDto } from './dto/response/assignee-user.dto';
 
 // FIX Guards
-// FIX Use @TransfromPlainToInstance instead of plainToInstance
 @Controller('assignee-user')
 export class AssigneeUserController {
-  constructor(private readonly assigneeUserService: AssigneeUserService) {}
+  constructor(private readonly assigneeUserService: AssigneeUserService) { }
 
   @Post()
-  async create(@Body() dto: CreateAssigneeUserDto): Promise<AssigneeUserDto> {
-    const record = await this.assigneeUserService.create(dto);
-    return plainToInstance(AssigneeUserDto, record);
+  @TransformPlainToInstance(AssigneeUserDto)
+  async create(@Body() dto: CreateAssigneeUserDto) {
+    return await this.assigneeUserService.create(dto);
   }
 
   @Get()
-  async findAll(): Promise<AssigneeUserDto[]> {
-    const records = await this.assigneeUserService.findAll();
-    return plainToInstance(AssigneeUserDto, records);
+  @TransformPlainToInstance(AssigneeUserDto)
+  async findAll() {
+    return await this.assigneeUserService.findAll();
   }
 
   // FIX Use GetIdDto
   @Get(':assigneeId/:userId')
+  @TransformPlainToInstance(AssigneeUserDto)
   async findOne(
     @Param('assigneeId', ParseIntPipe) assigneeId: number,
-    @Param('userId', ParseIntPipe) userId: number,
-  ): Promise<AssigneeUserDto> {
-    const record = await this.assigneeUserService.findOne(assigneeId, userId);
-    return plainToInstance(AssigneeUserDto, record);
+    @Param() { userId }: GetUserIdFieldDto,
+  ) {
+    return await this.assigneeUserService.findOne(assigneeId, userId);
   }
 
   // FIX Use GetIdDto
   @Delete(':assigneeId/:userId')
+  @TransformPlainToInstance(AssigneeUserDto)
   async remove(
     @Param('assigneeId', ParseIntPipe) assigneeId: number,
-    @Param('userId', ParseIntPipe) userId: number,
-    @Body() dto: DeleteAssigneeUserDto,
-  ): Promise<AssigneeUserDto> {
-    const record = await this.assigneeUserService.remove(dto.assigneeId, dto.userId);
-    return plainToInstance(AssigneeUserDto, record);
+    @Param() { userId }: GetUserIdFieldDto,
+  ) {
+    return await this.assigneeUserService.remove(assigneeId, userId);
   }
 }

@@ -1,53 +1,54 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post } from '@nestjs/common';
-import { plainToInstance } from 'class-transformer';
+import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
+import { TransformPlainToInstance } from 'class-transformer';
 import { CreatePikudDto } from './dto/request/create-pikud.dto';
 import { DeletePikudDto } from './dto/request/delete-pikud.dto';
+import { GetPikudIdDto } from './dto/request/get-pikud-id.dto';
 import { UpdatePikudDto } from './dto/request/update-pikud.dto';
 import { PikudDto } from './dto/response/pikud.dto';
 import { PikudService } from './pikud.service';
 
 // FIX Guards
-// FIX Use @TransfromPlainToInstance instead of plainToInstance
 @Controller('pikud')
 export class PikudController {
-  constructor(private readonly pikudService: PikudService) {}
+  constructor(private readonly pikudService: PikudService) { }
 
   @Post()
-  async create(@Body() dto: CreatePikudDto): Promise<PikudDto> {
-    const record = await this.pikudService.create(dto);
-    return plainToInstance(PikudDto, record);
+  @TransformPlainToInstance(PikudDto)
+  async create(
+    @Body() dto: CreatePikudDto
+  ) {
+    return await this.pikudService.create(dto);
   }
 
   @Get()
-  async findAll(): Promise<PikudDto[]> {
-    const records = await this.pikudService.findAll();
-    return plainToInstance(PikudDto, records);
+  @TransformPlainToInstance(PikudDto)
+  async findAll() {
+    return await this.pikudService.findAll();
   }
 
-  // FIX Use GetIdDto
   @Get(':id')
-  async findOne(@Param('id', ParseIntPipe) id: number): Promise<PikudDto> {
-    const record = await this.pikudService.findOne(id);
-    return plainToInstance(PikudDto, record);
+  @TransformPlainToInstance(PikudDto)
+  async findOne(
+    @Param() { id }: GetPikudIdDto
+  ) {
+    return await this.pikudService.findOne(id);
   }
 
-  // FIX Use GetIdDto
   @Patch(':id')
+  @TransformPlainToInstance(PikudDto)
   async update(
-    @Param('id', ParseIntPipe) id: number,
+    @Param() { id }: GetPikudIdDto,
     @Body() dto: UpdatePikudDto,
-  ): Promise<PikudDto> {
-    const record = await this.pikudService.update(id, dto);
-    return plainToInstance(PikudDto, record);
+  ) {
+    return await this.pikudService.update(id, dto);
   }
 
-  // FIX Use GetIdDto
   @Delete(':id')
+  @TransformPlainToInstance(PikudDto)
   async remove(
-    @Param('id', ParseIntPipe) id: number,
+    @Param() { id }: GetPikudIdDto,
     @Body() dto: DeletePikudDto,
-  ): Promise<PikudDto> {
-    const record = await this.pikudService.remove(dto.id, dto.deletedBy);
-    return plainToInstance(PikudDto, record);
+  ) {
+    return await this.pikudService.remove(dto.id, dto.deletedBy);
   }
 }

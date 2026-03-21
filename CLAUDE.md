@@ -88,7 +88,7 @@ All response DTOs use `class-transformer` serialization:
 * Class decorated with `@Exclude()`
 * Every field on its own line with `@Expose()` on the line above it
 * Blank line between every property
-* Extend `MetaFieldsDto` (full soft-delete fields) or `PartialMetaFieldsDto` (no deletedAt/deletedBy) from `src/shared/dto/`
+* Extend `MetaFieldsDto` (full soft-delete fields) or `PartialMetaFieldsDto` (no deletedAt/deletedBy) from `src/common/dto/`
 * Entities with no meta-fields (WorkspaceStatus, User, junction tables) do not extend any base DTO
 
 ```typescript
@@ -129,7 +129,7 @@ Schema files live in two places:
 
 When adding a new model, create it in both locations.
 
-`prisma.config.ts` points to `prisma/schema/`. Generator output goes to `prisma/generated/`.
+`prisma.config.ts` points to `prisma/schema/`. Generator output goes to `prisma/`.
 
 ### HTTP Test Files
 

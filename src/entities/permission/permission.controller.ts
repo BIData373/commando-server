@@ -1,5 +1,7 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post } from '@nestjs/common';
-import { plainToInstance } from 'class-transformer';
+import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
+import { TransformPlainToInstance } from 'class-transformer';
+import { GetUserIdFieldDto } from '../user/dto/request/get-user-id-field.dto';
+import { GetWorkspaceIdFieldDto } from '../workspace/dto/request/get-workspace-id-field.dto';
 import { CreatePermissionDto } from './dto/request/create-permission.dto';
 import { DeletePermissionDto } from './dto/request/delete-permission.dto';
 import { UpdatePermissionDto } from './dto/request/update-permission.dto';
@@ -7,58 +9,54 @@ import { PermissionDto } from './dto/response/permission.dto';
 import { PermissionService } from './permission.service';
 
 // FIX Guards
-// FIX Use @TransfromPlainToInstance instead of plainToInstance
 @Controller('permission')
 export class PermissionController {
-  constructor(private readonly permissionService: PermissionService) {}
+  constructor(private readonly permissionService: PermissionService) { }
 
   @Post()
-  async create(@Body() dto: CreatePermissionDto): Promise<PermissionDto> {
-    const record = await this.permissionService.create(dto);
-    return plainToInstance(PermissionDto, record);
+  @TransformPlainToInstance(PermissionDto)
+  async create(
+    @Body() dto: CreatePermissionDto
+  ) {
+    return await this.permissionService.create(dto);
   }
 
   @Get()
-  async findAll(): Promise<PermissionDto[]> {
-    const records = await this.permissionService.findAll();
-    return plainToInstance(PermissionDto, records);
+  @TransformPlainToInstance(PermissionDto)
+  async findAll() {
+    return await this.permissionService.findAll();
   }
 
   // FIX Get user from cookie middleware 
   // FIX Get workspace from query
-  // FIX Use GetIdDto
   @Get(':userId/:workspaceId')
+  @TransformPlainToInstance(PermissionDto)
   async findOne(
-    @Param('userId', ParseIntPipe) userId: number,
-    @Param('workspaceId', ParseIntPipe) workspaceId: number,
-  ): Promise<PermissionDto> {
-    const record = await this.permissionService.findOne(userId, workspaceId);
-    return plainToInstance(PermissionDto, record);
+    @Param() { userId }: GetUserIdFieldDto,
+    @Param() { workspaceId }: GetWorkspaceIdFieldDto,
+  ) {
+    return await this.permissionService.findOne(userId, workspaceId);
   }
 
   // FIX Get user from cookie middleware 
   // FIX Get workspace from query
-  // FIX Use GetIdDto
   @Patch(':userId/:workspaceId')
+  @TransformPlainToInstance(PermissionDto)
   async update(
-    @Param('userId', ParseIntPipe) userId: number,
-    @Param('workspaceId', ParseIntPipe) workspaceId: number,
-    @Body() dto: UpdatePermissionDto,
-  ): Promise<PermissionDto> {
-    const record = await this.permissionService.update(userId, workspaceId, dto);
-    return plainToInstance(PermissionDto, record);
+    @Body() { userId, workspaceId, type }: UpdatePermissionDto,
+  ) {
+    return await this.permissionService.update(userId, workspaceId, type);
   }
 
   // FIX Get user from cookie middleware 
   // FIX Get workspace from query
-  // FIX Use GetIdDto
   @Delete(':userId/:workspaceId')
+  @TransformPlainToInstance(PermissionDto)
   async remove(
-    @Param('userId', ParseIntPipe) userId: number,
-    @Param('workspaceId', ParseIntPipe) workspaceId: number,
+    @Param() { userId }: GetUserIdFieldDto,
+    @Param() { workspaceId }: GetWorkspaceIdFieldDto,
     @Body() dto: DeletePermissionDto,
-  ): Promise<PermissionDto> {
-    const record = await this.permissionService.remove(dto.userId, dto.workspaceId);
-    return plainToInstance(PermissionDto, record);
+  ) {
+    return await this.permissionService.remove(dto.userId, dto.workspaceId);
   }
 }

@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
+import { PermissionType } from '../../../prisma';
 import { PrismaService } from '../../common/prisma.service';
 import { CreatePermissionDto } from './dto/request/create-permission.dto';
-import { UpdatePermissionDto } from './dto/request/update-permission.dto';
 
 @Injectable()
 export class PermissionService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
 
   create(dto: CreatePermissionDto) {
     return this.prisma.permission.create({ data: dto });
@@ -22,10 +22,10 @@ export class PermissionService {
   }
 
   // FIX Refactor
-  update(userId: number, workspaceId: number, dto: UpdatePermissionDto) {
+  update(userId: number, workspaceId: number, type: PermissionType) {
     return this.prisma.permission.update({
       where: { userId_workspaceId: { userId, workspaceId } },
-      data: dto,
+      data: { type },
     });
   }
 

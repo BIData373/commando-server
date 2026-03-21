@@ -1,5 +1,5 @@
 import { IsEnum, IsInt } from 'class-validator';
-import { PermissionType } from '../../../../../prisma/generated';
+import { PermissionType } from '../../../../../prisma';
 
 export class CreatePermissionDto {
   @IsInt()

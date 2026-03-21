@@ -1,5 +1,5 @@
 import { IsInt } from 'class-validator';
-import { EntityExists } from '../../../../shared/decorators/entity-exists.decorator';
+import { EntityExists } from '../../../../common/decorators/entity-exists.decorator';
 
 export class DeleteUserDto {
   @IsInt()

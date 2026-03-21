@@ -1,10 +1,8 @@
 import { Exclude, Expose } from 'class-transformer';
+import { IdDto } from '../../../../common/dto/response/id.dto';
 
 @Exclude()
-export class UserDto {
-  @Expose()
-  id: number;
-
+export class UserDto extends IdDto {
   @Expose()
   upn: string;
 

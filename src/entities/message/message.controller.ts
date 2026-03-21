@@ -1,53 +1,57 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post } from '@nestjs/common';
-import { plainToInstance } from 'class-transformer';
+import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
+import { TransformPlainToInstance } from 'class-transformer';
 import { CreateMessageDto } from './dto/request/create-message.dto';
 import { DeleteMessageDto } from './dto/request/delete-message.dto';
+import { GetMessageIdDto } from './dto/request/get-message-id.dto';
 import { UpdateMessageDto } from './dto/request/update-message.dto';
 import { MessageDto } from './dto/response/message.dto';
 import { MessageService } from './message.service';
 
 // FIX Guards
-// FIX Use @TransfromPlainToInstance instead of plainToInstance
 @Controller('message')
 export class MessageController {
-  constructor(private readonly messageService: MessageService) {}
+  constructor(private readonly messageService: MessageService) { }
 
   @Post()
-  async create(@Body() dto: CreateMessageDto): Promise<MessageDto> {
-    const record = await this.messageService.create(dto);
-    return plainToInstance(MessageDto, record);
+  @TransformPlainToInstance(MessageDto)
+  async create(
+    @Body() dto: CreateMessageDto
+  ) {
+    return await this.messageService.create(dto);
   }
 
   @Get()
-  async findAll(): Promise<MessageDto[]> {
-    const records = await this.messageService.findAll();
-    return plainToInstance(MessageDto, records);
+  @TransformPlainToInstance(MessageDto)
+  async findAll() {
+    return await this.messageService.findAll();
   }
 
   // FIX Use GetIdDto
   @Get(':id')
-  async findOne(@Param('id', ParseIntPipe) id: number): Promise<MessageDto> {
-    const record = await this.messageService.findOne(id);
-    return plainToInstance(MessageDto, record);
+  @TransformPlainToInstance(MessageDto)
+  async findOne(
+    @Param() { id }: GetMessageIdDto
+  ) {
+    return await this.messageService.findOne(id);
   }
 
   // FIX Use GetIdDto
   @Patch(':id')
+  @TransformPlainToInstance(MessageDto)
   async update(
-    @Param('id', ParseIntPipe) id: number,
+    @Param() { id }: GetMessageIdDto,
     @Body() dto: UpdateMessageDto,
-  ): Promise<MessageDto> {
-    const record = await this.messageService.update(id, dto);
-    return plainToInstance(MessageDto, record);
+  ) {
+    return await this.messageService.update(id, dto);
   }
 
   // FIX Use GetIdDto
   @Delete(':id')
+  @TransformPlainToInstance(MessageDto)
   async remove(
-    @Param('id', ParseIntPipe) id: number,
+    @Param() { id }: GetMessageIdDto,
     @Body() dto: DeleteMessageDto,
-  ): Promise<MessageDto> {
-    const record = await this.messageService.remove(dto.id, dto.deletedBy);
-    return plainToInstance(MessageDto, record);
+  ) {
+    return await this.messageService.remove(dto.id, dto.deletedBy);
   }
 }

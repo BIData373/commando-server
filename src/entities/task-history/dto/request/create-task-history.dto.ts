@@ -1,5 +1,5 @@
 import { IsEnum, IsInt, IsOptional, IsString } from 'class-validator';
-import { HistoryAction } from '../../../../../prisma/generated';
+import { HistoryAction } from '../../../../../prisma';
 
 export class CreateTaskHistoryDto {
   @IsEnum(HistoryAction)

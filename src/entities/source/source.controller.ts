@@ -1,53 +1,47 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post } from '@nestjs/common';
-import { plainToInstance } from 'class-transformer';
+import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
 import { CreateSourceDto } from './dto/request/create-source.dto';
 import { DeleteSourceDto } from './dto/request/delete-source.dto';
+import { GetSourceIdDto } from './dto/request/get-source-id.dto';
 import { UpdateSourceDto } from './dto/request/update-source.dto';
-import { SourceDto } from './dto/response/source.dto';
 import { SourceService } from './source.service';
 
 // FIX Guards
-// FIX Use @TransfromPlainToInstance instead of plainToInstance
 @Controller('source')
 export class SourceController {
-  constructor(private readonly sourceService: SourceService) {}
+  constructor(private readonly sourceService: SourceService) { }
 
   @Post()
-  async create(@Body() dto: CreateSourceDto): Promise<SourceDto> {
-    const record = await this.sourceService.create(dto);
-    return plainToInstance(SourceDto, record);
+  async create(
+    @Body() dto: CreateSourceDto
+  ) {
+    return await this.sourceService.create(dto);
   }
 
   @Get()
-  async findAll(): Promise<SourceDto[]> {
-    const records = await this.sourceService.findAll();
-    return plainToInstance(SourceDto, records);
+  async findAll() {
+    return await this.sourceService.findAll();
   }
 
-  // FIX Use GetIdDto
   @Get(':id')
-  async findOne(@Param('id', ParseIntPipe) id: number): Promise<SourceDto> {
-    const record = await this.sourceService.findOne(id);
-    return plainToInstance(SourceDto, record);
+  async findOne(
+    @Param() { id }: GetSourceIdDto
+  ) {
+    return await this.sourceService.findOne(id);
   }
 
-  // FIX Use GetIdDto
   @Patch(':id')
   async update(
-    @Param('id', ParseIntPipe) id: number,
+    @Param() { id }: GetSourceIdDto,
     @Body() dto: UpdateSourceDto,
-  ): Promise<SourceDto> {
-    const record = await this.sourceService.update(id, dto);
-    return plainToInstance(SourceDto, record);
+  ) {
+    return await this.sourceService.update(id, dto);
   }
 
-  // FIX Use GetIdDto
   @Delete(':id')
   async remove(
-    @Param('id', ParseIntPipe) id: number,
+    @Param() { id }: GetSourceIdDto,
     @Body() dto: DeleteSourceDto,
-  ): Promise<SourceDto> {
-    const record = await this.sourceService.remove(dto.id, dto.deletedBy);
-    return plainToInstance(SourceDto, record);
+  ) {
+    return await this.sourceService.remove(dto.id, dto.deletedBy);
   }
 }

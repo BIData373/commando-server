@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post } from '@nestjs/common';
-import { plainToInstance } from 'class-transformer';
+import { TransformPlainToInstance } from 'class-transformer';
 import { CreateWorkspaceStatusDto } from './dto/request/create-workspace-status.dto';
 import { DeleteWorkspaceStatusDto } from './dto/request/delete-workspace-status.dto';
 import { UpdateWorkspaceStatusDto } from './dto/request/update-workspace-status.dto';
@@ -7,47 +7,46 @@ import { WorkspaceStatusDto } from './dto/response/workspace-status.dto';
 import { WorkspaceStatusService } from './workspace-status.service';
 
 // FIX Guards
-// FIX Use @TransfromPlainToInstance instead of plainToInstance
 @Controller('workspace-status')
 export class WorkspaceStatusController {
-  constructor(private readonly workspaceStatusService: WorkspaceStatusService) {}
+  constructor(private readonly workspaceStatusService: WorkspaceStatusService) { }
 
   @Post()
-  async create(@Body() dto: CreateWorkspaceStatusDto): Promise<WorkspaceStatusDto> {
-    const record = await this.workspaceStatusService.create(dto);
-    return plainToInstance(WorkspaceStatusDto, record);
+  @TransformPlainToInstance(WorkspaceStatusDto)
+  async create(@Body() dto: CreateWorkspaceStatusDto) {
+    return await this.workspaceStatusService.create(dto);
   }
 
   @Get()
-  async findAll(): Promise<WorkspaceStatusDto[]> {
-    const records = await this.workspaceStatusService.findAll();
-    return plainToInstance(WorkspaceStatusDto, records);
+  @TransformPlainToInstance(WorkspaceStatusDto)
+  async findAll() {
+    return await this.workspaceStatusService.findAll();
   }
 
   // FIX Use GetIdDto
   @Get(':id')
-  async findOne(@Param('id', ParseIntPipe) id: number): Promise<WorkspaceStatusDto> {
-    const record = await this.workspaceStatusService.findOne(id);
-    return plainToInstance(WorkspaceStatusDto, record);
+  @TransformPlainToInstance(WorkspaceStatusDto)
+  async findOne(@Param('id', ParseIntPipe) id: number) {
+    return await this.workspaceStatusService.findOne(id);
   }
 
   // FIX Use GetIdDto
   @Patch(':id')
+  @TransformPlainToInstance(WorkspaceStatusDto)
   async update(
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: UpdateWorkspaceStatusDto,
-  ): Promise<WorkspaceStatusDto> {
-    const record = await this.workspaceStatusService.update(id, dto);
-    return plainToInstance(WorkspaceStatusDto, record);
+  ) {
+    return await this.workspaceStatusService.update(id, dto);
   }
 
   // FIX Use GetIdDto
   @Delete(':id')
+  @TransformPlainToInstance(WorkspaceStatusDto)
   async remove(
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: DeleteWorkspaceStatusDto,
-  ): Promise<WorkspaceStatusDto> {
-    const record = await this.workspaceStatusService.remove(dto.id);
-    return plainToInstance(WorkspaceStatusDto, record);
+  ) {
+    return await this.workspaceStatusService.remove(dto.id);
   }
 }

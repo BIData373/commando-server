@@ -1,14 +1,15 @@
+import { IntersectionType } from '@nestjs/mapped-types';
 import { Exclude, Expose } from 'class-transformer';
-import { MetaFieldsDto } from '../../../../shared/dto/response/meta-fields.dto';
+import { IdDto } from '../../../../common/dto/response/id.dto';
+import { MetaFieldsDto } from '../../../../common/dto/response/meta-fields.dto';
+import { NameDto } from '../../../../common/dto/response/name.dto';
 
 @Exclude()
-export class PikudDto extends MetaFieldsDto {
-  @Expose()
-  id: number;
-
-  @Expose()
-  name: string;
-
+export class PikudDto extends IntersectionType(
+  IdDto,
+  NameDto,
+  MetaFieldsDto
+) {
   @Expose()
   icon?: string | null;
 }

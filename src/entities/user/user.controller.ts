@@ -1,5 +1,6 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post } from '@nestjs/common';
-import { plainToInstance } from 'class-transformer';
+import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
+import { TransformPlainToInstance } from 'class-transformer';
+import { GetUserIdDto } from './dto/request/get-user-id.dto';
 import { CreateUserDto } from './dto/request/create-user.dto';
 import { DeleteUserDto } from './dto/request/delete-user.dto';
 import { UpdateUserDto } from './dto/request/update-user.dto';
@@ -7,47 +8,47 @@ import { UserDto } from './dto/response/user.dto';
 import { UserService } from './user.service';
 
 // FIX Guards
-// FIX Use @TransfromPlainToInstance instead of plainToInstance
 @Controller('user')
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(private readonly userService: UserService) { }
 
   @Post()
-  async create(@Body() dto: CreateUserDto): Promise<UserDto> {
-    const record = await this.userService.create(dto);
-    return plainToInstance(UserDto, record);
+  @TransformPlainToInstance(UserDto)
+  async create(
+    @Body() dto: CreateUserDto
+  ) {
+    return await this.userService.create(dto);
   }
 
   @Get()
-  async findAll(): Promise<UserDto[]> {
-    const records = await this.userService.findAll();
-    return plainToInstance(UserDto, records);
+  @TransformPlainToInstance(UserDto)
+  async findAll() {
+    return await this.userService.findAll();
   }
 
-  // FIX Use GetIdDto
   @Get(':id')
-  async findOne(@Param('id', ParseIntPipe) id: number): Promise<UserDto> {
-    const record = await this.userService.findOne(id);
-    return plainToInstance(UserDto, record);
+  @TransformPlainToInstance(UserDto)
+  async findOne(
+    @Param() { id }: GetUserIdDto
+  ) {
+    return await this.userService.findOne(id);
   }
 
-  // FIX Use GetIdDto
   @Patch(':id')
+  @TransformPlainToInstance(UserDto)
   async update(
-    @Param('id', ParseIntPipe) id: number,
+    @Param() { id }: GetUserIdDto,
     @Body() dto: UpdateUserDto,
-  ): Promise<UserDto> {
-    const record = await this.userService.update(id, dto);
-    return plainToInstance(UserDto, record);
+  ) {
+    return await this.userService.update(id, dto);
   }
 
-  // FIX Use GetIdDto
   @Delete(':id')
+  @TransformPlainToInstance(UserDto)
   async remove(
-    @Param('id', ParseIntPipe) id: number,
+    @Param() { id }: GetUserIdDto,
     @Body() dto: DeleteUserDto,
-  ): Promise<UserDto> {
-    const record = await this.userService.remove(dto.id);
-    return plainToInstance(UserDto, record);
+  ) {
+    return await this.userService.remove(dto.id);
   }
 }

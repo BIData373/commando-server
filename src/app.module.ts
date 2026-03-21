@@ -14,7 +14,7 @@ import { TaskModule } from './entities/task/task.module';
 import { UserModule } from './entities/user/user.module';
 import { WorkspaceStatusModule } from './entities/workspace-status/workspace-status.module';
 import { WorkspaceModule } from './entities/workspace/workspace.module';
-import { SharedModule } from './shared/shared.module';
+import { SharedModule } from './common/shared.module';
 
 // FIX Use CrudService on all services
 // FIX Use GetIdDto instead of all ParseIntPipe's

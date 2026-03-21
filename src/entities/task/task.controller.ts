@@ -1,53 +1,57 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post } from '@nestjs/common';
-import { plainToInstance } from 'class-transformer';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Req } from '@nestjs/common';
+import { TransformPlainToInstance } from 'class-transformer';
+import { Request } from 'express';
 import { CreateTaskDto } from './dto/request/create-task.dto';
-import { DeleteTaskDto } from './dto/request/delete-task.dto';
+import { GetTaskIdDto } from './dto/request/get-task-id.dto';
 import { UpdateTaskDto } from './dto/request/update-task.dto';
 import { TaskDto } from './dto/response/task.dto';
 import { TaskService } from './task.service';
 
 // FIX Guards
-// FIX Use @TransfromPlainToInstance instead of plainToInstance
 @Controller('task')
 export class TaskController {
-  constructor(private readonly taskService: TaskService) {}
+  constructor(private readonly taskService: TaskService) { }
 
   @Post()
-  async create(@Body() dto: CreateTaskDto): Promise<TaskDto> {
-    const record = await this.taskService.create(dto);
-    return plainToInstance(TaskDto, record);
+  @TransformPlainToInstance(TaskDto)
+  async create(
+    @Body() dto: CreateTaskDto
+  ) {
+    return await this.taskService.create(dto);
   }
 
   @Get()
-  async findAll(): Promise<TaskDto[]> {
-    const records = await this.taskService.findAll();
-    return plainToInstance(TaskDto, records);
+  @TransformPlainToInstance(TaskDto)
+  async findAll() {
+    return await this.taskService.findAll();
   }
 
   // FIX Use GetIdDto
   @Get(':id')
-  async findOne(@Param('id', ParseIntPipe) id: number): Promise<TaskDto> {
-    const record = await this.taskService.findOne(id);
-    return plainToInstance(TaskDto, record);
+  @TransformPlainToInstance(TaskDto)
+  async findOne(
+    @Param() { id }: GetTaskIdDto
+  ) {
+    return await this.taskService.findOne(id);
   }
 
   // FIX Use GetIdDto
   @Patch(':id')
+  @TransformPlainToInstance(TaskDto)
   async update(
-    @Param('id', ParseIntPipe) id: number,
+    @Param() { id }: GetTaskIdDto,
     @Body() dto: UpdateTaskDto,
-  ): Promise<TaskDto> {
-    const record = await this.taskService.update(id, dto);
-    return plainToInstance(TaskDto, record);
+  ) {
+    return await this.taskService.update(id, dto);
   }
 
   // FIX Use GetIdDto
   @Delete(':id')
+  @TransformPlainToInstance(TaskDto)
   async remove(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() dto: DeleteTaskDto,
-  ): Promise<TaskDto> {
-    const record = await this.taskService.remove(dto.id, dto.deletedBy);
-    return plainToInstance(TaskDto, record);
+    @Req() { user }: Request,
+    @Param() { id }: GetTaskIdDto,
+  ) {
+    return await this.taskService.remove(id, user.id);
   }
 }

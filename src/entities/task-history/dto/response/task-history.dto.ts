@@ -1,11 +1,9 @@
 import { Exclude, Expose } from 'class-transformer';
-import { HistoryAction } from '../../../../../prisma/generated';
+import { HistoryAction } from '../../../../../prisma';
+import { IdDto } from '../../../../common/dto/response/id.dto';
 
 @Exclude()
-export class TaskHistoryDto {
-  @Expose()
-  id: number;
-
+export class TaskHistoryDto extends IdDto {
   @Expose()
   action: HistoryAction;
 
