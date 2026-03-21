@@ -13,7 +13,9 @@ export class WorkspaceStatusController {
 
   @Post()
   @TransformPlainToInstance(WorkspaceStatusDto)
-  async create(@Body() dto: CreateWorkspaceStatusDto) {
+  async create(
+    @Body() dto: CreateWorkspaceStatusDto
+  ) {
     return await this.workspaceStatusService.create(dto);
   }
 

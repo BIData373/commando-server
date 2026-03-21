@@ -1,12 +1,3 @@
-import { IsInt, IsString } from 'class-validator';
+import { GetNameDto } from '../../../../common/dto/request/get-name.dto';
 
-export class CreateSourceDto {
-  @IsString()
-  name: string;
-
-  @IsInt()
-  createdBy: number;
-
-  @IsInt()
-  updatedBy: number;
-}
+export class CreateSourceDto extends GetNameDto { }

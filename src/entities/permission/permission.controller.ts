@@ -3,7 +3,6 @@ import { TransformPlainToInstance } from 'class-transformer';
 import { GetUserIdFieldDto } from '../user/dto/request/get-user-id-field.dto';
 import { GetWorkspaceIdFieldDto } from '../workspace/dto/request/get-workspace-id-field.dto';
 import { CreatePermissionDto } from './dto/request/create-permission.dto';
-import { DeletePermissionDto } from './dto/request/delete-permission.dto';
 import { UpdatePermissionDto } from './dto/request/update-permission.dto';
 import { PermissionDto } from './dto/response/permission.dto';
 import { PermissionService } from './permission.service';
@@ -54,9 +53,8 @@ export class PermissionController {
   @TransformPlainToInstance(PermissionDto)
   async remove(
     @Param() { userId }: GetUserIdFieldDto,
-    @Param() { workspaceId }: GetWorkspaceIdFieldDto,
-    @Body() dto: DeletePermissionDto,
+    @Param() { workspaceId }: GetWorkspaceIdFieldDto
   ) {
-    return await this.permissionService.remove(dto.userId, dto.workspaceId);
+    return await this.permissionService.remove(userId, workspaceId);
   }
 }

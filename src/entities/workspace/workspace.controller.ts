@@ -1,7 +1,7 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Req } from '@nestjs/common';
 import { TransformPlainToInstance } from 'class-transformer';
+import { Request } from 'express';
 import { CreateWorkspaceDto } from './dto/request/create-workspace.dto';
-import { DeleteWorkspaceDto } from './dto/request/delete-workspace.dto';
 import { GetWorkspaceIdDto } from './dto/request/get-workspace-id.dto';
 import { UpdateWorkspaceDto } from './dto/request/update-workspace.dto';
 import { WorkspaceDto } from './dto/response/workspace.dto';
@@ -49,9 +49,9 @@ export class WorkspaceController {
   @Delete(':id')
   @TransformPlainToInstance(WorkspaceDto)
   async remove(
-    @Param() { id }: GetWorkspaceIdDto,
-    @Body() dto: DeleteWorkspaceDto,
+    @Req() { user }: Request,
+    @Param() { id }: GetWorkspaceIdDto
   ) {
-    return await this.workspaceService.remove(dto.id, dto.deletedBy);
+    return await this.workspaceService.remove(id, user.id);
   }
 }

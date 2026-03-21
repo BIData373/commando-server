@@ -1,7 +1,7 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Req } from '@nestjs/common';
 import { TransformPlainToInstance } from 'class-transformer';
+import { Request } from 'express';
 import { CreateMessageDto } from './dto/request/create-message.dto';
-import { DeleteMessageDto } from './dto/request/delete-message.dto';
 import { GetMessageIdDto } from './dto/request/get-message-id.dto';
 import { UpdateMessageDto } from './dto/request/update-message.dto';
 import { MessageDto } from './dto/response/message.dto';
@@ -26,7 +26,6 @@ export class MessageController {
     return await this.messageService.findAll();
   }
 
-  // FIX Use GetIdDto
   @Get(':id')
   @TransformPlainToInstance(MessageDto)
   async findOne(
@@ -35,7 +34,6 @@ export class MessageController {
     return await this.messageService.findOne(id);
   }
 
-  // FIX Use GetIdDto
   @Patch(':id')
   @TransformPlainToInstance(MessageDto)
   async update(
@@ -45,13 +43,12 @@ export class MessageController {
     return await this.messageService.update(id, dto);
   }
 
-  // FIX Use GetIdDto
   @Delete(':id')
   @TransformPlainToInstance(MessageDto)
   async remove(
-    @Param() { id }: GetMessageIdDto,
-    @Body() dto: DeleteMessageDto,
+    @Req() { user }: Request,
+    @Param() { id }: GetMessageIdDto
   ) {
-    return await this.messageService.remove(dto.id, dto.deletedBy);
+    return await this.messageService.remove(id, user.id);
   }
 }

@@ -1,8 +1,8 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Req } from '@nestjs/common';
 import { TransformPlainToInstance } from 'class-transformer';
+import { Request } from 'express';
 import { AssigneeService } from './assignee.service';
 import { CreateAssigneeDto } from './dto/request/create-assignee.dto';
-import { DeleteAssigneeDto } from './dto/request/delete-assignee.dto';
 import { GetAssigneeIdDto } from './dto/request/get-assignee-id.dto';
 import { UpdateAssigneeDto } from './dto/request/update-assignee.dto';
 import { AssigneeDto } from './dto/response/assignee.dto';
@@ -46,9 +46,9 @@ export class AssigneeController {
   @Delete(':id')
   @TransformPlainToInstance(AssigneeDto)
   async remove(
-    @Param() { id }: GetAssigneeIdDto,
-    @Body() dto: DeleteAssigneeDto,
+    @Req() { user }: Request,
+    @Param() { id }: GetAssigneeIdDto
   ) {
-    return await this.assigneeService.remove(dto.id, dto.deletedBy);
+    return await this.assigneeService.remove(id, user.id);
   }
 }

@@ -1,6 +1,6 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Req } from '@nestjs/common';
+import { Request } from 'express';
 import { CreateSourceDto } from './dto/request/create-source.dto';
-import { DeleteSourceDto } from './dto/request/delete-source.dto';
 import { GetSourceIdDto } from './dto/request/get-source-id.dto';
 import { UpdateSourceDto } from './dto/request/update-source.dto';
 import { SourceService } from './source.service';
@@ -39,9 +39,9 @@ export class SourceController {
 
   @Delete(':id')
   async remove(
-    @Param() { id }: GetSourceIdDto,
-    @Body() dto: DeleteSourceDto,
+    @Req() { user }: Request,
+    @Param() { id }: GetSourceIdDto
   ) {
-    return await this.sourceService.remove(dto.id, dto.deletedBy);
+    return await this.sourceService.remove(id, user.id);
   }
 }

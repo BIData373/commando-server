@@ -1,7 +1,13 @@
+import { IntersectionType } from '@nestjs/mapped-types';
 import { Type } from 'class-transformer';
-import { IsBoolean, IsDate, IsInt, IsObject, IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsDate, IsObject, IsOptional, IsString } from 'class-validator';
+import { GetSourceIdFieldDto } from '../../../source/dto/request/get-source-id-field.dto';
+import { GetWorkspaceIdFieldDto } from '../../../workspace/dto/request/get-workspace-id-field.dto';
 
-export class CreateTaskDto {
+export class CreateTaskDto extends IntersectionType(
+  GetWorkspaceIdFieldDto,
+  GetSourceIdFieldDto
+) {
   @IsString()
   title: string;
 
@@ -28,16 +34,4 @@ export class CreateTaskDto {
   @IsObject()
   @IsOptional()
   notes?: object;
-
-  @IsInt()
-  workspaceId: number;
-
-  @IsInt()
-  sourceId: number;
-
-  @IsInt()
-  createdBy: number;
-
-  @IsInt()
-  updatedBy: number;
 }

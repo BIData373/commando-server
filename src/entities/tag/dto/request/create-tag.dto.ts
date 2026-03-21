@@ -1,15 +1,8 @@
-import { IsInt, IsString } from 'class-validator';
+import { IntersectionType } from '@nestjs/mapped-types';
+import { GetNameDto } from '../../../../common/dto/request/get-name.dto';
+import { GetWorkspaceIdFieldDto } from '../../../workspace/dto/request/get-workspace-id-field.dto';
 
-export class CreateTagDto {
-  @IsString()
-  name: string;
-
-  @IsInt()
-  workspaceId: number;
-
-  @IsInt()
-  createdBy: number;
-
-  @IsInt()
-  updatedBy: number;
-}
+export class CreateTagDto extends IntersectionType(
+  GetNameDto,
+  GetWorkspaceIdFieldDto
+) { }

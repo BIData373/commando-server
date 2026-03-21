@@ -1,16 +1,8 @@
-import { IsInt, IsOptional, IsString } from 'class-validator';
+import { IsOptional, IsString } from 'class-validator';
+import { GetNameDto } from '../../../../common/dto/request/get-name.dto';
 
-export class CreatePikudDto {
-  @IsString()
-  name: string;
-
+export class CreatePikudDto extends GetNameDto {
   @IsString()
   @IsOptional()
   icon?: string;
-
-  @IsInt()
-  createdBy: number;
-
-  @IsInt()
-  updatedBy: number;
 }

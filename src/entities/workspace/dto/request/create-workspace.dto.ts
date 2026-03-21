@@ -17,10 +17,4 @@ export class CreateWorkspaceDto {
 
   @IsInt()
   pikudId: number;
-
-  @IsInt()
-  createdBy: number;
-
-  @IsInt()
-  updatedBy: number;
 }

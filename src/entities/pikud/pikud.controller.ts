@@ -1,7 +1,7 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Req } from '@nestjs/common';
 import { TransformPlainToInstance } from 'class-transformer';
+import { Request } from 'express';
 import { CreatePikudDto } from './dto/request/create-pikud.dto';
-import { DeletePikudDto } from './dto/request/delete-pikud.dto';
 import { GetPikudIdDto } from './dto/request/get-pikud-id.dto';
 import { UpdatePikudDto } from './dto/request/update-pikud.dto';
 import { PikudDto } from './dto/response/pikud.dto';
@@ -46,9 +46,9 @@ export class PikudController {
   @Delete(':id')
   @TransformPlainToInstance(PikudDto)
   async remove(
-    @Param() { id }: GetPikudIdDto,
-    @Body() dto: DeletePikudDto,
+    @Req() { user }: Request,
+    @Param() { id }: GetPikudIdDto
   ) {
-    return await this.pikudService.remove(dto.id, dto.deletedBy);
+    return await this.pikudService.remove(id, user.id);
   }
 }

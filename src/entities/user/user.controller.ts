@@ -1,8 +1,7 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
 import { TransformPlainToInstance } from 'class-transformer';
-import { GetUserIdDto } from './dto/request/get-user-id.dto';
 import { CreateUserDto } from './dto/request/create-user.dto';
-import { DeleteUserDto } from './dto/request/delete-user.dto';
+import { GetUserIdDto } from './dto/request/get-user-id.dto';
 import { UpdateUserDto } from './dto/request/update-user.dto';
 import { UserDto } from './dto/response/user.dto';
 import { UserService } from './user.service';
@@ -46,9 +45,8 @@ export class UserController {
   @Delete(':id')
   @TransformPlainToInstance(UserDto)
   async remove(
-    @Param() { id }: GetUserIdDto,
-    @Body() dto: DeleteUserDto,
+    @Param() { id }: GetUserIdDto
   ) {
-    return await this.userService.remove(dto.id);
+    return await this.userService.remove(id);
   }
 }
