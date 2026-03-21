@@ -5,10 +5,16 @@ import { UpdatePikudDto } from './dto/request/update-pikud.dto';
 
 @Injectable()
 export class PikudService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
 
-  create(dto: CreatePikudDto) {
-    return this.prisma.pikud.create({ data: dto });
+  create(dto: CreatePikudDto, userId: number) {
+    return this.prisma.pikud.create({
+      data: {
+        ...dto,
+        createdBy: userId,
+        updatedBy: userId
+      }
+    });
   }
 
   findAll() {
@@ -19,8 +25,11 @@ export class PikudService {
     return this.prisma.pikud.findUnique({ where: { id } });
   }
 
-  update(id: number, dto: UpdatePikudDto) {
-    return this.prisma.pikud.update({ where: { id }, data: dto });
+  update(id: number, dto: UpdatePikudDto, updatedBy: number) {
+    return this.prisma.pikud.update({
+      where: { id },
+      data: { ...dto, updatedBy }
+    });
   }
 
   remove(id: number, deletedBy: number) {

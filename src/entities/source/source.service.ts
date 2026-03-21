@@ -5,10 +5,16 @@ import { UpdateSourceDto } from './dto/request/update-source.dto';
 
 @Injectable()
 export class SourceService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
 
-  create(dto: CreateSourceDto) {
-    return this.prisma.source.create({ data: dto });
+  create(dto: CreateSourceDto, userId: number) {
+    return this.prisma.source.create({
+      data: {
+        ...dto,
+        createdBy: userId,
+        updatedBy: userId
+      }
+    });
   }
 
   findAll() {
@@ -19,8 +25,11 @@ export class SourceService {
     return this.prisma.source.findUnique({ where: { id } });
   }
 
-  update(id: number, dto: UpdateSourceDto) {
-    return this.prisma.source.update({ where: { id }, data: dto });
+  update(id: number, dto: UpdateSourceDto, updatedBy: number) {
+    return this.prisma.source.update({
+      where: { id },
+      data: { ...dto, updatedBy }
+    });
   }
 
   remove(id: number, deletedBy: number) {

@@ -12,9 +12,10 @@ export class SourceController {
 
   @Post()
   async create(
+    @Req() { user }: Request,
     @Body() dto: CreateSourceDto
   ) {
-    return await this.sourceService.create(dto);
+    return await this.sourceService.create(dto, user.id);
   }
 
   @Get()
@@ -31,10 +32,11 @@ export class SourceController {
 
   @Patch(':id')
   async update(
+    @Req() { user }: Request,
     @Param() { id }: GetSourceIdDto,
     @Body() dto: UpdateSourceDto,
   ) {
-    return await this.sourceService.update(id, dto);
+    return await this.sourceService.update(id, dto, user.id);
   }
 
   @Delete(':id')

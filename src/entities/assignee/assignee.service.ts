@@ -7,8 +7,14 @@ import { UpdateAssigneeDto } from './dto/request/update-assignee.dto';
 export class AssigneeService {
   constructor(private readonly prisma: PrismaService) { }
 
-  create(dto: CreateAssigneeDto) {
-    return this.prisma.assignee.create({ data: dto });
+  create(dto: CreateAssigneeDto, userId: number) {
+    return this.prisma.assignee.create({
+      data: {
+        ...dto,
+        createdBy: userId,
+        updatedBy: userId
+      }
+    });
   }
 
   findAll() {
@@ -19,8 +25,11 @@ export class AssigneeService {
     return this.prisma.assignee.findUnique({ where: { id } });
   }
 
-  update(id: number, dto: UpdateAssigneeDto) {
-    return this.prisma.assignee.update({ where: { id }, data: dto });
+  update(id: number, dto: UpdateAssigneeDto, updatedBy: number) {
+    return this.prisma.assignee.update({
+      where: { id },
+      data: { ...dto, updatedBy }
+    });
   }
 
   remove(id: number, deletedBy: number) {

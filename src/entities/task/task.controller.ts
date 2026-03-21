@@ -15,9 +15,10 @@ export class TaskController {
   @Post()
   @TransformPlainToInstance(TaskDto)
   async create(
+    @Req() { user }: Request,
     @Body() dto: CreateTaskDto
   ) {
-    return await this.taskService.create(dto);
+    return await this.taskService.create(dto, user.id);
   }
 
   @Get()
@@ -39,10 +40,11 @@ export class TaskController {
   @Patch(':id')
   @TransformPlainToInstance(TaskDto)
   async update(
+    @Req() { user }: Request,
     @Param() { id }: GetTaskIdDto,
     @Body() dto: UpdateTaskDto,
   ) {
-    return await this.taskService.update(id, dto);
+    return await this.taskService.update(id, dto, user.id);
   }
 
   // FIX Use GetIdDto

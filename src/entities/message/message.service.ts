@@ -5,10 +5,16 @@ import { UpdateMessageDto } from './dto/request/update-message.dto';
 
 @Injectable()
 export class MessageService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
 
-  create(dto: CreateMessageDto) {
-    return this.prisma.message.create({ data: dto });
+  create(dto: CreateMessageDto, userId: number) {
+    return this.prisma.message.create({
+      data: {
+        ...dto,
+        createdBy: userId,
+        updatedBy: userId
+      }
+    });
   }
 
   findAll() {
@@ -19,8 +25,11 @@ export class MessageService {
     return this.prisma.message.findUnique({ where: { id } });
   }
 
-  update(id: number, dto: UpdateMessageDto) {
-    return this.prisma.message.update({ where: { id }, data: dto });
+  update(id: number, dto: UpdateMessageDto, updatedBy: number) {
+    return this.prisma.message.update({
+      where: { id },
+      data: { ...dto, updatedBy }
+    });
   }
 
   remove(id: number, deletedBy: number) {

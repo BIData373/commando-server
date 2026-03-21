@@ -5,10 +5,16 @@ import { UpdateWorkspaceDto } from './dto/request/update-workspace.dto';
 
 @Injectable()
 export class WorkspaceService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
 
-  create(dto: CreateWorkspaceDto) {
-    return this.prisma.workspace.create({ data: dto });
+  create(dto: CreateWorkspaceDto, userId: number) {
+    return this.prisma.workspace.create({
+      data: {
+        ...dto,
+        createdBy: userId,
+        updatedBy: userId
+      }
+    });
   }
 
   findAll() {
@@ -19,8 +25,11 @@ export class WorkspaceService {
     return this.prisma.workspace.findUnique({ where: { id } });
   }
 
-  update(id: number, dto: UpdateWorkspaceDto) {
-    return this.prisma.workspace.update({ where: { id }, data: dto });
+  update(id: number, dto: UpdateWorkspaceDto, updatedBy: number) {
+    return this.prisma.workspace.update({
+      where: { id },
+      data: { ...dto, updatedBy }
+    });
   }
 
   remove(id: number, deletedBy: number) {

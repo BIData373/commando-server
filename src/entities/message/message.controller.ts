@@ -15,9 +15,10 @@ export class MessageController {
   @Post()
   @TransformPlainToInstance(MessageDto)
   async create(
+    @Req() { user }: Request,
     @Body() dto: CreateMessageDto
   ) {
-    return await this.messageService.create(dto);
+    return await this.messageService.create(dto, user.id);
   }
 
   @Get()
@@ -37,10 +38,11 @@ export class MessageController {
   @Patch(':id')
   @TransformPlainToInstance(MessageDto)
   async update(
+    @Req() { user }: Request,
     @Param() { id }: GetMessageIdDto,
     @Body() dto: UpdateMessageDto,
   ) {
-    return await this.messageService.update(id, dto);
+    return await this.messageService.update(id, dto, user.id);
   }
 
   @Delete(':id')

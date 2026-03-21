@@ -5,10 +5,16 @@ import { UpdateTaskDto } from './dto/request/update-task.dto';
 
 @Injectable()
 export class TaskService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
 
-  create(dto: CreateTaskDto) {
-    return this.prisma.task.create({ data: dto });
+  create(dto: CreateTaskDto, userId: number) {
+    return this.prisma.task.create({
+      data: {
+        ...dto,
+        createdBy: userId,
+        updatedBy: userId
+      }
+    });
   }
 
   findAll() {
@@ -19,8 +25,11 @@ export class TaskService {
     return this.prisma.task.findUnique({ where: { id } });
   }
 
-  update(id: number, dto: UpdateTaskDto) {
-    return this.prisma.task.update({ where: { id }, data: dto });
+  update(id: number, dto: UpdateTaskDto, updatedBy: number) {
+    return this.prisma.task.update({
+      where: { id },
+      data: { ...dto, updatedBy }
+    });
   }
 
   remove(id: number, deletedBy: number) {

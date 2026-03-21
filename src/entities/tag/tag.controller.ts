@@ -1,5 +1,6 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Req } from '@nestjs/common';
 import { TransformPlainToInstance } from 'class-transformer';
+import { Request } from 'express';
 import { CreateTagDto } from './dto/request/create-tag.dto';
 import { GetTagIdDto } from './dto/request/get-tag-id.dto';
 import { UpdateTagDto } from './dto/request/update-tag.dto';
@@ -14,9 +15,10 @@ export class TagController {
   @Post()
   @TransformPlainToInstance(TagDto)
   async create(
+    @Req() { user }: Request,
     @Body() dto: CreateTagDto
   ) {
-    return await this.tagService.create(dto);
+    return await this.tagService.create(dto, user.id);
   }
 
   @Get()
@@ -38,10 +40,11 @@ export class TagController {
   @Patch(':id')
   @TransformPlainToInstance(TagDto)
   async update(
+    @Req() { user }: Request,
     @Param() { id }: GetTagIdDto,
     @Body() dto: UpdateTagDto,
   ) {
-    return await this.tagService.update(id, dto);
+    return await this.tagService.update(id, dto, user.id);
   }
 
   // FIX Use GetIdDto

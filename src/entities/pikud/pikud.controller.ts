@@ -15,9 +15,10 @@ export class PikudController {
   @Post()
   @TransformPlainToInstance(PikudDto)
   async create(
+    @Req() { user }: Request,
     @Body() dto: CreatePikudDto
   ) {
-    return await this.pikudService.create(dto);
+    return await this.pikudService.create(dto, user.id);
   }
 
   @Get()
@@ -37,10 +38,11 @@ export class PikudController {
   @Patch(':id')
   @TransformPlainToInstance(PikudDto)
   async update(
+    @Req() { user }: Request,
     @Param() { id }: GetPikudIdDto,
     @Body() dto: UpdatePikudDto,
   ) {
-    return await this.pikudService.update(id, dto);
+    return await this.pikudService.update(id, dto, user.id);
   }
 
   @Delete(':id')

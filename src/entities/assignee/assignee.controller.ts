@@ -15,9 +15,10 @@ export class AssigneeController {
   @Post()
   @TransformPlainToInstance(AssigneeDto)
   async create(
+    @Req() { user }: Request,
     @Body() dto: CreateAssigneeDto
   ) {
-    return await this.assigneeService.create(dto);
+    return await this.assigneeService.create(dto, user.id);
   }
 
   @Get()
@@ -37,10 +38,11 @@ export class AssigneeController {
   @Patch(':id')
   @TransformPlainToInstance(AssigneeDto)
   async update(
+    @Req() { user }: Request,
     @Param() { id }: GetAssigneeIdDto,
     @Body() dto: UpdateAssigneeDto,
   ) {
-    return await this.assigneeService.update(id, dto);
+    return await this.assigneeService.update(id, dto, user.id);
   }
 
   @Delete(':id')

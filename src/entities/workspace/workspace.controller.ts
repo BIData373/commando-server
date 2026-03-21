@@ -15,9 +15,10 @@ export class WorkspaceController {
   @Post()
   @TransformPlainToInstance(WorkspaceDto)
   async create(
+    @Req() { user }: Request,
     @Body() dto: CreateWorkspaceDto
   ) {
-    return await this.workspaceService.create(dto);
+    return await this.workspaceService.create(dto, user.id);
   }
 
   @Get()
@@ -26,7 +27,6 @@ export class WorkspaceController {
     return await this.workspaceService.findAll();
   }
 
-  // FIX Use GetIdDto
   @Get(':id')
   @TransformPlainToInstance(WorkspaceDto)
   async findOne(
@@ -35,17 +35,16 @@ export class WorkspaceController {
     return await this.workspaceService.findOne(id);
   }
 
-  // FIX Use GetIdDto
   @Patch(':id')
   @TransformPlainToInstance(WorkspaceDto)
   async update(
+    @Req() { user }: Request,
     @Param() { id }: GetWorkspaceIdDto,
     @Body() dto: UpdateWorkspaceDto,
   ) {
-    return await this.workspaceService.update(id, dto);
+    return await this.workspaceService.update(id, dto, user.id);
   }
 
-  // FIX Use GetIdDto
   @Delete(':id')
   @TransformPlainToInstance(WorkspaceDto)
   async remove(
