@@ -26,7 +26,10 @@ import { WorkspaceModule } from './entities/workspace/workspace.module';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: path.join(__dirname, `../config`, process.env.ENV ?? '', '.env'),
+      envFilePath: [
+        path.join(__dirname, '../config/common.env'),
+        path.join(__dirname, `../config`, process.env.ENV ?? '', '.env')
+      ],
     }),
     SharedModule,
     PikudModule,
