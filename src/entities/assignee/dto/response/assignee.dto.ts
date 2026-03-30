@@ -1,15 +1,11 @@
-import { IntersectionType } from '@nestjs/mapped-types';
 import { Exclude, Expose } from 'class-transformer';
-import { IdDto } from '../../../../common/dto/response/id.dto';
-import { MetaFieldsDto } from '../../../../common/dto/response/meta-fields.dto';
-import { NameDto } from '../../../../common/dto/response/name.dto';
+import { IdMetaFieldsDto } from '../../../../common/dto/response/id-meta-fields.dto';
 
 @Exclude()
-export class AssigneeDto extends IntersectionType(
-  IdDto,
-  NameDto,
-  MetaFieldsDto
-) {
+export class AssigneeDto extends IdMetaFieldsDto {
+  @Expose()
+  name: string;
+
   @Expose()
   color: string;
 }

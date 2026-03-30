@@ -27,7 +27,6 @@ export class TagController {
     return await this.tagService.findAll();
   }
 
-  // FIX Use GetIdDto
   @Get(':id')
   @TransformPlainToInstance(TagDto)
   async findOne(
@@ -36,7 +35,6 @@ export class TagController {
     return await this.tagService.findOne(id);
   }
 
-  // FIX Use GetIdDto
   @Patch(':id')
   @TransformPlainToInstance(TagDto)
   async update(
@@ -47,7 +45,6 @@ export class TagController {
     return await this.tagService.update(id, dto, user.id);
   }
 
-  // FIX Use GetIdDto
   @Delete(':id')
   @TransformPlainToInstance(TagDto)
   async remove(

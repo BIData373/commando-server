@@ -52,7 +52,10 @@ import { WorkspaceModule } from './entities/workspace/workspace.module';
       useValue: new ValidationPipe({
         whitelist: true,
         stopAtFirstError: true,
-        transform: true
+        transform: true,
+        // transformOptions: {
+        //   enableImplicitConversion: true
+        // }
       })
     },
   ]

@@ -1,13 +1,11 @@
-import { IntersectionType } from '@nestjs/mapped-types';
 import { Exclude, Expose } from 'class-transformer';
 import { IdDto } from '../../../../common/dto/response/id.dto';
-import { NameDto } from '../../../../common/dto/response/name.dto';
 
 @Exclude()
-export class WorkspaceStatusDto extends IntersectionType(
-  IdDto,
-  NameDto
-) {
+export class WorkspaceStatusDto extends IdDto {
+  @Expose()
+  name: string;
+
   @Expose()
   color: string;
 

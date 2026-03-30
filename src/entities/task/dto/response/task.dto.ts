@@ -1,13 +1,8 @@
-import { IntersectionType } from '@nestjs/mapped-types';
 import { Exclude, Expose } from 'class-transformer';
-import { IdDto } from '../../../../common/dto/response/id.dto';
-import { MetaFieldsDto } from '../../../../common/dto/response/meta-fields.dto';
+import { IdMetaFieldsDto } from '../../../../common/dto/response/id-meta-fields.dto';
 
 @Exclude()
-export class TaskDto extends IntersectionType(
-  IdDto,
-  MetaFieldsDto
-) {
+export class TaskDto extends IdMetaFieldsDto {
   @Expose()
   title: string;
 
