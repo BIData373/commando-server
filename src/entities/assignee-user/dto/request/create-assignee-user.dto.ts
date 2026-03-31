@@ -1,6 +1,7 @@
 import { IsInt } from 'class-validator';
+import { ICreateAssigneeUser } from '../../../../types';
 
-export class CreateAssigneeUserDto {
+export class CreateAssigneeUserDto implements ICreateAssigneeUser {
   @IsInt()
   assigneeId: number;
 

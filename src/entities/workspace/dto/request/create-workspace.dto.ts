@@ -1,6 +1,7 @@
 import { IsBoolean, IsInt, IsOptional, IsString } from 'class-validator';
+import { ICreateWorkspace } from '../../../../types';
 
-export class CreateWorkspaceDto {
+export class CreateWorkspaceDto implements ICreateWorkspace {
   @IsString()
   title: string;
 

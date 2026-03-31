@@ -1,8 +1,9 @@
 import { Exclude, Expose } from 'class-transformer';
 import { IdMetaFieldsDto } from '../../../../common/dto/response/id-meta-fields.dto';
+import { IWorkspace } from '../../../../types';
 
 @Exclude()
-export class WorkspaceDto extends IdMetaFieldsDto {
+export class WorkspaceDto extends IdMetaFieldsDto implements IWorkspace {
   @Expose()
   title: string;
 
@@ -10,7 +11,7 @@ export class WorkspaceDto extends IdMetaFieldsDto {
   urlName: string;
 
   @Expose()
-  icon?: string | null;
+  icon: string | null;
 
   @Expose()
   assigneeStatusEditable: boolean;

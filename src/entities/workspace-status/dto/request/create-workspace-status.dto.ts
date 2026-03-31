@@ -1,6 +1,7 @@
 import { IsInt, IsString } from 'class-validator';
+import { ICreateWorkspaceStatus } from '../../../../types';
 
-export class CreateWorkspaceStatusDto {
+export class CreateWorkspaceStatusDto implements ICreateWorkspaceStatus {
   @IsString()
   name: string;
 

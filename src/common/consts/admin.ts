@@ -1,4 +1,4 @@
-import { Prisma } from "../../../prisma";
+import { Prisma } from "../../types/prisma";
 
 export const admin = {
     upn: 's0000000',

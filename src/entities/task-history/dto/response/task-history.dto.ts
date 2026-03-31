@@ -1,9 +1,9 @@
 import { Exclude, Expose } from 'class-transformer';
-import { HistoryAction } from '../../../../../prisma';
 import { IdDto } from '../../../../common/dto/response/id.dto';
+import { ITaskHistory, HistoryAction } from '../../../../types';
 
 @Exclude()
-export class TaskHistoryDto extends IdDto {
+export class TaskHistoryDto extends IdDto implements ITaskHistory {
   @Expose()
   action: HistoryAction;
 
@@ -11,7 +11,7 @@ export class TaskHistoryDto extends IdDto {
   field: string;
 
   @Expose()
-  value?: string | null;
+  value: string | null;
 
   @Expose()
   timestamp: Date;

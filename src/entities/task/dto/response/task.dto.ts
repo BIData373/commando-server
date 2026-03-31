@@ -1,13 +1,14 @@
 import { Exclude, Expose } from 'class-transformer';
 import { IdMetaFieldsDto } from '../../../../common/dto/response/id-meta-fields.dto';
+import { ITask } from '../../../../types';
 
 @Exclude()
-export class TaskDto extends IdMetaFieldsDto {
+export class TaskDto extends IdMetaFieldsDto implements ITask {
   @Expose()
   title: string;
 
   @Expose()
-  description?: string | null;
+  description: string | null;
 
   @Expose()
   flagged: boolean;
@@ -22,7 +23,7 @@ export class TaskDto extends IdMetaFieldsDto {
   dueDate: Date;
 
   @Expose()
-  notes?: object | null;
+  notes: object | null;
 
   @Expose()
   workspaceId: number;

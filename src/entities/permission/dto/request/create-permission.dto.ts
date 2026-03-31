@@ -1,7 +1,7 @@
 import { IsEnum, IsInt } from 'class-validator';
-import { PermissionType } from '../../../../../prisma';
+import { ICreatePermission, PermissionType } from '../../../../types';
 
-export class CreatePermissionDto {
+export class CreatePermissionDto implements ICreatePermission {
   @IsInt()
   userId: number;
 

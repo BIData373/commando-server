@@ -1,7 +1,7 @@
 import { IsEnum, IsInt, IsOptional, IsString } from 'class-validator';
-import { HistoryAction } from '../../../../../prisma';
+import { ICreateTaskHistory, HistoryAction } from '../../../../types';
 
-export class CreateTaskHistoryDto {
+export class CreateTaskHistoryDto implements ICreateTaskHistory {
   @IsEnum(HistoryAction)
   action: HistoryAction;
 

@@ -1,6 +1,7 @@
 import { IsInt } from 'class-validator';
+import { IUpdateAssigneeTaskStatus } from '../../../../types';
 
-export class UpdateAssigneeTaskStatusDto {
+export class UpdateAssigneeTaskStatusDto implements IUpdateAssigneeTaskStatus {
   @IsInt()
   statusId: number;
 }

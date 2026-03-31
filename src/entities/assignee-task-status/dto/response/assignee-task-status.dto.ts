@@ -1,7 +1,8 @@
 import { Exclude, Expose } from 'class-transformer';
+import { IAssigneeTaskStatus } from '../../../../types';
 
 @Exclude()
-export class AssigneeTaskStatusDto {
+export class AssigneeTaskStatusDto implements IAssigneeTaskStatus {
   @Expose()
   taskId: number;
 

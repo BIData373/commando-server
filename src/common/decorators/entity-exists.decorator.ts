@@ -8,15 +8,16 @@ import {
 } from 'class-validator';
 import { PrismaService } from '../prisma.service';
 
-// FIX Make into mixin, add options
 @ValidatorConstraint({ name: 'EntityExists', async: true })
 @Injectable()
 export class EntityExistsConstraint implements ValidatorConstraintInterface {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
 
   async validate(id: number, args: ValidationArguments): Promise<boolean> {
     const model = args.constraints[0] as keyof PrismaService;
+
     const record = await (this.prisma[model] as any).findUnique({ where: { id } });
+
     return !!record;
   }
 
@@ -25,7 +26,8 @@ export class EntityExistsConstraint implements ValidatorConstraintInterface {
   }
 }
 
-export function EntityExists(model: string, options?: ValidationOptions) {
+// FIX Add findOptions
+export function EntityExists(model: keyof PrismaService, options?: ValidationOptions) {
   return function (object: object, propertyName: string) {
     registerDecorator({
       target: object.constructor,
