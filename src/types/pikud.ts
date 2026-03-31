@@ -1,8 +1,8 @@
-import { Pikud, Prisma } from './prisma';
 import { OmittedMetaFields } from './common';
+import { Pikud, Prisma } from './prisma';
 
-export interface IPikud extends Pikud {}
+export interface IPikud extends Pikud { }
 
-export interface ICreatePikud extends OmittedMetaFields<Prisma.PikudUncheckedCreateInput> {}
+export interface ICreatePikud extends Omit<Prisma.PikudUncheckedCreateInput, OmittedMetaFields> { }
 
-export interface IUpdatePikud extends Partial<ICreatePikud> {}
+export interface IUpdatePikud extends Partial<ICreatePikud> { }

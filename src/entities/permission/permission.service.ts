@@ -1,36 +1,40 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../common/prisma.service';
 import { PermissionType } from '../../types/prisma';
-import { CreatePermissionDto } from './dto/request/create-permission.dto';
 
+// FIX Add createdAt, updatedAt, createdBy, updatedBy?
 @Injectable()
 export class PermissionService {
   constructor(private readonly prisma: PrismaService) { }
 
-  create(dto: CreatePermissionDto) {
-    return this.prisma.permission.create({ data: dto });
+  async findInWorkspace(workspaceId: number) {
+    return await this.prisma.permission.findMany({ where: { workspaceId } });
   }
 
-  findAll() {
-    return this.prisma.permission.findMany();
-  }
-
-  findOne(userId: number, workspaceId: number) {
-    return this.prisma.permission.findUnique({
+  async findOne(userId: number, workspaceId: number) {
+    return await this.prisma.permission.findUnique({
       where: { userId_workspaceId: { userId, workspaceId } },
     });
   }
 
-  // FIX Refactor
-  update(userId: number, workspaceId: number, type: PermissionType) {
-    return this.prisma.permission.update({
-      where: { userId_workspaceId: { userId, workspaceId } },
-      data: { type },
-    });
+  async upsert(upn: string, workspaceId: number, type: PermissionType) {
+    return await this.prisma.$transaction(async prisma => {
+      const user = await prisma.user.upsert({
+        where: { upn },
+        create: { upn },
+        update: { upn }
+      })
+
+      return await prisma.permission.upsert({
+        where: { userId_workspaceId: { userId: user.id, workspaceId } },
+        create: { userId: user.id, workspaceId, type },
+        update: { type }
+      });
+    })
   }
 
-  remove(userId: number, workspaceId: number) {
-    return this.prisma.permission.delete({
+  async remove(userId: number, workspaceId: number) {
+    return await this.prisma.permission.delete({
       where: { userId_workspaceId: { userId, workspaceId } },
     });
   }

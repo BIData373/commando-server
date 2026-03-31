@@ -1,8 +1,8 @@
-import { AssigneeTaskStatus, Prisma } from './prisma';
 import { OmittedMetaFields } from './common';
+import { AssigneeTaskStatus, Prisma } from './prisma';
 
-export interface IAssigneeTaskStatus extends AssigneeTaskStatus {}
+export interface IAssigneeTaskStatus extends AssigneeTaskStatus { }
 
-export interface ICreateAssigneeTaskStatus extends OmittedMetaFields<Prisma.AssigneeTaskStatusUncheckedCreateInput> {}
+export interface ICreateAssigneeTaskStatus extends Omit<Prisma.AssigneeTaskStatusUncheckedCreateInput, OmittedMetaFields> { }
 
-export interface IUpdateAssigneeTaskStatus extends Partial<ICreateAssigneeTaskStatus> {}
+export interface IUpdateAssigneeTaskStatus extends Partial<ICreateAssigneeTaskStatus> { }

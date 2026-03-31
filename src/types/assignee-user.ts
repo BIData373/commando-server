@@ -1,6 +1,6 @@
-import { AssigneeUser, Prisma } from './prisma';
 import { OmittedMetaFields } from './common';
+import { AssigneeUser, Prisma } from './prisma';
 
-export interface IAssigneeUser extends AssigneeUser {}
+export interface IAssigneeUser extends AssigneeUser { }
 
-export interface ICreateAssigneeUser extends OmittedMetaFields<Prisma.AssigneeUserUncheckedCreateInput> {}
+export interface ICreateAssigneeUser extends Omit<Prisma.AssigneeUserUncheckedCreateInput, OmittedMetaFields> { }

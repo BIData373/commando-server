@@ -56,12 +56,6 @@ Content-Type: application/json
 ?? status >= 400
 
 ### Delete Permission
-DELETE {{baseUrl}}/permission/1/1
-Content-Type: application/json
-
-{
-  "userId": 1,
-  "workspaceId": 1
-}
+DELETE {{baseUrl}}/permission?userId=1&workspaceId=1
 
 ?? status == 200

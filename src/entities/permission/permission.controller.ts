@@ -1,8 +1,8 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Patch, Query, Req } from '@nestjs/common';
 import { TransformPlainToInstance } from 'class-transformer';
-import { GetUserIdFieldDto } from '../user/dto/request/get-user-id-field.dto';
+import type { Request } from 'express';
 import { GetWorkspaceIdFieldDto } from '../workspace/dto/request/get-workspace-id-field.dto';
-import { CreatePermissionDto } from './dto/request/create-permission.dto';
+import { DeletePermissionDto } from './dto/request/delete-permission.dto';
 import { UpdatePermissionDto } from './dto/request/update-permission.dto';
 import { PermissionDto } from './dto/response/permission.dto';
 import { PermissionService } from './permission.service';
@@ -12,48 +12,35 @@ import { PermissionService } from './permission.service';
 export class PermissionController {
   constructor(private readonly permissionService: PermissionService) { }
 
-  @Post()
-  @TransformPlainToInstance(PermissionDto)
-  async create(
-    @Body() dto: CreatePermissionDto
-  ) {
-    return await this.permissionService.create(dto);
-  }
-
   @Get()
   @TransformPlainToInstance(PermissionDto)
-  async findAll() {
-    return await this.permissionService.findAll();
+  async findInWorkspace(
+    @Query() { workspaceId }: GetWorkspaceIdFieldDto
+  ) {
+    return await this.permissionService.findInWorkspace(workspaceId);
   }
 
-  // FIX Get user from cookie middleware 
-  // FIX Get workspace from query
-  @Get(':userId/:workspaceId')
+  @Get('me')
   @TransformPlainToInstance(PermissionDto)
   async findOne(
-    @Param() { userId }: GetUserIdFieldDto,
-    @Param() { workspaceId }: GetWorkspaceIdFieldDto,
+    @Req() { user }: Request,
+    @Query() { workspaceId }: GetWorkspaceIdFieldDto
   ) {
-    return await this.permissionService.findOne(userId, workspaceId);
+    return await this.permissionService.findOne(user.id, workspaceId);
   }
 
-  // FIX Get user from cookie middleware 
-  // FIX Get workspace from query
-  @Patch(':userId/:workspaceId')
+  @Patch()
   @TransformPlainToInstance(PermissionDto)
   async update(
-    @Body() { userId, workspaceId, type }: UpdatePermissionDto,
+    @Body() { upn, workspaceId, type }: UpdatePermissionDto
   ) {
-    return await this.permissionService.update(userId, workspaceId, type);
+    return await this.permissionService.upsert(upn, workspaceId, type);
   }
 
-  // FIX Get user from cookie middleware 
-  // FIX Get workspace from query
-  @Delete(':userId/:workspaceId')
+  @Delete()
   @TransformPlainToInstance(PermissionDto)
   async remove(
-    @Param() { userId }: GetUserIdFieldDto,
-    @Param() { workspaceId }: GetWorkspaceIdFieldDto
+    @Query() { userId, workspaceId }: DeletePermissionDto
   ) {
     return await this.permissionService.remove(userId, workspaceId);
   }

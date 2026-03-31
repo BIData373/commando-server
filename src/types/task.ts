@@ -1,10 +1,10 @@
-import { Task, Prisma } from './prisma';
 import { OmittedMetaFields } from './common';
+import { Prisma, Task } from './prisma';
 
-export interface ITask extends Task {}
+export interface ITask extends Task { }
 
-export interface ICreateTask extends Omit<OmittedMetaFields<Prisma.TaskUncheckedCreateInput>, 'notes'> {
+export interface ICreateTask extends Omit<Prisma.TaskUncheckedCreateInput, OmittedMetaFields | 'notes'> {
   notes?: object | null;
 }
 
-export interface IUpdateTask extends Partial<ICreateTask> {}
+export interface IUpdateTask extends Partial<ICreateTask> { }

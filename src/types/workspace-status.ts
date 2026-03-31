@@ -3,6 +3,6 @@ import { Prisma, WorkspaceStatus } from './prisma';
 
 export interface IWorkspaceStatus extends WorkspaceStatus { }
 
-export interface ICreateWorkspaceStatus extends OmittedMetaFields<Prisma.WorkspaceStatusUncheckedCreateInput> { }
+export interface ICreateWorkspaceStatus extends Omit<Prisma.WorkspaceStatusUncheckedCreateInput, OmittedMetaFields> { }
 
 export interface IUpdateWorkspaceStatus extends Partial<ICreateWorkspaceStatus> { }

@@ -1,8 +1,8 @@
-import { Permission, Prisma } from './prisma';
 import { OmittedMetaFields } from './common';
+import { Permission, Prisma } from './prisma';
 
-export interface IPermission extends Permission {}
+export interface IPermission extends Permission { }
 
-export interface ICreatePermission extends OmittedMetaFields<Prisma.PermissionUncheckedCreateInput> {}
-
-export interface IUpdatePermission extends Partial<ICreatePermission> {}
+export interface IUpdatePermission extends Omit<Prisma.PermissionUncheckedCreateInput, OmittedMetaFields | 'userId'> {
+    upn: string
+}

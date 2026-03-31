@@ -108,7 +108,7 @@ Every entity has a `delete-[entity].dto.ts` in `dto/request/`.
 
 * Soft-delete entities: `id` (with `@EntityExists`) + `deletedBy: number`
 * Hard-delete entities: `id` (with `@EntityExists`) only
-* Composite-PK entities: all PK fields (no `@EntityExists` — Prisma throws on missing record)
+* Composite-PK entities: all PK fields
 
 ```typescript
 export class DeleteXxxDto {
