@@ -136,7 +136,7 @@ When adding a new model, create it in both locations.
 Each entity folder contains a `[entity].http` file in httpYac format.
 
 Structure per file:
-* `@baseUrl = http://localhost:3000`
+* `# @import ../../../global.http`
 * Requests separated by `###`
 * `{{@response exports.createdId = response.parsedBody.id; }}` to chain ids across requests
 * `?? status == 2xx` assertions after every request

@@ -1,4 +1,4 @@
-@baseUrl = http://localhost:3000
+# @import ../../../global.http
 
 ### Create Tag — valid payload
 POST {{baseUrl}}/tag
