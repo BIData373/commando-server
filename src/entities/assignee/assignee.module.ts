@@ -5,5 +5,6 @@ import { AssigneeService } from './assignee.service';
 @Module({
   controllers: [AssigneeController],
   providers: [AssigneeService],
+  exports: [AssigneeService]
 })
-export class AssigneeModule {}
+export class AssigneeModule { }

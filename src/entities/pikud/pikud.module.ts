@@ -5,5 +5,6 @@ import { PikudService } from './pikud.service';
 @Module({
   controllers: [PikudController],
   providers: [PikudService],
+  exports: [PikudService]
 })
-export class PikudModule {}
+export class PikudModule { }

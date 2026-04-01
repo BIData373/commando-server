@@ -5,5 +5,6 @@ import { AssigneeTaskStatusService } from './assignee-task-status.service';
 @Module({
   controllers: [AssigneeTaskStatusController],
   providers: [AssigneeTaskStatusService],
+  exports: [AssigneeTaskStatusService]
 })
-export class AssigneeTaskStatusModule {}
+export class AssigneeTaskStatusModule { }

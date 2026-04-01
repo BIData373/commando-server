@@ -1,10 +1,8 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { admin } from '../../common/consts/admin';
 import { PrismaService } from '../../common/prisma.service';
-import { ICreateUser } from '../../types';
+import { ICreateUser, IUpdateUser, IUser } from '../../types';
 import { Prisma } from '../../types/prisma';
-import { CreateUserDto } from './dto/request/create-user.dto';
-import { UpdateUserDto } from './dto/request/update-user.dto';
 
 @Injectable()
 export class UserService implements OnModuleInit {
@@ -14,18 +12,27 @@ export class UserService implements OnModuleInit {
     await this.upsert(admin);
   }
 
+  static formatInfoForSave(info?: IUser | null) {
+    return info ?? Prisma.JsonNull
+  }
+
   async upsert({ upn, info }: ICreateUser) {
-    const infoToSave = info ?? Prisma.JsonNull
+    const infoToSave = UserService.formatInfoForSave(info)
 
     return await this.prisma.user.upsert({
       where: { upn },
       create: { upn, info: infoToSave },
-      update: { upn, info: infoToSave },
+      update: { upn, info: infoToSave }
     })
   }
 
-  create(dto: CreateUserDto) {
-    return this.prisma.user.create({ data: dto });
+  create({ upn, info }: ICreateUser) {
+    return this.prisma.user.create({
+      data: {
+        upn,
+        info: UserService.formatInfoForSave(info)
+      }
+    });
   }
 
   findAll() {
@@ -36,8 +43,14 @@ export class UserService implements OnModuleInit {
     return this.prisma.user.findUnique({ where: { id } });
   }
 
-  update(id: number, dto: UpdateUserDto) {
-    return this.prisma.user.update({ where: { id }, data: dto });
+  update(id: number, { upn, info }: IUpdateUser) {
+    return this.prisma.user.update({
+      where: { id },
+      data: {
+        upn,
+        info: UserService.formatInfoForSave(info)
+      }
+    });
   }
 
   remove(id: number) {

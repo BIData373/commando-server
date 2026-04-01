@@ -5,5 +5,6 @@ import { TaskHistoryService } from './task-history.service';
 @Module({
   controllers: [TaskHistoryController],
   providers: [TaskHistoryService],
+  exports: [TaskHistoryService]
 })
-export class TaskHistoryModule {}
+export class TaskHistoryModule { }
