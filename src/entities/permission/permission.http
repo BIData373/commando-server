@@ -45,11 +45,11 @@ Content-Type: application/json
 ?? status == 200
 
 ### Delete Permission — non-existent record (expect error)
-DELETE {{baseUrl}}/permission/99999/99999
+DELETE {{baseUrl}}/permission
 Content-Type: application/json
 
 {
-  "userId": 99999,
+  "upn": "s0000000",
   "workspaceId": 99999
 }
 

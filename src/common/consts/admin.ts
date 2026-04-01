@@ -1,6 +1,6 @@
-import { Prisma } from "../../types/prisma";
+import { ICreateUser } from "../../types";
 
-export const admin = {
+export const admin: ICreateUser = {
     upn: 's0000000',
-    info: Prisma.JsonNull,
-} satisfies Prisma.UserCreateInput;
+    info: null
+};

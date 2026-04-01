@@ -1,6 +1,8 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { admin } from '../../common/consts/admin';
 import { PrismaService } from '../../common/prisma.service';
+import { ICreateUser } from '../../types';
+import { Prisma } from '../../types/prisma';
 import { CreateUserDto } from './dto/request/create-user.dto';
 import { UpdateUserDto } from './dto/request/update-user.dto';
 
@@ -9,11 +11,17 @@ export class UserService implements OnModuleInit {
   constructor(private readonly prisma: PrismaService) { }
 
   async onModuleInit(): Promise<void> {
-    await this.prisma.user.upsert({
-      where: { upn: admin.upn },
-      create: admin,
-      update: {},
-    });
+    await this.upsert(admin);
+  }
+
+  async upsert({ upn, info }: ICreateUser) {
+    const infoToSave = info ?? Prisma.JsonNull
+
+    return await this.prisma.user.upsert({
+      where: { upn },
+      create: { upn, info: infoToSave },
+      update: { upn, info: infoToSave },
+    })
   }
 
   create(dto: CreateUserDto) {
