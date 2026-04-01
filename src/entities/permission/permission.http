@@ -2,7 +2,7 @@
 
 ### Create Permission — valid payload
 POST {{baseUrl}}/permission
-Content-Type: application/json
+...headers
 
 {
   "userId": 1,
@@ -14,7 +14,7 @@ Content-Type: application/json
 
 ### Create Permission — invalid enum value (expect 400)
 POST {{baseUrl}}/permission
-Content-Type: application/json
+...headers
 
 {
   "userId": 1,
@@ -25,20 +25,24 @@ Content-Type: application/json
 ?? status == 400
 
 ### Get all Permissions
-GET {{baseUrl}}/permission
+GET {{baseUrl}}/permission?workspaceId={{workspaceId}}
+...headers
 
 ?? status == 200
 
 ### Get Permission by composite key
-GET {{baseUrl}}/permission/1/1
+GET {{baseUrl}}/permission/me?workspaceId={{workspaceId}}
+...headers
 
 ?? status == 200
 
 ### Update Permission type
-PATCH {{baseUrl}}/permission/1/1
-Content-Type: application/json
+PATCH {{baseUrl}}/permission
+...headers
 
 {
+  "upn": "s9336069",
+  "workspaceId": 1,
   "type": "MANAGER"
 }
 
@@ -46,7 +50,7 @@ Content-Type: application/json
 
 ### Delete Permission — non-existent record (expect error)
 DELETE {{baseUrl}}/permission
-Content-Type: application/json
+...headers
 
 {
   "upn": "s0000000",

@@ -1,6 +1,7 @@
 import { Exclude, Expose } from 'class-transformer';
 import { IdDto } from '../../../../common/dto/response/id.dto';
 import { IUser } from '../../../../types';
+import { UserInfoDto } from './user-info.dto';
 
 @Exclude()
 export class UserDto extends IdDto implements IUser {
@@ -8,5 +9,5 @@ export class UserDto extends IdDto implements IUser {
   upn: string;
 
   @Expose()
-  info: object | null;
+  info: UserInfoDto | null;
 }

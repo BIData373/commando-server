@@ -7,6 +7,14 @@ import { PermissionType } from '../../types/prisma';
 export class PermissionService {
   constructor(private readonly prisma: PrismaService) { }
 
+  async hasPermission(userId: number, workspaceId: number, types: PermissionType[]) {
+    const count = await this.prisma.permission.count({
+      where: { userId, workspaceId, type: { in: types } }
+    })
+
+    return count > 0
+  }
+
   async findInWorkspace(workspaceId: number) {
     return await this.prisma.permission.findMany({ where: { workspaceId } });
   }

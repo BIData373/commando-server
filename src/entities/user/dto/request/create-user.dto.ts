@@ -1,5 +1,5 @@
 import { IsObject, IsOptional, IsString } from 'class-validator';
-import { ICreateUser, IUser } from '../../../../types';
+import { ICreateUser, IUserInfo } from '../../../../types';
 
 export class CreateUserDto implements ICreateUser {
   @IsString()
@@ -8,5 +8,5 @@ export class CreateUserDto implements ICreateUser {
   // FIX Validation?
   @IsObject()
   @IsOptional()
-  info?: IUser;
+  info?: IUserInfo;
 }

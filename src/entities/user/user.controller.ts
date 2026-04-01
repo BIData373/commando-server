@@ -1,5 +1,6 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
 import { TransformPlainToInstance } from 'class-transformer';
+import { BIGuard } from '../../common/guards/bi.guard';
 import { CreateUserDto } from './dto/request/create-user.dto';
 import { GetUserIdDto } from './dto/request/get-user-id.dto';
 import { UpdateUserDto } from './dto/request/update-user.dto';
@@ -7,6 +8,7 @@ import { UserDto } from './dto/response/user.dto';
 import { UserService } from './user.service';
 
 // FIX Guards
+@UseGuards(BIGuard)
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) { }

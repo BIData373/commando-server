@@ -2,6 +2,7 @@ import { MiddlewareConsumer, Module, NestModule, ValidationPipe } from '@nestjs/
 import { ConfigModule } from '@nestjs/config';
 import { APP_PIPE } from '@nestjs/core';
 import path from 'node:path';
+import { BIGuard } from './common/guards/bi.guard';
 import { CookieMiddleware } from './common/middleware/cookie.middleware';
 import { SharedModule } from './common/shared.module';
 import { AssigneeTaskStatusModule } from './entities/assignee-task-status/assignee-task-status.module';
@@ -47,6 +48,7 @@ import { WorkspaceModule } from './entities/workspace/workspace.module';
     TaskHistoryModule,
   ],
   providers: [
+    BIGuard,
     {
       provide: APP_PIPE,
       useValue: new ValidationPipe({

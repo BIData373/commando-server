@@ -2,16 +2,14 @@
 
 ### Create Workspace — valid payload
 POST {{baseUrl}}/workspace
-Content-Type: application/json
+...headers
 
 {
-  "title": "Operations Center",
+  "title": "Operations Center 2",
   "urlName": "operations-center",
   "icon": "ops-icon",
   "assigneeStatusEditable": true,
-  "pikudId": 1,
-  "createdBy": 1,
-  "updatedBy": 1
+  "pikudId": 1
 }
 
 {{@response
@@ -22,7 +20,7 @@ Content-Type: application/json
 
 ### Create Workspace — missing required field (expect 400)
 POST {{baseUrl}}/workspace
-Content-Type: application/json
+...headers
 
 {
   "icon": "ops-icon"
@@ -32,28 +30,29 @@ Content-Type: application/json
 
 ### Get all Workspaces
 GET {{baseUrl}}/workspace
+...headers
 
 ?? status == 200
 
 ### Get Workspace by id
 GET {{baseUrl}}/workspace/{{workspaceId}}
+...headers
 
 ?? status == 200
 
 ### Update Workspace
 PATCH {{baseUrl}}/workspace/{{workspaceId}}
-Content-Type: application/json
+...headers
 
 {
-  "title": "Operations Center Updated",
-  "updatedBy": 1
+  "title": "Operations Center Updated"
 }
 
 ?? status == 200
 
 ### Delete Workspace — non-existent id (expect 400 from @EntityExists)
 DELETE {{baseUrl}}/workspace/99999
-Content-Type: application/json
+...headers
 
 {
   "id": 99999,
@@ -64,7 +63,7 @@ Content-Type: application/json
 
 ### Delete Workspace
 DELETE {{baseUrl}}/workspace/{{workspaceId}}
-Content-Type: application/json
+...headers
 
 {
   "id": {{workspaceId}},
