@@ -1,0 +1,11 @@
+model User {
+  id   Int    @id @default(autoincrement())
+  upn  String @unique
+  info Json?
+
+  assignees   AssigneeUser[]
+  permissions Permission[]
+  history     TaskHistory[]
+
+  @@map("users")
+}

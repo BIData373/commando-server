@@ -1,0 +1,20 @@
+model Message {
+  id      Int    @id @default(autoincrement())
+  content String @db.Text
+
+  assigneeId Int @map("assignee_id")
+  taskId     Int @map("task_id")
+
+  assignee Assignee @relation(fields: [assigneeId], references: [id])
+  task     Task     @relation(fields: [taskId], references: [id])
+
+  // Meta Fields
+  createdAt DateTime  @default(now()) @map("created_at")
+  createdBy Int       @map("created_by")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  updatedBy Int       @map("updated_by")
+  deletedAt DateTime? @map("deleted_at")
+  deletedBy Int?      @map("deleted_by")
+
+  @@map("messages")
+}

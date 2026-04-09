@@ -1,17 +1,11 @@
 version: '3.8'
 
 services:
-  app:
-    build:
-      context: .
-      dockerfile: Dockerfile
+  postgres:
+    image: postgres:17-alpine
     ports:
-      - "${PORT:-3000}:3000"
+      - 5433:5432
     environment:
-      NODE_ENV: ${NODE_ENV:-development}
-      PORT: 3000
-    volumes:
-      - .:/app
-      - /app/node_modules
-    command: npm run start:dev
-    restart: unless-stopped
+      - POSTGRES_PASSWORD=matzpen-123-mefaked-456
+      - POSTGRES_USER=admin
+      - POSTGRES_DB=matzpen_mefaked

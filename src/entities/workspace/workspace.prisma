@@ -1,0 +1,26 @@
+model Workspace {
+  id                     Int       @id @default(autoincrement())
+  title                  String
+  urlName                String    @map("url_name")
+  icon                   String?
+  assigneeStatusEditable Boolean   @default(false) @map("assignee_status_editable")
+
+  // Meta Fields
+  createdAt DateTime  @default(now()) @map("created_at")
+  createdBy Int       @map("created_by")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  updatedBy Int       @map("updated_by")
+  deletedAt DateTime? @map("deleted_at")
+  deletedBy Int?      @map("deleted_by")
+
+  pikudId Int   @map("pikud_id")
+  pikud   Pikud @relation(fields: [pikudId], references: [id])
+
+  tags              Tag[]
+  tasks             Task[]
+  workspaceStatuses WorkspaceStatus[]
+  permissions       Permission[]
+  tasksHistory      TaskHistory[]
+
+  @@map("workspaces")
+}

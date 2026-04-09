@@ -1,0 +1,16 @@
+model Tag {
+  id   Int    @id @default(autoincrement())
+  name String
+
+  // Meta Fields (no deletedAt/deletedBy)
+  createdAt DateTime @default(now()) @map("created_at")
+  createdBy Int      @map("created_by")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  updatedBy Int      @map("updated_by")
+
+  workspaceId Int       @map("workspace_id")
+  workspace   Workspace @relation(fields: [workspaceId], references: [id])
+  tasks       Task[]    @relation("TaskToTag")
+
+  @@map("tags")
+}

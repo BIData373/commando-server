@@ -1,0 +1,69 @@
+# @import ../../../global.http
+
+### Create WorkspaceStatus — valid payload
+POST {{baseUrl}}/workspace-status
+Content-Type: application/json
+
+{
+  "name": "In Progress",
+  "color": "#FFD700",
+  "statusType": "active",
+  "workspaceId": 1
+}
+
+{{@response
+  exports.workspaceStatusId = response.parsedBody.id;
+}}
+
+?? status == 201
+
+### Create WorkspaceStatus — missing required field (expect 400)
+POST {{baseUrl}}/workspace-status
+Content-Type: application/json
+
+{
+  "color": "#FFD700"
+}
+
+?? status == 400
+
+### Get all WorkspaceStatuses
+GET {{baseUrl}}/workspace-status
+
+?? status == 200
+
+### Get WorkspaceStatus by id
+GET {{baseUrl}}/workspace-status/{{workspaceStatusId}}
+
+?? status == 200
+
+### Update WorkspaceStatus
+PATCH {{baseUrl}}/workspace-status/{{workspaceStatusId}}
+Content-Type: application/json
+
+{
+  "name": "Done",
+  "color": "#00C853"
+}
+
+?? status == 200
+
+### Delete WorkspaceStatus — non-existent id (expect 400 from @EntityExists)
+DELETE {{baseUrl}}/workspace-status/99999
+Content-Type: application/json
+
+{
+  "id": 99999
+}
+
+?? status == 400
+
+### Delete WorkspaceStatus
+DELETE {{baseUrl}}/workspace-status/{{workspaceStatusId}}
+Content-Type: application/json
+
+{
+  "id": {{workspaceStatusId}}
+}
+
+?? status == 200

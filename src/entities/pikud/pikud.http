@@ -1,0 +1,71 @@
+# @import ../../../global.http
+
+### Create Pikud — valid payload
+POST {{baseUrl}}/pikud
+Content-Type: application/json
+
+{
+  "name": "Pikud HaZafon",
+  "icon": "north-icon",
+  "createdBy": 1,
+  "updatedBy": 1
+}
+
+{{@response
+  exports.pikudId = response.parsedBody.id;
+}}
+
+?? status == 201
+
+### Create Pikud — missing required field (expect 400)
+POST {{baseUrl}}/pikud
+Content-Type: application/json
+
+{
+  "icon": "north-icon"
+}
+
+?? status == 400
+
+### Get all Pikuds
+GET {{baseUrl}}/pikud
+
+?? status == 200
+
+### Get Pikud by id
+GET {{baseUrl}}/pikud/{{pikudId}}
+
+?? status == 200
+
+### Update Pikud
+PATCH {{baseUrl}}/pikud/{{pikudId}}
+Content-Type: application/json
+
+{
+  "name": "Pikud HaZafon Updated",
+  "updatedBy": 1
+}
+
+?? status == 200
+
+### Delete Pikud — non-existent id (expect 400 from @EntityExists)
+DELETE {{baseUrl}}/pikud/99999
+Content-Type: application/json
+
+{
+  "id": 99999,
+  "deletedBy": 1
+}
+
+?? status == 400
+
+### Delete Pikud
+DELETE {{baseUrl}}/pikud/{{pikudId}}
+Content-Type: application/json
+
+{
+  "id": {{pikudId}},
+  "deletedBy": 1
+}
+
+?? status == 200

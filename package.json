@@ -5,10 +5,19 @@
   "scripts": {
     "build": "nest build",
     "start": "node dist/main.js",
+    "start:local": "cross-env-shell ENV=local nest start --watch",
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build:webpack": "npx nest build --webpack --webpackPath webpack.config.js"
+    "build:webpack": "npx nest build --webpack --webpackPath webpack.config.js",
+    "prisma:repl": "prisma-repl",
+    "prisma:format": "prisma format",
+    "prisma:client:generate": "cross-env-shell ENV=local prisma generate",
+    "prisma:db:push": "prisma db push",
+    "prisma:migration:generate": "prisma migrate dev --create-only",
+    "prisma:migration:deploy": "cross-env-shell ENV=local prisma migrate deploy",
+    "prisma:migration:reset": "prisma migrate reset",
+    "prisma:studio": "prisma studio"
   },
   "repository": {
     "type": "git",
@@ -20,15 +29,29 @@
   "description": "",
   "dependencies": {
     "@nestjs/common": "^11.1.16",
+    "@nestjs/config": "^4.0.3",
     "@nestjs/core": "^11.1.16",
+    "@nestjs/mapped-types": "^2.1.0",
     "@nestjs/platform-express": "^11.1.16",
+    "@prisma/adapter-pg": "^7.5.0",
+    "@prisma/client": "^7.5.0",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.1",
+    "dotenv": "^17.3.1",
+    "jsonwebtoken": "^9.0.3",
+    "pg": "^8.20.0",
     "reflect-metadata": "^0.2.2",
-    "rxjs": "^7.8.2"
+    "rxjs": "^7.8.2",
+    "webpack": "^5.105.4"
   },
   "devDependencies": {
     "@nestjs/cli": "^11.0.16",
     "@types/express": "^5.0.6",
-    "@types/node": "^25.3.5",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/node": "^25.5.0",
+    "@types/pg": "^8.18.0",
+    "cross-env": "^10.1.0",
+    "prisma": "^7.5.0",
     "ts-loader": "^9.5.4",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3",

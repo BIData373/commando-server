@@ -1,0 +1,65 @@
+# @import ../../../global.http
+
+### Create Permission — valid payload
+POST {{baseUrl}}/permission
+...headers
+
+{
+  "userId": 1,
+  "workspaceId": 1,
+  "type": "VIEWER"
+}
+
+?? status == 201
+
+### Create Permission — invalid enum value (expect 400)
+POST {{baseUrl}}/permission
+...headers
+
+{
+  "userId": 1,
+  "workspaceId": 1,
+  "type": "SUPER_ADMIN"
+}
+
+?? status == 400
+
+### Get all Permissions
+GET {{baseUrl}}/permission?workspaceId={{workspaceId}}
+...headers
+
+?? status == 200
+
+### Get Permission by composite key
+GET {{baseUrl}}/permission/me?workspaceId={{workspaceId}}
+...headers
+
+?? status == 200
+
+### Update Permission type
+PATCH {{baseUrl}}/permission
+...headers
+
+{
+  "upn": "s9336069",
+  "workspaceId": 1,
+  "type": "MANAGER"
+}
+
+?? status == 200
+
+### Delete Permission — non-existent record (expect error)
+DELETE {{baseUrl}}/permission
+...headers
+
+{
+  "upn": "s0000000",
+  "workspaceId": 99999
+}
+
+?? status >= 400
+
+### Delete Permission
+DELETE {{baseUrl}}/permission?userId=1&workspaceId=1
+
+?? status == 200

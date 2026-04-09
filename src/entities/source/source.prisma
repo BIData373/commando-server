@@ -1,0 +1,16 @@
+model Source {
+  id   Int    @id @default(autoincrement())
+  name String
+
+  // Meta Fields
+  createdAt DateTime  @default(now()) @map("created_at")
+  createdBy Int       @map("created_by")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  updatedBy Int       @map("updated_by")
+  deletedAt DateTime? @map("deleted_at")
+  deletedBy Int?      @map("deleted_by")
+
+  tasks Task[]
+
+  @@map("sources")
+}
