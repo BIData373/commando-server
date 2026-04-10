@@ -11,7 +11,7 @@ import { UpdateTagDto } from './dto/request/update-tag.dto';
 import { TagDto } from './dto/response/tag.dto';
 import { TagService } from './tag.service';
 
-@UseGuards(PermissionGuard)
+// @UseGuards(PermissionGuard)
 @Controller('tag')
 export class TagController {
   constructor(private readonly tagService: TagService) { }
@@ -41,12 +41,12 @@ export class TagController {
     return await this.tagService.findInWorkspace(workspaceId);
   }
 
-  @PermissionSettings({
-    type: PermissionType.VIEWER,
-    from: 'params',
-    dto: GetTagIdDto,
-    contextField: 'tag'
-  })
+  // @PermissionSettings({
+  //   type: PermissionType.VIEWER,
+  //   from: 'params',
+  //   dto: GetTagIdDto,
+  //   contextField: 'tag'
+  // })
   @Get(':id')
   @TransformPlainToInstance(TagDto)
   async findOne(
@@ -55,12 +55,12 @@ export class TagController {
     return await this.tagService.findOne(id);
   }
 
-  @PermissionSettings({
-    type: PermissionType.MANAGER,
-    from: 'params',
-    dto: GetTagIdDto,
-    contextField: 'tag'
-  })
+  // @PermissionSettings({
+  //   type: PermissionType.MANAGER,
+  //   from: 'params',
+  //   dto: GetTagIdDto,
+  //   contextField: 'tag'
+  // })
   @Patch(':id')
   @TransformPlainToInstance(TagDto)
   async update(
@@ -71,12 +71,12 @@ export class TagController {
     return await this.tagService.update(id, dto, user.id);
   }
 
-  @PermissionSettings({
-    type: PermissionType.MANAGER,
-    from: 'params',
-    dto: GetTagIdDto,
-    contextField: 'tag'
-  })
+  // @PermissionSettings({
+  //   type: PermissionType.MANAGER,
+  //   from: 'params',
+  //   dto: GetTagIdDto,
+  //   contextField: 'tag'
+  // })
   @Delete(':id')
   @TransformPlainToInstance(TagDto)
   async remove(
