@@ -22,9 +22,11 @@ export async function addDtosToContext(
 
             Object.assign(request[to], {
                 ...request[to],
-                context: Object.assign({}, ...instances)
+                context: {
+                    ...(request[to]?.context ?? {}),
+                    [to]: Object.assign((request[to]?.context?.[to] ?? {}), ...instances)
+                }
             })
         }
-
     })
 }

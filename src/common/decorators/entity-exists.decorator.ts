@@ -6,8 +6,6 @@ import {
   ValidatorConstraint,
   ValidatorConstraintInterface,
 } from 'class-validator';
-import { managerTypes } from '../../entities/permission/guards/permission.guard';
-import { IUserContext } from '../../entities/user/interfaces/user-context.interface';
 import { Prisma } from '../../types/prisma';
 import { IContext } from '../interfaces/context.interface';
 import { PrismaService } from '../prisma.service';
@@ -63,17 +61,17 @@ export class EntityExistsConstraint<
 > implements ValidatorConstraintInterface {
   constructor(private readonly prisma: PrismaService) { }
 
-  async validate(value: ExtractValue<TDto, TDtoField>, args: ValidationArguments) {
+  async validate(value: ExtractValue<TDto, TDtoField>, { constraints, object }: ValidationArguments) {
     const {
       model,
       contextField,
       fail,
       unauthorized,
       findArgs: customFindArgs
-    } = args.constraints[0] as IEntityExistsConstraints<TDto, TDtoField, TModel>
+    } = constraints[0] as IEntityExistsConstraints<TDto, TDtoField, TModel>
 
     const defaultFindArgs = { where: { id: value } } as unknown as ModelFindUniqueArgs<TModel>
-    const findArgs = customFindArgs?.({ value, obj: args.object as TDto }) ?? defaultFindArgs
+    const findArgs = customFindArgs?.({ value, obj: object as TDto }) ?? defaultFindArgs
     const record = (this.prisma[model] as ModelDelegate<TModel>).findUnique(findArgs)
 
     const success = fail ? !record : !!record
@@ -82,9 +80,9 @@ export class EntityExistsConstraint<
     }
 
     if (record && contextField) {
-      Object.assign(args.object, {
+      Object.assign(object, {
         [contextField]: {
-          ...((args.object as IContext<object>).context ?? {}),
+          ...((object as IContext<object>).context ?? {}),
           ...record
         }
       })

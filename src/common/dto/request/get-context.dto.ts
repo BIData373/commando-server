@@ -1,8 +1,7 @@
-import { Exclude, Expose } from "class-transformer";
+import { Allow } from "class-validator";
 import { IContext } from "../../interfaces/context.interface";
 
-@Exclude()
 export class GetContextDto<T> implements IContext<T> {
-    @Expose()
+    @Allow()
     context: T;
 }

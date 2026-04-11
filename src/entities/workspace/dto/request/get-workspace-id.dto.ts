@@ -11,8 +11,12 @@ interface IWorkspaceContext {
     workspace: Workspace
 }
 
+interface IGetWorkspaceIdContext extends IWorkspaceContext {
+    params: IUser
+}
+
 function GetPermittedWorkspaceIdMixin(type: PermissionType) {
-    class GetWorkspaceIdDto extends GetContextDto<IWorkspaceContext & IUser> {
+    class GetWorkspaceIdDto extends GetContextDto<IGetWorkspaceIdContext> {
         @Type(() => Number)
         @EntityExists('permission', {
             unauthorized: true,
@@ -20,7 +24,7 @@ function GetPermittedWorkspaceIdMixin(type: PermissionType) {
                 where: {
                     type: { in: allowedTypes[type] },
                     userId_workspaceId: {
-                        userId: obj.context.id,
+                        userId: obj.context.params.id,
                         workspaceId: value
                     }
                 }

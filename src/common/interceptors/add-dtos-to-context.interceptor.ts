@@ -6,7 +6,7 @@ import { addDtosToContext, DtoToAdd } from "../functions/transform";
 export function AddDtosToContext(...dtosToAdd: DtoToAdd<ClassConstructor<Object>>[]) {
     class AddDtosToContextInterceptor implements NestInterceptor {
         intercept(context: ExecutionContext, next: CallHandler) {
-            const request = context.switchToHttp().getRequest<Request>()
+            let request = context.switchToHttp().getRequest<Request>()
 
             addDtosToContext(request, dtosToAdd)
 
