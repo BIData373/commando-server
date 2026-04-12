@@ -2,11 +2,11 @@ import { OmittedMetaFields } from './common';
 import { Prisma, User } from './prisma';
 
 export interface IUserInfo {
-  id: number
+  id?: number
   upn: string
-  name: string
-  displayName: string
-  isBI: boolean
+  name?: string
+  displayName?: string
+  isBI?: boolean
 }
 
 export interface IUser extends Omit<User, 'info'> {

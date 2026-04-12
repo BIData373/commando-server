@@ -15,7 +15,7 @@ export class GetWorkspaceIdFieldDto {
 export function GetPermittedWorkspaceIdFieldDto(type: PermissionType, contextField: string) {
     class GetWorkspaceIdDto extends GetContextDto<{ [contextField]: IUser }> {
         @Type(() => Number)
-        @HasWorkspacePermission(type, obj => obj.context[contextField].id, { forbidden: true })
+        @HasWorkspacePermission(type, obj => obj.context[contextField], { forbidden: true })
         @EntityExists('workspace')
         @IsPositiveInt()
         workspaceId: number

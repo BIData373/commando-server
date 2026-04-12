@@ -10,7 +10,8 @@ import { Prisma } from '../../types/prisma';
 import { IContext } from '../interfaces/context.interface';
 import { PrismaService } from '../prisma.service';
 
-type ExtractValue<TObject, TField extends keyof TObject> = TObject[TField] extends any[]
+// FIX Move
+export type ExtractValue<TObject, TField extends keyof TObject> = TObject[TField] extends any[]
   ? TObject[TField][0]
   : TObject[TField]
 
@@ -24,15 +25,24 @@ type ModelDelegate<TModel extends Models> = {
   findUnique(args: ModelFindUniqueArgs<TModel>): Promise<ModelFindUnique<TModel>['result']>
 }
 
+type PredicateParams<
+  TDto,
+  TDtoField extends keyof TDto
+> = {
+  value: ExtractValue<TDto, TDtoField>
+  obj: TDto
+}
+
 interface IEntityExistsOptions<
   TDto,
   TDtoField extends keyof TDto,
   TModel extends Models
 > {
   contextField?: string
-  fail?: boolean
+  failIfExists?: boolean
   forbidden?: boolean
-  findArgs?(params: { value: ExtractValue<TDto, TDtoField>, obj: TDto }): ModelFindUniqueArgs<TModel>
+  validateIf?: (params: PredicateParams<TDto, TDtoField>) => boolean
+  findArgs?(params: PredicateParams<TDto, TDtoField>): ModelFindUniqueArgs<TModel>
 }
 
 interface IEntityExistsConstraints<
@@ -65,17 +75,24 @@ export class EntityExistsConstraint<
     const {
       model,
       contextField,
-      fail,
+      failIfExists,
       forbidden,
-      findArgs: customFindArgs
+      findArgs: customFindArgs,
+      validateIf
     } = constraints[0] as IEntityExistsConstraints<TDto, TDtoField, TModel>
 
+    const obj = object as TDto
+    
+    if (validateIf && !validateIf({ value, obj })) {
+      return true
+    }
+
     const defaultFindArgs = { where: { id: value } } as unknown as ModelFindUniqueArgs<TModel>
-    const findArgs = customFindArgs?.({ value, obj: object as TDto }) ?? defaultFindArgs
+    const findArgs = customFindArgs?.({ value, obj }) ?? defaultFindArgs
 
     const record = await (this.prisma[model] as ModelDelegate<TModel>).findUnique(findArgs)
 
-    const success = fail ? !record : !!record
+    const success = failIfExists ? !record : !!record
     if (!success && forbidden) {
       throw new ForbiddenException()
     }

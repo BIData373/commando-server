@@ -10,7 +10,7 @@ import { HasWorkspacePermission } from "../../decorators/has-workspace-permissio
 export function GetPermittedWorkspaceIdDto(type: PermissionType, contextField: string) {
     class GetWorkspaceIdDto extends GetContextDto<{ [contextField]: IUser }> {
         @Type(() => Number)
-        @HasWorkspacePermission(type, obj => obj.context[contextField].id, { forbidden: true })
+        @HasWorkspacePermission(type, obj => obj.context[contextField], { forbidden: true })
         @EntityExists('workspace')
         @IsPositiveInt()
         id: number
