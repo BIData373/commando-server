@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { ForbiddenException, Injectable } from '@nestjs/common';
 import {
   registerDecorator,
   ValidationArguments,
@@ -10,7 +10,7 @@ import { Prisma } from '../../types/prisma';
 import { IContext } from '../interfaces/context.interface';
 import { PrismaService } from '../prisma.service';
 
-type ExtractValue<TObject, TField extends keyof TObject> = TObject[TField] extends Array<unknown>
+type ExtractValue<TObject, TField extends keyof TObject> = TObject[TField] extends any[]
   ? TObject[TField][0]
   : TObject[TField]
 
@@ -21,7 +21,7 @@ type ModelFindUnique<TModel extends Models> = Prisma.TypeMap['model'][Capitalize
 type ModelFindUniqueArgs<TModel extends Models> = Prisma.SelectSubset<ModelFindUnique<TModel>['args'], ModelFindUnique<TModel>['args']>
 
 type ModelDelegate<TModel extends Models> = {
-  findUnique(args: ModelFindUniqueArgs<TModel>): ModelFindUnique<TModel>['result']
+  findUnique(args: ModelFindUniqueArgs<TModel>): Promise<ModelFindUnique<TModel>['result']>
 }
 
 interface IEntityExistsOptions<
@@ -31,7 +31,7 @@ interface IEntityExistsOptions<
 > {
   contextField?: string
   fail?: boolean
-  unauthorized?: boolean
+  forbidden?: boolean
   findArgs?(params: { value: ExtractValue<TDto, TDtoField>, obj: TDto }): ModelFindUniqueArgs<TModel>
 }
 
@@ -66,17 +66,18 @@ export class EntityExistsConstraint<
       model,
       contextField,
       fail,
-      unauthorized,
+      forbidden,
       findArgs: customFindArgs
     } = constraints[0] as IEntityExistsConstraints<TDto, TDtoField, TModel>
 
     const defaultFindArgs = { where: { id: value } } as unknown as ModelFindUniqueArgs<TModel>
     const findArgs = customFindArgs?.({ value, obj: object as TDto }) ?? defaultFindArgs
-    const record = (this.prisma[model] as ModelDelegate<TModel>).findUnique(findArgs)
+
+    const record = await (this.prisma[model] as ModelDelegate<TModel>).findUnique(findArgs)
 
     const success = fail ? !record : !!record
-    if (!success && unauthorized) {
-      throw new UnauthorizedException()
+    if (!success && forbidden) {
+      throw new ForbiddenException()
     }
 
     if (record && contextField) {

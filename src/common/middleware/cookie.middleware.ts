@@ -9,7 +9,7 @@ import { verifySsoUSer } from '../functions/cookie';
 export class CookieMiddleware implements NestMiddleware {
   constructor(private readonly userService: UserService) { }
 
-  async use(req: Request, _res: Response, next: NextFunction): Promise<void> {
+  async use(req: Request, _res: Response, next: NextFunction) {
     const customUpn = req.headers[requestUsernameHeader] as string
 
     const user = process.env.STATIC_TOKEN === req.headers[staticTokenHeader]

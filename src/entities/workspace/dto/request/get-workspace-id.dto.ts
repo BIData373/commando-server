@@ -4,32 +4,13 @@ import { IsPositiveInt } from "../../../../common/decorators/is-positive-int.dec
 import { GetContextDto } from "../../../../common/dto/request/get-context.dto";
 import { GetIdDto } from "../../../../common/dto/request/get-id.dto";
 import { IUser } from "../../../../types";
-import { PermissionType, Workspace } from "../../../../types/prisma";
-import { allowedTypes } from "../../../permission/guards/permission.guard";
+import { PermissionType } from "../../../../types/prisma";
+import { HasWorkspacePermission } from "../../decorators/has-workspace-permission.decorator";
 
-interface IWorkspaceContext {
-    workspace: Workspace
-}
-
-interface IGetWorkspaceIdContext extends IWorkspaceContext {
-    params: IUser
-}
-
-function GetPermittedWorkspaceIdMixin(type: PermissionType) {
-    class GetWorkspaceIdDto extends GetContextDto<IGetWorkspaceIdContext> {
+export function GetPermittedWorkspaceIdDto(type: PermissionType, contextField: string) {
+    class GetWorkspaceIdDto extends GetContextDto<{ [contextField]: IUser }> {
         @Type(() => Number)
-        @EntityExists('permission', {
-            unauthorized: true,
-            findArgs: ({ value, obj }) => ({
-                where: {
-                    type: { in: allowedTypes[type] },
-                    userId_workspaceId: {
-                        userId: obj.context.params.id,
-                        workspaceId: value
-                    }
-                }
-            })
-        })
+        @HasWorkspacePermission(type, obj => obj.context[contextField].id, { forbidden: true })
         @EntityExists('workspace')
         @IsPositiveInt()
         id: number
@@ -39,5 +20,5 @@ function GetPermittedWorkspaceIdMixin(type: PermissionType) {
 }
 
 export class GetWorkspaceIdDto extends GetIdDto('workspace') { }
-export class GetViewerWorkspaceIdDto extends GetPermittedWorkspaceIdMixin(PermissionType.VIEWER) { }
-export class GetManagerWorkspaceIdDto extends GetPermittedWorkspaceIdMixin(PermissionType.MANAGER) { }
+export class GetViewerParamsWorkspaceIdDto extends GetPermittedWorkspaceIdDto(PermissionType.VIEWER, 'params') { }
+export class GetManagerParamsWorkspaceIdDto extends GetPermittedWorkspaceIdDto(PermissionType.MANAGER, 'params') { }

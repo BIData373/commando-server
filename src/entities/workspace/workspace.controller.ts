@@ -5,7 +5,7 @@ import { BIGuard } from '../../common/guards/bi.guard';
 import { AddDtosToContext } from '../../common/interceptors/add-dtos-to-context.interceptor';
 import { UserDto } from '../user/dto/response/user.dto';
 import { CreateWorkspaceDto } from './dto/request/create-workspace.dto';
-import { GetManagerWorkspaceIdDto, GetWorkspaceIdDto } from './dto/request/get-workspace-id.dto';
+import { GetManagerParamsWorkspaceIdDto, GetWorkspaceIdDto } from './dto/request/get-workspace-id.dto';
 import { UpdateWorkspaceDto } from './dto/request/update-workspace.dto';
 import { WorkspaceDto } from './dto/response/workspace.dto';
 import { WorkspaceService } from './workspace.service';
@@ -43,7 +43,7 @@ export class WorkspaceController {
   @TransformPlainToInstance(WorkspaceDto)
   async update(
     @Req() { user }: Request,
-    @Param() { id }: GetManagerWorkspaceIdDto,
+    @Param() { id }: GetManagerParamsWorkspaceIdDto,
     @Body() dto: UpdateWorkspaceDto,
   ) {
     return await this.workspaceService.update(id, dto, user.id);
@@ -54,7 +54,7 @@ export class WorkspaceController {
   @TransformPlainToInstance(WorkspaceDto)
   async remove(
     @Req() { user }: Request,
-    @Param() { id }: GetManagerWorkspaceIdDto
+    @Param() { id }: GetManagerParamsWorkspaceIdDto
   ) {
     return await this.workspaceService.remove(id, user.id);
   }

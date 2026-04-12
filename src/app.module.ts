@@ -4,6 +4,7 @@ import { APP_PIPE } from '@nestjs/core';
 import path from 'node:path';
 import { BIGuard } from './common/guards/bi.guard';
 import { CookieMiddleware } from './common/middleware/cookie.middleware';
+import { WritableQueryMiddleware } from './common/middleware/writable-query.middleware';
 import { SharedModule } from './common/shared.module';
 import { AssigneeTaskStatusModule } from './entities/assignee-task-status/assignee-task-status.module';
 import { AssigneeUserModule } from './entities/assignee-user/assignee-user.module';
@@ -61,6 +62,9 @@ import { WorkspaceModule } from './entities/workspace/workspace.module';
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer): void {
-    consumer.apply(CookieMiddleware).forRoutes('*');
+    consumer.apply(
+      WritableQueryMiddleware,
+      CookieMiddleware
+    ).forRoutes('*');
   }
 }

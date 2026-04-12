@@ -2,7 +2,9 @@ import { Body, Controller, Delete, Get, Patch, Query, Req, UseGuards } from '@ne
 import { TransformPlainToInstance } from 'class-transformer';
 import type { Request } from 'express';
 import { PermissionSettings } from '../../common/decorators/permission-settings.decorator';
+import { AddDtosToContext } from '../../common/interceptors/add-dtos-to-context.interceptor';
 import { PermissionType } from '../../types';
+import { UserDto } from '../user/dto/response/user.dto';
 import { GetWorkspaceIdFieldDto } from '../workspace/dto/request/get-workspace-id-field.dto';
 import { DeletePermissionDto } from './dto/request/delete-permission.dto';
 import { UpdatePermissionDto } from './dto/request/update-permission.dto';
@@ -31,11 +33,12 @@ export class PermissionController {
     return await this.permissionService.findOne(user.id, workspaceId);
   }
 
-  @UseGuards(PermissionGuard)
-  @PermissionSettings({
-    type: PermissionType.MANAGER,
-    from: 'body'
-  })
+  // @UseGuards(PermissionGuard)
+  // @PermissionSettings({
+  //   type: PermissionType.MANAGER,
+  //   from: 'body'
+  // })
+  @AddDtosToContext({ from: 'user', to: 'body', dto: UserDto })
   @Patch()
   @TransformPlainToInstance(PermissionDto)
   async update(
@@ -44,11 +47,12 @@ export class PermissionController {
     return await this.permissionService.upsert(upn, workspaceId, type);
   }
 
-  @UseGuards(PermissionGuard)
-  @PermissionSettings({
-    type: PermissionType.MANAGER,
-    from: 'body'
-  })
+  // @UseGuards(PermissionGuard)
+  // @PermissionSettings({
+  //   type: PermissionType.MANAGER,
+  //   from: 'body'
+  // })
+  @AddDtosToContext({ from: 'user', to: 'query', dto: UserDto })
   @Delete()
   @TransformPlainToInstance(PermissionDto)
   async remove(

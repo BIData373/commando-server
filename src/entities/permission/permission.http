@@ -41,25 +41,21 @@ PATCH {{baseUrl}}/permission
 ...headers
 
 {
-  "upn": "s9336069",
+  "upn": "s1111111",
   "workspaceId": 1,
-  "type": "MANAGER"
+  "type": "VIEWER"
 }
 
 ?? status == 200
 
 ### Delete Permission — non-existent record (expect error)
-DELETE {{baseUrl}}/permission
+DELETE {{baseUrl}}/permission?userId=9999&workspaceId=9999
 ...headers
-
-{
-  "upn": "s0000000",
-  "workspaceId": 99999
-}
 
 ?? status >= 400
 
 ### Delete Permission
-DELETE {{baseUrl}}/permission?userId=1&workspaceId=1
+DELETE {{baseUrl}}/permission?userId=418&workspaceId=1
+...headers
 
 ?? status == 200
