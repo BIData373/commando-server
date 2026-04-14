@@ -12,5 +12,7 @@ model Source {
 
   tasks Task[]
 
+  tags  Tag[] @relation("sources_tags")
+
   @@map("sources")
 }

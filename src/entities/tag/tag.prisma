@@ -10,7 +10,9 @@ model Tag {
 
   workspaceId Int       @map("workspace_id")
   workspace   Workspace @relation(fields: [workspaceId], references: [id])
-  tasks       Task[]    @relation("TaskToTag")
+
+  tasks    Task[]   @relation("tasks_tags")
+  sources  Source[] @relation("sources_tags")
 
   @@map("tags")
 }
