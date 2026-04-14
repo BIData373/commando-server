@@ -1,6 +1,15 @@
-import { EntityExists, IEntityExistsValidationOptions } from "../../../common/decorators/entity-exists.decorator";
+import { EntityExists, IEntityExistsValidationOptions, PredicateParams } from "../../../common/decorators/entity-exists.decorator";
 import { IUser, PermissionType } from "../../../types";
+import { Prisma } from "../../../types/prisma";
 import { allowedTypes } from "../../permission/guards/permission.guard";
+
+
+interface IHasWorkspacePermissionOptions<
+    TDtoField extends string,
+    TDto extends Record<TDtoField, number>
+> extends IEntityExistsValidationOptions<TDto, TDtoField, "permission"> {
+    workspaceFindArgs?: (params: PredicateParams<TDto, TDtoField>) => Prisma.PermissionWhereInput['workspace']
+}
 
 export function HasWorkspacePermission<
     TDtoField extends string,
@@ -8,17 +17,15 @@ export function HasWorkspacePermission<
 >(
     type: PermissionType,
     extractUser: (obj: TDto) => IUser,
-    options: IEntityExistsValidationOptions<TDto, TDtoField, "permission"> = {}
+    { workspaceFindArgs, ...options }: IHasWorkspacePermissionOptions<TDtoField, TDto> = {}
 ) {
     return EntityExists<TDto, TDtoField, "permission">('permission', {
-        validateIf: ({ obj }) => { console.log(obj); return !extractUser(obj).info?.isBI },
+        validateIf: ({ obj }) => !(extractUser(obj).info?.isBI ?? false),
         findArgs: ({ value, obj }) => ({
             where: {
                 type: { in: allowedTypes[type] },
-                userId_workspaceId: {
-                    userId: extractUser(obj).id,
-                    workspaceId: value
-                }
+                userId: extractUser(obj).id,
+                workspace: workspaceFindArgs?.({ value, obj }) ?? { id: value }
             }
         }),
         ...options

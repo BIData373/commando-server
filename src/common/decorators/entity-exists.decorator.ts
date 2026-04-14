@@ -18,14 +18,14 @@ export type ExtractValue<TObject, TField extends keyof TObject> = TObject[TField
 export type Models = Prisma.TypeMap['meta']['modelProps']
 export type ModelTypes<TModel extends Models> = Prisma.TypeMap['model'][Capitalize<TModel>]
 
-type ModelFindUnique<TModel extends Models> = Prisma.TypeMap['model'][Capitalize<TModel>]['operations']['findUnique']
-type ModelFindUniqueArgs<TModel extends Models> = Prisma.SelectSubset<ModelFindUnique<TModel>['args'], ModelFindUnique<TModel>['args']>
+type ModelFindFirst<TModel extends Models> = Prisma.TypeMap['model'][Capitalize<TModel>]['operations']['findFirst']
+type ModelFindFirstArgs<TModel extends Models> = Prisma.SelectSubset<ModelFindFirst<TModel>['args'], ModelFindFirst<TModel>['args']>
 
 type ModelDelegate<TModel extends Models> = {
-  findUnique(args: ModelFindUniqueArgs<TModel>): Promise<ModelFindUnique<TModel>['result']>
+  findFirst(args: ModelFindFirstArgs<TModel>): Promise<ModelFindFirst<TModel>['result']>
 }
 
-type PredicateParams<
+export type PredicateParams<
   TDto,
   TDtoField extends keyof TDto
 > = {
@@ -42,7 +42,7 @@ interface IEntityExistsOptions<
   failIfExists?: boolean
   forbidden?: boolean
   validateIf?: (params: PredicateParams<TDto, TDtoField>) => boolean
-  findArgs?(params: PredicateParams<TDto, TDtoField>): ModelFindUniqueArgs<TModel>
+  findArgs?(params: PredicateParams<TDto, TDtoField>): ModelFindFirstArgs<TModel>
 }
 
 interface IEntityExistsConstraints<
@@ -82,21 +82,21 @@ export class EntityExistsConstraint<
     } = constraints[0] as IEntityExistsConstraints<TDto, TDtoField, TModel>
 
     const obj = object as TDto
-    
+
     if (validateIf && !validateIf({ value, obj })) {
       return true
     }
 
-    const defaultFindArgs = { where: { id: value } } as unknown as ModelFindUniqueArgs<TModel>
+    const defaultFindArgs = { where: { id: value } } as unknown as ModelFindFirstArgs<TModel>
     const findArgs = customFindArgs?.({ value, obj }) ?? defaultFindArgs
 
-    const record = await (this.prisma[model] as ModelDelegate<TModel>).findUnique(findArgs)
+    const record = await (this.prisma[model] as ModelDelegate<TModel>).findFirst(findArgs)
 
     const success = failIfExists ? !record : !!record
     if (!success && forbidden) {
       throw new ForbiddenException()
     }
-
+    
     if (record && contextField) {
       Object.assign(object, {
         [contextField]: {
@@ -105,7 +105,8 @@ export class EntityExistsConstraint<
         }
       })
     }
-
+    
+    console.log('forbidden', forbidden)
     return success;
   }
 
@@ -141,41 +142,3 @@ export function EntityExists<
     });
   };
 }
-
-// function formatPermissionFindArgs<
-//   TDto extends IContext<IUserContext>,
-//   TDtoField extends keyof TDto
-// >(value: ExtractValue<TDto, TDtoField>, obj: TDto) {
-//   return {
-//     permissions: {
-//       some: {
-//         type: { in: managerTypes },
-//         userId_workspaceId: {
-//           userId: obj.context.user.id,
-//           workspaceId: value
-//         },
-//       }
-//     }
-//   }
-// }
-
-// const a: Record<Models, () =>  = {
-
-// }
-
-// export function HasPermission<
-//   TDto extends IContext<IUserContext>,
-//   TDtoField extends keyof TDto,
-//   TModel extends Models
-// >(model: TModel) {
-//   return EntityExists<TDto, TDtoField, TModel>(model, {
-//     findArgs: ({ value, obj }) => ({
-//       where: {
-//         id: value,
-//         ...(model === 'workspace'
-//           ? formatPermissionFindArgs(value, obj)
-//           : { workspace: formatPermissionFindArgs(value, obj) })
-//       }
-//     })
-//   })
-// }

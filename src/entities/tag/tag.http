@@ -2,13 +2,11 @@
 
 ### Create Tag — valid payload
 POST {{baseUrl}}/tag
-Content-Type: application/json
+...headers
 
 {
   "name": "Urgent",
-  "workspaceId": 1,
-  "createdBy": 1,
-  "updatedBy": 1
+  "workspaceId": 1
 }
 
 {{@response
@@ -19,7 +17,7 @@ Content-Type: application/json
 
 ### Create Tag — missing required field (expect 400)
 POST {{baseUrl}}/tag
-Content-Type: application/json
+...headers
 
 {
   "workspaceId": 1
@@ -28,18 +26,20 @@ Content-Type: application/json
 ?? status == 400
 
 ### Get all Tags
-GET {{baseUrl}}/tag
+GET {{baseUrl}}/tag?workspaceId={{workspaceId}}
+...headers
 
 ?? status == 200
 
 ### Get Tag by id
 GET {{baseUrl}}/tag/{{tagId}}
+...headers
 
 ?? status == 200
 
 ### Update Tag
 PATCH {{baseUrl}}/tag/{{tagId}}
-Content-Type: application/json
+...headers
 
 {
   "name": "Critical",
@@ -50,20 +50,12 @@ Content-Type: application/json
 
 ### Delete Tag — non-existent id (expect 400 from @EntityExists)
 DELETE {{baseUrl}}/tag/99999
-Content-Type: application/json
-
-{
-  "id": 99999
-}
+...headers
 
 ?? status == 400
 
 ### Delete Tag
 DELETE {{baseUrl}}/tag/{{tagId}}
-Content-Type: application/json
-
-{
-  "id": {{tagId}}
-}
+...headers
 
 ?? status == 200

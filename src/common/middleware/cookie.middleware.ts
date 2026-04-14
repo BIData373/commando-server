@@ -12,14 +12,13 @@ export class CookieMiddleware implements NestMiddleware {
 
   async use(req: Request, _res: Response, next: NextFunction) {
     let user: ICreateUser;
-    
-    const hasStaticToken = process.env.STATIC_TOKEN === req.headers[staticTokenHeader]
+
+    const hasStaticToken = process.env.STATIC_TOKEN === (req.headers[staticTokenHeader] as string)
     if (hasStaticToken) {
       const customUpn = req.headers[requestUsernameHeader] as string
-      
+
       const currentUser = customUpn ? { upn: customUpn } : admin
       const isBI = req.headers[isBiHeader] as string === 'true'
-      console.log('isBI', isBI)
 
       user = {
         ...currentUser,

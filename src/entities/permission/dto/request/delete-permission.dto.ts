@@ -12,10 +12,8 @@ export class DeletePermissionDto extends GetContextDto<IUserContext & IQuery<IUs
     @EntityExists('permission', {
         findArgs: ({ value, obj }) => ({
             where: {
-                userId_workspaceId: {
-                    userId: value,
-                    workspaceId: obj.workspaceId
-                }
+                userId: value,
+                workspaceId: obj.workspaceId
             }
         }),
         message: ({ value, object }) => (
