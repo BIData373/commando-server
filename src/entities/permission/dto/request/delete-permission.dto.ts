@@ -25,7 +25,7 @@ export class DeletePermissionDto extends GetContextDto<IUserContext & IQuery<IUs
     userId: number;
 
     @Type(() => Number)
-    @HasWorkspacePermission(PermissionType.MANAGER, obj => obj.context.user, { forbidden: true })
+    @HasWorkspacePermission(PermissionType.MANAGER, obj => obj.context.user)
     @EntityExists('workspace')
     @IsPositiveInt()
     workspaceId: number;

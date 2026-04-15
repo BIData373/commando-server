@@ -12,12 +12,11 @@ export class GetTagIdDto extends GetIdDto('tag', { contextField: 'tag' }) { }
 export function GetPermittedTagIdDto(type: PermissionType, contextField: string) {
     class GetTagIdDto extends GetContextDto<{ [contextField]: IUser }> {
         @Type(() => Number)
+        @IsPositiveInt()
+        @EntityExists('tag', { contextField: 'tag' })
         @HasWorkspacePermission(type, obj => obj.context[contextField], {
-            forbidden: true,
             workspaceFindArgs: ({ value }) => ({ tags: { some: { id: value } } })
         })
-        @EntityExists('tag', { contextField: 'tag' })
-        @IsPositiveInt()
         id: number
     }
 

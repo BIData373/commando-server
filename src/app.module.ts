@@ -2,10 +2,11 @@ import { MiddlewareConsumer, Module, NestModule, ValidationPipe } from '@nestjs/
 import { ConfigModule } from '@nestjs/config';
 import { APP_PIPE } from '@nestjs/core';
 import path from 'node:path';
+import { forbiddenExceptionFactory } from './common/functions/transform';
 import { BIGuard } from './common/guards/bi.guard';
 import { CookieMiddleware } from './common/middleware/cookie.middleware';
 import { WritableQueryMiddleware } from './common/middleware/writable-query.middleware';
-import { SharedModule } from './common/shared.module';
+import { PrismaModule } from './common/prisma.module';
 import { AssigneeTaskStatusModule } from './entities/assignee-task-status/assignee-task-status.module';
 import { AssigneeUserModule } from './entities/assignee-user/assignee-user.module';
 import { AssigneeModule } from './entities/assignee/assignee.module';
@@ -33,7 +34,7 @@ import { WorkspaceModule } from './entities/workspace/workspace.module';
         path.join(__dirname, `../config`, process.env.ENV ?? '', '.env')
       ],
     }),
-    SharedModule,
+    PrismaModule,
     PikudModule,
     WorkspaceModule,
     TagModule,
@@ -55,7 +56,9 @@ import { WorkspaceModule } from './entities/workspace/workspace.module';
       useValue: new ValidationPipe({
         whitelist: true,
         stopAtFirstError: true,
-        transform: true
+        transform: true,
+        validateCustomDecorators: true,
+        exceptionFactory: forbiddenExceptionFactory
       })
     },
   ]

@@ -20,7 +20,8 @@ POST {{baseUrl}}/tag
 ...headers
 
 {
-  "workspaceId": 1
+  "name": "a",
+  "workspaceId": 42
 }
 
 ?? status == 400
@@ -42,14 +43,13 @@ PATCH {{baseUrl}}/tag/{{tagId}}
 ...headers
 
 {
-  "name": "Critical",
-  "updatedBy": 1
+  "name": "Critical"
 }
 
 ?? status == 200
 
 ### Delete Tag — non-existent id (expect 400 from @EntityExists)
-DELETE {{baseUrl}}/tag/99999
+DELETE {{baseUrl}}/tag/9999
 ...headers
 
 ?? status == 400

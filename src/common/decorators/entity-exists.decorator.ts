@@ -1,4 +1,4 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import {
   registerDecorator,
   ValidationArguments,
@@ -40,7 +40,6 @@ interface IEntityExistsOptions<
 > {
   contextField?: string
   failIfExists?: boolean
-  forbidden?: boolean
   validateIf?: (params: PredicateParams<TDto, TDtoField>) => boolean
   findArgs?(params: PredicateParams<TDto, TDtoField>): ModelFindFirstArgs<TModel>
 }
@@ -62,7 +61,49 @@ export interface IEntityExistsValidationOptions<
   ValidationOptions,
   IEntityExistsOptions<TDto, TDtoField, TModel> { }
 
-@ValidatorConstraint({ name: 'EntityExists', async: true })
+
+export async function entityExists<
+  TDto extends object,
+  TDtoField extends keyof TDto,
+  TModel extends Models
+>(
+  prisma: PrismaService,
+  value: ExtractValue<TDto, TDtoField>,
+  { constraints, object }: ValidationArguments
+) {
+  const {
+    model,
+    contextField,
+    failIfExists,
+    findArgs: customFindArgs,
+    validateIf
+  } = constraints[0] as IEntityExistsConstraints<TDto, TDtoField, TModel>
+
+  const obj = object as TDto
+
+  if (validateIf && !validateIf({ value, obj })) {
+    return true
+  }
+
+  const defaultFindArgs = { where: { id: value } } as unknown as ModelFindFirstArgs<TModel>
+  const findArgs = customFindArgs?.({ value, obj }) ?? defaultFindArgs
+
+  const record = await (prisma[model] as ModelDelegate<TModel>).findFirst(findArgs)
+
+  if (record && contextField) {
+    Object.assign(object, {
+      [contextField]: {
+        ...((object as IContext<object>).context ?? {}),
+        ...record
+      }
+    })
+  }
+
+  return failIfExists ? !record : !!record;
+}
+
+// FIX Implement each
+@ValidatorConstraint({ async: true })
 @Injectable()
 export class EntityExistsConstraint<
   TDto extends object,
@@ -71,43 +112,8 @@ export class EntityExistsConstraint<
 > implements ValidatorConstraintInterface {
   constructor(private readonly prisma: PrismaService) { }
 
-  async validate(value: ExtractValue<TDto, TDtoField>, { constraints, object }: ValidationArguments) {
-    const {
-      model,
-      contextField,
-      failIfExists,
-      forbidden,
-      findArgs: customFindArgs,
-      validateIf
-    } = constraints[0] as IEntityExistsConstraints<TDto, TDtoField, TModel>
-
-    const obj = object as TDto
-
-    if (validateIf && !validateIf({ value, obj })) {
-      return true
-    }
-
-    const defaultFindArgs = { where: { id: value } } as unknown as ModelFindFirstArgs<TModel>
-    const findArgs = customFindArgs?.({ value, obj }) ?? defaultFindArgs
-
-    const record = await (this.prisma[model] as ModelDelegate<TModel>).findFirst(findArgs)
-
-    const success = failIfExists ? !record : !!record
-    if (!success && forbidden) {
-      throw new ForbiddenException()
-    }
-    
-    if (record && contextField) {
-      Object.assign(object, {
-        [contextField]: {
-          ...((object as IContext<object>).context ?? {}),
-          ...record
-        }
-      })
-    }
-    
-    console.log('forbidden', forbidden)
-    return success;
+  async validate(value: ExtractValue<TDto, TDtoField>, args: ValidationArguments) {
+    return await entityExists(this.prisma, value, args)
   }
 
   defaultMessage(args: ValidationArguments): string {
