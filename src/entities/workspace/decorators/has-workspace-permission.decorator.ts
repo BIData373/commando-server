@@ -42,7 +42,10 @@ export class HasWorkspacePermissionConstraint<
 > implements ValidatorConstraintInterface {
     constructor(private readonly prisma: PrismaService) { }
 
-    async validate(value: ExtractValue<TDto, TDtoField>, { constraints, ...args }: ValidationArguments) {
+    async validate(
+        value: ExtractValue<TDto, TDtoField>,
+        { constraints, ...args }: ValidationArguments
+    ) {
         const {
             type,
             extractUser,
@@ -50,11 +53,12 @@ export class HasWorkspacePermissionConstraint<
             ...entityExistsArgs
         } = constraints[0] as IHasWorkspacePermissionContraints<TDtoField, TDto>
 
-        return await entityExists(this.prisma, value, {
+        return await entityExists<TDto, TDtoField, 'permission'>(this.prisma, value, {
             ...args,
             constraints: [{
-                validateIf: ({ obj }) => !(extractUser(obj).info?.isBI ?? false),
+                model: 'permission',
                 message: FORBIDDEN_MESSAGE,
+                validateIf: ({ obj }) => !(extractUser(obj).info?.isBI ?? false),
                 findArgs: ({ value, obj }) => ({
                     where: {
                         type: { in: allowedTypes[type] },
