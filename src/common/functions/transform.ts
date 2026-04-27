@@ -4,14 +4,6 @@ import { ClassConstructor, plainToInstance } from "class-transformer";
 import { ValidationError } from "class-validator";
 import type { Request } from "express";
 
-type WritableKeys<T> = {
-    [K in keyof T]-?: IfEquals<{ [Q in K]: T[K] }, { -readonly [Q in K]: T[K] }, K, never>
-}[keyof T]
-
-type IfEquals<X, Y, A, B> =
-    (<T>() => T extends X ? 1 : 2) extends
-    (<T>() => T extends Y ? 1 : 2) ? A : B
-
 export type DtoToAdd<TDto> = {
     from: keyof Request
     to: keyof Request
