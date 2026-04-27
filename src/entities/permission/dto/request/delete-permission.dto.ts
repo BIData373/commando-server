@@ -1,15 +1,31 @@
 import { Type } from "class-transformer";
 import { EntityExists } from "../../../../common/decorators/entity-exists.decorator";
 import { IsPositiveInt } from "../../../../common/decorators/is-positive-int.decorator";
-import { IDeletePermission } from "../../../../types";
+import { GetContextDto } from "../../../../common/dto/request/get-context.dto";
+import { IQuery } from "../../../../common/interfaces/query.interface";
+import { IDeletePermission, IUser, PermissionType } from "../../../../types";
+import { IUserContext } from "../../../user/interfaces/user-context.interface";
+import { HasWorkspacePermission } from "../../../workspace/decorators/has-workspace-permission.decorator";
 
-export class DeletePermissionDto implements IDeletePermission {
+export class DeletePermissionDto extends GetContextDto<IUserContext & IQuery<IUser>> implements IDeletePermission {
     @Type(() => Number)
-    @EntityExists('user')
+    @EntityExists('permission', {
+        findArgs: ({ value, obj }) => ({
+            where: {
+                userId: value,
+                workspaceId: obj.workspaceId
+            }
+        }),
+        message: ({ value, object }) => (
+            `Permission doesn't exist for user id ${value} in workspace id ${(object as IDeletePermission).workspaceId}`
+        )
+    })
+    @EntityExists('user', { contextField: 'user' })
     @IsPositiveInt()
     userId: number;
 
     @Type(() => Number)
+    @HasWorkspacePermission(PermissionType.MANAGER, obj => obj.context.user)
     @EntityExists('workspace')
     @IsPositiveInt()
     workspaceId: number;

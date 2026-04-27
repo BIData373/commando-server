@@ -1,14 +1,14 @@
 import { Type } from "class-transformer"
-import { EntityExists, IEntityExistsValidationOptions } from "../../decorators/entity-exists.decorator"
+import { IId } from "../../../types"
+import { EntityExists, IEntityExistsValidationOptions, Models } from "../../decorators/entity-exists.decorator"
 import { IsPositiveInt } from "../../decorators/is-positive-int.decorator"
-import { PrismaService } from "../../prisma.service"
 import { GetContextDto } from "./get-context.dto"
 
-export function GetIdDto<TModel>(
-    model: keyof PrismaService,
-    options: IEntityExistsValidationOptions = {}
+export function GetIdDto<TModel extends Models>(
+    model: TModel,
+    options: IEntityExistsValidationOptions<IId, 'id', TModel> = {}
 ) {
-    class GetIdDtoClass extends GetContextDto<{ [options.context]: TModel }> {
+    class GetIdDtoClass extends GetContextDto<{ [options.context]: TModel }> implements IId {
         @Type(() => Number)
         @EntityExists(model, options)
         @IsPositiveInt()

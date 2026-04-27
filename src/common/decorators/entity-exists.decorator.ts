@@ -6,58 +6,145 @@ import {
   ValidatorConstraint,
   ValidatorConstraintInterface,
 } from 'class-validator';
+import { Prisma } from '../../types/prisma';
+import { IContext } from '../interfaces/context.interface';
 import { PrismaService } from '../prisma.service';
 
-interface IEntityExistsOptions {
+// FIX Move
+export type ExtractValue<TObject, TField extends keyof TObject> = TObject[TField] extends any[]
+  ? TObject[TField][0]
+  : TObject[TField]
+
+export type Models = Prisma.TypeMap['meta']['modelProps']
+export type ModelTypes<TModel extends Models> = Prisma.TypeMap['model'][Capitalize<TModel>]
+
+type ModelFindFirst<TModel extends Models> = Prisma.TypeMap['model'][Capitalize<TModel>]['operations']['findFirst']
+type ModelFindFirstArgs<TModel extends Models> = Prisma.SelectSubset<ModelFindFirst<TModel>['args'], ModelFindFirst<TModel>['args']>
+
+type ModelDelegate<TModel extends Models> = {
+  findFirst(args: ModelFindFirstArgs<TModel>): Promise<ModelFindFirst<TModel>['result']>
+}
+
+export type PredicateParams<
+  TDto,
+  TDtoField extends keyof TDto
+> = {
+  value: ExtractValue<TDto, TDtoField>
+  obj: TDto
+}
+
+interface IEntityExistsOptions<
+  TDto,
+  TDtoField extends keyof TDto,
+  TModel extends Models
+> {
   contextField?: string
-  fail?: boolean
+  failIfExists?: boolean
+  validateIf?: (params: PredicateParams<TDto, TDtoField>) => boolean
+  findArgs?(params: PredicateParams<TDto, TDtoField>): ModelFindFirstArgs<TModel>
 }
 
-interface IEntityExistsConstraints extends IEntityExistsOptions {
-  model: keyof PrismaService
+interface IEntityExistsConstraints<
+  TDto,
+  TDtoField extends keyof TDto,
+  TModel extends Models
+> extends
+  IEntityExistsOptions<TDto, TDtoField, TModel> {
+  model: TModel
 }
 
-export interface IEntityExistsValidationOptions extends
+export interface IEntityExistsValidationOptions<
+  TDto,
+  TDtoField extends keyof TDto,
+  TModel extends Models
+> extends
   ValidationOptions,
-  IEntityExistsOptions { }
+  IEntityExistsOptions<TDto, TDtoField, TModel> { }
 
-@ValidatorConstraint({ name: 'EntityExists', async: true })
+
+export async function entityExists<
+  TDto extends object,
+  TDtoField extends keyof TDto,
+  TModel extends Models
+>(
+  prisma: PrismaService,
+  value: ExtractValue<TDto, TDtoField>,
+  { constraints, object }: ValidationArguments
+) {
+  const {
+    model,
+    contextField,
+    failIfExists,
+    findArgs: customFindArgs,
+    validateIf
+  } = constraints[0] as IEntityExistsConstraints<TDto, TDtoField, TModel>
+
+  const obj = object as TDto
+
+  if (validateIf && !validateIf({ value, obj })) {
+    return true
+  }
+
+  const defaultFindArgs = { where: { id: value } } as unknown as ModelFindFirstArgs<TModel>
+  const findArgs = customFindArgs?.({ value, obj }) ?? defaultFindArgs
+
+  const record = await (prisma[model] as ModelDelegate<TModel>).findFirst(findArgs)
+
+  if (record && contextField) {
+    Object.assign(object, {
+      [contextField]: {
+        ...((object as IContext<object>).context ?? {}),
+        ...record
+      }
+    })
+  }
+
+  return failIfExists ? !record : !!record;
+}
+
+// FIX Implement each
+@ValidatorConstraint({ async: true })
 @Injectable()
-export class EntityExistsConstraint implements ValidatorConstraintInterface {
+export class EntityExistsConstraint<
+  TDto extends object,
+  TDtoField extends keyof TDto,
+  TModel extends Models
+> implements ValidatorConstraintInterface {
   constructor(private readonly prisma: PrismaService) { }
 
-  async validate(id: number, args: ValidationArguments) {
-    const { model, contextField, fail } = args.constraints[0] as IEntityExistsConstraints
-
-    const record = await (this.prisma[model] as any).findUnique({ where: { id } });
-    if (contextField) {
-      Object.assign(args.object, { [contextField]: record })
-    }
-
-    return fail ? !record : !!record;
+  async validate(value: ExtractValue<TDto, TDtoField>, args: ValidationArguments) {
+    return await entityExists(this.prisma, value, args)
   }
 
   defaultMessage(args: ValidationArguments): string {
-    const { model } = args.constraints[0] as IEntityExistsConstraints
+    const { model } = args.constraints[0] as IEntityExistsConstraints<TDto, TDtoField, TModel>
 
     return `${String(model)} with id ${args.value} does not exist`;
   }
 }
 
-// FIX Add findOptions
-export function EntityExists(
-  model: keyof PrismaService,
-  options?: IEntityExistsOptions
+export function EntityExists<
+  TDto extends object,
+  TDtoField extends keyof TDto,
+  TModel extends Models
+>(
+  model: TModel,
+  {
+    each,
+    message,
+    groups,
+    always,
+    context,
+    ...entityExistsOptions
+  }: IEntityExistsValidationOptions<TDto, TDtoField, TModel> = {}
 ) {
-  const { contextField, fail, ...validationOptions } = options ?? {}
-
-  return function (object: object, propertyName: string) {
+  return function (object: TDto, propertyName: TDtoField) {
     registerDecorator({
       target: object.constructor,
-      propertyName,
-      options: validationOptions,
-      constraints: [{ model, fail, contextField }],
-      validator: EntityExistsConstraint
+      propertyName: propertyName as string,
+      options: { each, message, groups, always, context },
+      constraints: [{ model, ...entityExistsOptions }],
+      validator: EntityExistsConstraint<TDto, TDtoField, TModel>
     });
   };
 }

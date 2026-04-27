@@ -1,17 +1,19 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Req } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req } from '@nestjs/common';
 import { TransformPlainToInstance } from 'class-transformer';
 import { Request } from 'express';
+import { AddUserToContext } from '../../common/interceptors/add-user-to-context.interceptor';
+import { GetViewerQueryWorkspaceIdFieldDto } from '../workspace/dto/request/get-workspace-id-field.dto';
 import { CreateTaskDto } from './dto/request/create-task.dto';
 import { GetTaskIdDto } from './dto/request/get-task-id.dto';
 import { UpdateTaskDto } from './dto/request/update-task.dto';
 import { TaskDto } from './dto/response/task.dto';
 import { TaskService } from './task.service';
 
-// FIX Guards
 @Controller('task')
 export class TaskController {
   constructor(private readonly taskService: TaskService) { }
 
+  @AddUserToContext('body')
   @Post()
   @TransformPlainToInstance(TaskDto)
   async create(
@@ -21,13 +23,16 @@ export class TaskController {
     return await this.taskService.create(dto, user.id);
   }
 
+  @AddUserToContext('query')
   @Get()
   @TransformPlainToInstance(TaskDto)
-  async findAll() {
-    return await this.taskService.findAll();
+  async findInWorkspace(
+    @Query() { workspaceId }: GetViewerQueryWorkspaceIdFieldDto
+  ) {
+    return await this.taskService.findInWorkspace(workspaceId);
   }
 
-  // FIX Use GetIdDto
+  @AddUserToContext('params')
   @Get(':id')
   @TransformPlainToInstance(TaskDto)
   async findOne(
@@ -36,23 +41,23 @@ export class TaskController {
     return await this.taskService.findOne(id);
   }
 
-  // FIX Use GetIdDto
+  @AddUserToContext('params')
   @Patch(':id')
   @TransformPlainToInstance(TaskDto)
   async update(
     @Req() { user }: Request,
     @Param() { id }: GetTaskIdDto,
-    @Body() dto: UpdateTaskDto,
+    @Body() dto: UpdateTaskDto
   ) {
     return await this.taskService.update(id, dto, user.id);
   }
 
-  // FIX Use GetIdDto
+  @AddUserToContext('params')
   @Delete(':id')
   @TransformPlainToInstance(TaskDto)
   async remove(
     @Req() { user }: Request,
-    @Param() { id }: GetTaskIdDto,
+    @Param() { id }: GetTaskIdDto
   ) {
     return await this.taskService.remove(id, user.id);
   }
