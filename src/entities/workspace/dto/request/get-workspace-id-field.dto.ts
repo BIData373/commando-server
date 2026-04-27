@@ -25,3 +25,4 @@ export function GetPermittedWorkspaceIdFieldDto(type: PermissionType, contextFie
 }
 
 export class GetViewerQueryWorkspaceIdFieldDto extends GetPermittedWorkspaceIdFieldDto(PermissionType.VIEWER, 'query') { }
+export class GetManagerBodyWorkspaceIdFieldDto extends GetPermittedWorkspaceIdFieldDto(PermissionType.MANAGER, 'body') { }

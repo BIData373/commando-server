@@ -5,6 +5,7 @@ import { IsPositiveInt } from '../../../../common/decorators/is-positive-int.dec
 import { ICreateMessage } from '../../../../types';
 import { GetAssigneeIdFieldDto } from '../../../assignee/dto/request/get-assignee-id-field.dto';
 
+// FIX Get task with permission check
 export class CreateMessageDto extends GetAssigneeIdFieldDto implements ICreateMessage {
   @Type(() => Number)
   @EntityExists('task')

@@ -1,6 +1,7 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Controller, Get, Query } from '@nestjs/common';
 import { TransformPlainToInstance } from 'class-transformer';
-import { CreateTaskHistoryDto } from './dto/request/create-task-history.dto';
+import { AddUserToContext } from '../../common/interceptors/add-user-to-context.interceptor';
+import { GetTaskIdFieldDto } from '../task/dto/request/get-task-id-field.dto';
 import { TaskHistoryDto } from './dto/response/task-history.dto';
 import { TaskHistoryService } from './task-history.service';
 
@@ -9,17 +10,20 @@ import { TaskHistoryService } from './task-history.service';
 export class TaskHistoryController {
   constructor(private readonly taskHistoryService: TaskHistoryService) { }
 
-  @Post()
-  @TransformPlainToInstance(TaskHistoryDto)
-  async create(
-    @Body() dto: CreateTaskHistoryDto
-  ) {
-    return await this.taskHistoryService.create(dto);
-  }
+  // @Post()
+  // @TransformPlainToInstance(TaskHistoryDto)
+  // async create(
+  //   @Body() dto: CreateTaskHistoryDto
+  // ) {
+  //   return await this.taskHistoryService.create(dto);
+  // }
 
+  @AddUserToContext('query')
   @Get()
   @TransformPlainToInstance(TaskHistoryDto)
-  async findAll() {
-    return await this.taskHistoryService.findAll();
+  async findInTask(
+    @Query() { taskId }: GetTaskIdFieldDto
+  ) {
+    return await this.taskHistoryService.findInTask(taskId);
   }
 }

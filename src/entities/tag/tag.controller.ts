@@ -1,8 +1,7 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req } from '@nestjs/common';
 import { TransformPlainToInstance } from 'class-transformer';
 import { Request } from 'express';
-import { AddDtosToContext } from '../../common/interceptors/add-dtos-to-context.interceptor';
-import { UserDto } from '../user/dto/response/user.dto';
+import { AddUserToContext } from '../../common/interceptors/add-user-to-context.interceptor';
 import { GetViewerQueryWorkspaceIdFieldDto } from '../workspace/dto/request/get-workspace-id-field.dto';
 import { CreateTagDto } from './dto/request/create-tag.dto';
 import { GetManagerParamsTagIdDto, GetViewerParamsTagIdDto } from './dto/request/get-tag-id.dto';
@@ -14,7 +13,7 @@ import { TagService } from './tag.service';
 export class TagController {
   constructor(private readonly tagService: TagService) { }
 
-  @AddDtosToContext({ from: 'user', to: 'body', dto: UserDto })
+  @AddUserToContext('body')
   @Post()
   @TransformPlainToInstance(TagDto)
   async create(
@@ -24,7 +23,7 @@ export class TagController {
     return await this.tagService.create(dto, user.id);
   }
 
-  @AddDtosToContext({ from: 'user', to: 'query', dto: UserDto })
+  @AddUserToContext('query')
   @Get()
   @TransformPlainToInstance(TagDto)
   async findAll(
@@ -33,7 +32,7 @@ export class TagController {
     return await this.tagService.findInWorkspace(workspaceId);
   }
 
-  @AddDtosToContext({ from: 'user', to: 'params', dto: UserDto })
+  @AddUserToContext('params')
   @Get(':id')
   @TransformPlainToInstance(TagDto)
   async findOne(
@@ -42,7 +41,7 @@ export class TagController {
     return tag;
   }
 
-  @AddDtosToContext({ from: 'user', to: 'params', dto: UserDto })
+  @AddUserToContext('params')
   @Patch(':id')
   @TransformPlainToInstance(TagDto)
   async update(
@@ -53,7 +52,7 @@ export class TagController {
     return await this.tagService.update(id, dto, user.id);
   }
 
-  @AddDtosToContext({ from: 'user', to: 'params', dto: UserDto })
+  @AddUserToContext('params')
   @Delete(':id')
   @TransformPlainToInstance(TagDto)
   async remove(

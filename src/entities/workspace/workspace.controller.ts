@@ -2,8 +2,7 @@ import { Body, Controller, Delete, Get, Param, Patch, Post, Req, UseGuards } fro
 import { TransformPlainToInstance } from 'class-transformer';
 import { Request } from 'express';
 import { BIGuard } from '../../common/guards/bi.guard';
-import { AddDtosToContext } from '../../common/interceptors/add-dtos-to-context.interceptor';
-import { UserDto } from '../user/dto/response/user.dto';
+import { AddUserToContext } from '../../common/interceptors/add-user-to-context.interceptor';
 import { CreateWorkspaceDto } from './dto/request/create-workspace.dto';
 import { GetManagerParamsWorkspaceIdDto, GetWorkspaceIdDto } from './dto/request/get-workspace-id.dto';
 import { UpdateWorkspaceDto } from './dto/request/update-workspace.dto';
@@ -38,7 +37,7 @@ export class WorkspaceController {
     return await this.workspaceService.findOne(id);
   }
 
-  @AddDtosToContext({ from: 'user', to: 'params', dto: UserDto })
+  @AddUserToContext('params')
   @Patch(':id')
   @TransformPlainToInstance(WorkspaceDto)
   async update(
@@ -49,7 +48,7 @@ export class WorkspaceController {
     return await this.workspaceService.update(id, dto, user.id);
   }
 
-  @AddDtosToContext({ from: 'user', to: 'params', dto: UserDto })
+  @AddUserToContext('params')
   @Delete(':id')
   @TransformPlainToInstance(WorkspaceDto)
   async remove(

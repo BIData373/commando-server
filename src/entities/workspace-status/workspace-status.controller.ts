@@ -1,7 +1,8 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, Query } from '@nestjs/common';
 import { TransformPlainToInstance } from 'class-transformer';
+import { AddUserToContext } from '../../common/interceptors/add-user-to-context.interceptor';
+import { GetViewerQueryWorkspaceIdFieldDto } from '../workspace/dto/request/get-workspace-id-field.dto';
 import { CreateWorkspaceStatusDto } from './dto/request/create-workspace-status.dto';
-import { DeleteWorkspaceStatusDto } from './dto/request/delete-workspace-status.dto';
 import { UpdateWorkspaceStatusDto } from './dto/request/update-workspace-status.dto';
 import { WorkspaceStatusDto } from './dto/response/workspace-status.dto';
 import { WorkspaceStatusService } from './workspace-status.service';
@@ -11,6 +12,7 @@ import { WorkspaceStatusService } from './workspace-status.service';
 export class WorkspaceStatusController {
   constructor(private readonly workspaceStatusService: WorkspaceStatusService) { }
 
+  @AddUserToContext('body')
   @Post()
   @TransformPlainToInstance(WorkspaceStatusDto)
   async create(
@@ -19,13 +21,17 @@ export class WorkspaceStatusController {
     return await this.workspaceStatusService.create(dto);
   }
 
+  @AddUserToContext('query')
   @Get()
   @TransformPlainToInstance(WorkspaceStatusDto)
-  async findAll() {
-    return await this.workspaceStatusService.findAll();
+  async findInWorkspace(
+    @Query() { workspaceId }: GetViewerQueryWorkspaceIdFieldDto
+  ) {
+    return await this.workspaceStatusService.findInWorkspace(workspaceId);
   }
 
   // FIX Use GetIdDto
+  @AddUserToContext('query')
   @Get(':id')
   @TransformPlainToInstance(WorkspaceStatusDto)
   async findOne(@Param('id', ParseIntPipe) id: number) {
@@ -33,8 +39,9 @@ export class WorkspaceStatusController {
   }
 
   // FIX Use GetIdDto
-  @Patch(':id')
+  @AddUserToContext('query')
   @TransformPlainToInstance(WorkspaceStatusDto)
+  @Patch(':id')
   async update(
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: UpdateWorkspaceStatusDto,
@@ -43,12 +50,12 @@ export class WorkspaceStatusController {
   }
 
   // FIX Use GetIdDto
+  @AddUserToContext('params')
   @Delete(':id')
   @TransformPlainToInstance(WorkspaceStatusDto)
   async remove(
     @Param('id', ParseIntPipe) id: number,
-    @Body() dto: DeleteWorkspaceStatusDto,
   ) {
-    return await this.workspaceStatusService.remove(dto.id);
+    return await this.workspaceStatusService.remove(id);
   }
 }
