@@ -13,7 +13,9 @@ export class AssigneeUserController {
 
   @Post()
   @TransformPlainToInstance(AssigneeUserDto)
-  async create(@Body() dto: CreateAssigneeUserDto) {
+  async create(
+    @Body() dto: CreateAssigneeUserDto
+  ) {
     return await this.assigneeUserService.create(dto);
   }
 

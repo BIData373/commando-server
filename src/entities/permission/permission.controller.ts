@@ -1,23 +1,24 @@
-import { Body, Controller, Delete, Get, Patch, Query, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Patch, Query, Req } from '@nestjs/common';
 import { TransformPlainToInstance } from 'class-transformer';
 import type { Request } from 'express';
-import { PermissionSettings } from '../../common/decorators/permission-settings.decorator';
-import { PermissionType } from '../../types';
-import { GetWorkspaceIdFieldDto } from '../workspace/dto/request/get-workspace-id-field.dto';
+import { AddDtosToContext } from '../../common/interceptors/add-dtos-to-context.interceptor';
+import { AddUserToContext } from '../../common/interceptors/add-user-to-context.interceptor';
+import { UserDto } from '../user/dto/response/user.dto';
+import { GetViewerQueryWorkspaceIdFieldDto, GetWorkspaceIdFieldDto } from '../workspace/dto/request/get-workspace-id-field.dto';
 import { DeletePermissionDto } from './dto/request/delete-permission.dto';
 import { UpdatePermissionDto } from './dto/request/update-permission.dto';
 import { PermissionDto } from './dto/response/permission.dto';
-import { PermissionGuard } from './guards/permission.guard';
 import { PermissionService } from './permission.service';
 
 @Controller('permission')
 export class PermissionController {
   constructor(private readonly permissionService: PermissionService) { }
 
+  @AddUserToContext('params')
   @Get()
   @TransformPlainToInstance(PermissionDto)
   async findInWorkspace(
-    @Query() { workspaceId }: GetWorkspaceIdFieldDto
+    @Query() { workspaceId }: GetViewerQueryWorkspaceIdFieldDto
   ) {
     return await this.permissionService.findInWorkspace(workspaceId);
   }
@@ -31,11 +32,7 @@ export class PermissionController {
     return await this.permissionService.findOne(user.id, workspaceId);
   }
 
-  @UseGuards(PermissionGuard)
-  @PermissionSettings({
-    type: PermissionType.MANAGER,
-    from: 'body'
-  })
+  @AddUserToContext('body')
   @Patch()
   @TransformPlainToInstance(PermissionDto)
   async update(
@@ -44,11 +41,7 @@ export class PermissionController {
     return await this.permissionService.upsert(upn, workspaceId, type);
   }
 
-  @UseGuards(PermissionGuard)
-  @PermissionSettings({
-    type: PermissionType.MANAGER,
-    from: 'body'
-  })
+  @AddUserToContext('query')
   @Delete()
   @TransformPlainToInstance(PermissionDto)
   async remove(

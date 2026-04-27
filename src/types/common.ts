@@ -7,3 +7,7 @@ export { PermissionType, HistoryAction };
  * Removes: id, createdAt, createdBy, updatedAt, updatedBy, deletedAt, deletedBy
  */
 export type OmittedMetaFields = 'id' | 'createdAt' | 'createdBy' | 'updatedAt' | 'updatedBy' | 'deletedAt' | 'deletedBy'
+
+export interface IId {
+    id: number
+}

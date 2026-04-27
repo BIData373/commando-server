@@ -5,7 +5,7 @@ import { UpdateWorkspaceStatusDto } from './dto/request/update-workspace-status.
 
 @Injectable()
 export class WorkspaceStatusService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
 
   create(dto: CreateWorkspaceStatusDto) {
     return this.prisma.workspaceStatus.create({ data: dto });
@@ -13,6 +13,10 @@ export class WorkspaceStatusService {
 
   findAll() {
     return this.prisma.workspaceStatus.findMany();
+  }
+
+  async findInWorkspace(workspaceId: number) {
+    return await this.prisma.permission.findMany({ where: { workspaceId } });
   }
 
   findOne(id: number) {

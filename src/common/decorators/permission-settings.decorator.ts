@@ -8,6 +8,7 @@ interface IPermissionSettings {
     type: PermissionType
     from: keyof Request
     dto?: ClassConstructor<IContext<Record<string, IWorkspaceId>>>,
+    field?: string
     contextField?: string
 }
 

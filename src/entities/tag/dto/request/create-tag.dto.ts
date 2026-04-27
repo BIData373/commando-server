@@ -1,8 +1,8 @@
 import { IsNotEmptyString } from '../../../../common/decorators/is-not-empty-string.decorator';
-import { ICreateTag } from '../../../../types';
-import { GetWorkspaceIdFieldDto } from '../../../workspace/dto/request/get-workspace-id-field.dto';
+import { ICreateTag, PermissionType } from '../../../../types';
+import { GetPermittedWorkspaceIdFieldDto } from '../../../workspace/dto/request/get-workspace-id-field.dto';
 
-export class CreateTagDto extends GetWorkspaceIdFieldDto implements ICreateTag {
+export class CreateTagDto extends GetPermittedWorkspaceIdFieldDto(PermissionType.MANAGER, 'body') implements ICreateTag {
   @IsNotEmptyString()
   name: string;
 }

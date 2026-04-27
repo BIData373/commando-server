@@ -4,7 +4,7 @@ import { CreateTaskHistoryDto } from './dto/request/create-task-history.dto';
 
 @Injectable()
 export class TaskHistoryService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
 
   create(dto: CreateTaskHistoryDto) {
     return this.prisma.taskHistory.create({ data: dto });
@@ -12,6 +12,10 @@ export class TaskHistoryService {
 
   findAll() {
     return this.prisma.taskHistory.findMany();
+  }
+
+  async findInTask(taskId: number) {
+    return await this.prisma.taskHistory.findMany({ where: { taskId } });
   }
 
   findOne(id: number) {
