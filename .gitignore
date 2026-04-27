@@ -36,4 +36,4 @@ temp/
 .DS_Store
 Thumbs.db
 
-/prisma/**
+/src/types/prisma/**
