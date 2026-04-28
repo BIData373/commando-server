@@ -4,6 +4,7 @@ import { PrismaService } from '../../common/prisma.service';
 import { ICreateUser, IUpdateUser, IUserInfo } from '../../types';
 import { Prisma } from '../../types/prisma';
 
+// FIX Add user search mirage function
 @Injectable()
 export class UserService implements OnModuleInit {
   constructor(private readonly prisma: PrismaService) { }

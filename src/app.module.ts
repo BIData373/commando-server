@@ -23,10 +23,6 @@ import { UserModule } from './entities/user/user.module';
 import { WorkspaceStatusModule } from './entities/workspace-status/workspace-status.module';
 import { WorkspaceModule } from './entities/workspace/workspace.module';
 
-// FIX Use CrudService on all services
-// FIX Use GetIdDto instead of all ParseIntPipe's
-// FIX Add & use read, edit, manager, bi guards
-// FIX Use types
 @Module({
   imports: [
     ConfigModule.forRoot({
