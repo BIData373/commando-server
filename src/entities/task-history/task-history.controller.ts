@@ -1,6 +1,6 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { TransformPlainToInstance } from 'class-transformer';
-import { AddUserToContext } from '../../common/interceptors/add-user-to-context.interceptor';
+//import { AddUserToContext } from '../../common/interceptors/add-user-to-context.interceptor';
 import { GetTaskIdFieldDto } from '../task/dto/request/get-task-id-field.dto';
 import { TaskHistoryDto } from './dto/response/task-history.dto';
 import { TaskHistoryService } from './task-history.service';
@@ -18,7 +18,7 @@ export class TaskHistoryController {
   //   return await this.taskHistoryService.create(dto);
   // }
 
-  @AddUserToContext('query')
+  //@AddUserToContext('query')
   @Get()
   @TransformPlainToInstance(TaskHistoryDto)
   async findInTask(

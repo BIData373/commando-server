@@ -1,7 +1,6 @@
 import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, Query } from '@nestjs/common';
 import { TransformPlainToInstance } from 'class-transformer';
-import { AddUserToContext } from '../../common/interceptors/add-user-to-context.interceptor';
-import { GetViewerQueryWorkspaceIdFieldDto } from '../workspace/dto/request/get-workspace-id-field.dto';
+import { GetViewerWorkspaceIdFieldDto } from '../workspace/dto/request/get-workspace-id-field.dto';
 import { CreateWorkspaceStatusDto } from './dto/request/create-workspace-status.dto';
 import { UpdateWorkspaceStatusDto } from './dto/request/update-workspace-status.dto';
 import { WorkspaceStatusDto } from './dto/response/workspace-status.dto';
@@ -12,7 +11,6 @@ import { WorkspaceStatusService } from './workspace-status.service';
 export class WorkspaceStatusController {
   constructor(private readonly workspaceStatusService: WorkspaceStatusService) { }
 
-  @AddUserToContext('body')
   @Post()
   @TransformPlainToInstance(WorkspaceStatusDto)
   async create(
@@ -21,17 +19,15 @@ export class WorkspaceStatusController {
     return await this.workspaceStatusService.create(dto);
   }
 
-  @AddUserToContext('query')
   @Get()
   @TransformPlainToInstance(WorkspaceStatusDto)
   async findInWorkspace(
-    @Query() { workspaceId }: GetViewerQueryWorkspaceIdFieldDto
+    @Query() { workspaceId }: GetViewerWorkspaceIdFieldDto
   ) {
     return await this.workspaceStatusService.findInWorkspace(workspaceId);
   }
 
   // FIX Use GetIdDto
-  @AddUserToContext('query')
   @Get(':id')
   @TransformPlainToInstance(WorkspaceStatusDto)
   async findOne(@Param('id', ParseIntPipe) id: number) {
@@ -39,7 +35,6 @@ export class WorkspaceStatusController {
   }
 
   // FIX Use GetIdDto
-  @AddUserToContext('query')
   @TransformPlainToInstance(WorkspaceStatusDto)
   @Patch(':id')
   async update(
@@ -50,7 +45,6 @@ export class WorkspaceStatusController {
   }
 
   // FIX Use GetIdDto
-  @AddUserToContext('params')
   @Delete(':id')
   @TransformPlainToInstance(WorkspaceStatusDto)
   async remove(

@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../common/prisma.service';
+import { IUpdateAssigneeTaskStatus } from '../../types';
 import { CreateAssigneeTaskStatusDto } from './dto/request/create-assignee-task-status.dto';
-import { UpdateAssigneeTaskStatusDto } from './dto/request/update-assignee-task-status.dto';
 
 @Injectable()
 export class AssigneeTaskStatusService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
 
   create(dto: CreateAssigneeTaskStatusDto) {
     return this.prisma.assigneeTaskStatus.upsert({
@@ -25,10 +25,11 @@ export class AssigneeTaskStatusService {
     });
   }
 
-  update(taskId: number, assigneeId: number, dto: UpdateAssigneeTaskStatusDto) {
-    return this.prisma.assigneeTaskStatus.update({
+  update({ taskId, assigneeId, statusId }: IUpdateAssigneeTaskStatus) {
+    return this.prisma.assigneeTaskStatus.upsert({
       where: { taskId_assigneeId: { taskId, assigneeId } },
-      data: dto,
+      create: { taskId, assigneeId, statusId },
+      update: { taskId, assigneeId, statusId }
     });
   }
 

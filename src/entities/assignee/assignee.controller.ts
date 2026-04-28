@@ -3,11 +3,12 @@ import { TransformPlainToInstance } from 'class-transformer';
 import { Request } from 'express';
 import { AssigneeService } from './assignee.service';
 import { CreateAssigneeDto } from './dto/request/create-assignee.dto';
-import { GetAssigneeIdDto } from './dto/request/get-assignee-id.dto';
+import { GetAssigneeIdDto, GetManagerAssigneeIdDto, GetViewerAssigneeIdDto } from './dto/request/get-assignee-id.dto';
 import { UpdateAssigneeDto } from './dto/request/update-assignee.dto';
 import { AssigneeDto } from './dto/response/assignee.dto';
 
 // FIX Guards
+// FIX Add workspaceId to table
 @Controller('assignee')
 export class AssigneeController {
   constructor(private readonly assigneeService: AssigneeService) { }
@@ -30,7 +31,7 @@ export class AssigneeController {
   @Get(':id')
   @TransformPlainToInstance(AssigneeDto)
   async findOne(
-    @Param() { id }: GetAssigneeIdDto
+    @Param() { id }: GetViewerAssigneeIdDto
   ) {
     return await this.assigneeService.findOne(id);
   }
@@ -39,8 +40,8 @@ export class AssigneeController {
   @TransformPlainToInstance(AssigneeDto)
   async update(
     @Req() { user }: Request,
-    @Param() { id }: GetAssigneeIdDto,
-    @Body() dto: UpdateAssigneeDto,
+    @Param() { id }: GetManagerAssigneeIdDto,
+    @Body() dto: UpdateAssigneeDto
   ) {
     return await this.assigneeService.update(id, dto, user.id);
   }
@@ -49,7 +50,7 @@ export class AssigneeController {
   @TransformPlainToInstance(AssigneeDto)
   async remove(
     @Req() { user }: Request,
-    @Param() { id }: GetAssigneeIdDto
+    @Param() { id }: GetManagerAssigneeIdDto
   ) {
     return await this.assigneeService.remove(id, user.id);
   }

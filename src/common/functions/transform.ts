@@ -7,7 +7,8 @@ import type { Request } from "express";
 export type DtoToAdd<TDto> = {
     from: keyof Request
     to: keyof Request
-    dto: TDto | TDto[]
+    dto: TDto | TDto[],
+    field?: string
 }
 
 // FIX Check
@@ -15,17 +16,19 @@ export async function addDtosToContext(
     request: Request,
     dtosToAdd: DtoToAdd<ClassConstructor<Object>>[]
 ) {
-    dtosToAdd.forEach(({ from, to, dto }) => {
+    dtosToAdd.forEach(({ from, to, dto, field }) => {
         if (request[to]) {
             const instances = (Array.isArray(dto) ? dto : [dto])
                 .map(currentDto => plainToInstance(currentDto, request[from]))
 
+            const context = request?.[to]?.context
+
             Object.assign(request[to], {
                 ...request[to],
                 context: {
-                    ...(request?.[to]?.context ?? {}),
-                    [to]: {
-                        ...(request?.[to]?.context?.[to] ?? {}),
+                    ...(context ?? {}),
+                    [field ?? to]: {
+                        ...(context?.[field ?? to] ?? {}),
                         ...Object.assign({}, ...instances)
                     }
                 }

@@ -2,9 +2,9 @@ import { Body, Controller, Delete, Get, Patch, Query, Req } from '@nestjs/common
 import { TransformPlainToInstance } from 'class-transformer';
 import type { Request } from 'express';
 import { AddDtosToContext } from '../../common/interceptors/add-dtos-to-context.interceptor';
-import { AddUserToContext } from '../../common/interceptors/add-user-to-context.interceptor';
+//import { AddUserToContext } from '../../common/interceptors/add-user-to-context.interceptor';
 import { UserDto } from '../user/dto/response/user.dto';
-import { GetViewerQueryWorkspaceIdFieldDto, GetWorkspaceIdFieldDto } from '../workspace/dto/request/get-workspace-id-field.dto';
+import { GetViewerWorkspaceIdFieldDto, GetWorkspaceIdFieldDto } from '../workspace/dto/request/get-workspace-id-field.dto';
 import { DeletePermissionDto } from './dto/request/delete-permission.dto';
 import { UpdatePermissionDto } from './dto/request/update-permission.dto';
 import { PermissionDto } from './dto/response/permission.dto';
@@ -14,11 +14,11 @@ import { PermissionService } from './permission.service';
 export class PermissionController {
   constructor(private readonly permissionService: PermissionService) { }
 
-  @AddUserToContext('params')
+  //@AddUserToContext('params')
   @Get()
   @TransformPlainToInstance(PermissionDto)
   async findInWorkspace(
-    @Query() { workspaceId }: GetViewerQueryWorkspaceIdFieldDto
+    @Query() { workspaceId }: GetViewerWorkspaceIdFieldDto
   ) {
     return await this.permissionService.findInWorkspace(workspaceId);
   }
@@ -32,7 +32,7 @@ export class PermissionController {
     return await this.permissionService.findOne(user.id, workspaceId);
   }
 
-  @AddUserToContext('body')
+  //@AddUserToContext('body')
   @Patch()
   @TransformPlainToInstance(PermissionDto)
   async update(
@@ -41,7 +41,7 @@ export class PermissionController {
     return await this.permissionService.upsert(upn, workspaceId, type);
   }
 
-  @AddUserToContext('query')
+  //@AddUserToContext('query')
   @Delete()
   @TransformPlainToInstance(PermissionDto)
   async remove(

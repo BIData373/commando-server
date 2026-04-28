@@ -1,5 +1,5 @@
 import { PartialType } from '@nestjs/mapped-types';
 import { IUpdateMessage } from '../../../../types';
-import { CreateMessageDto } from './create-message.dto';
+import { GetContentDto } from './get-content.dto';
 
-export class UpdateMessageDto extends PartialType(CreateMessageDto) implements IUpdateMessage {}
+export class UpdateMessageDto extends PartialType(GetContentDto) implements IUpdateMessage { }
