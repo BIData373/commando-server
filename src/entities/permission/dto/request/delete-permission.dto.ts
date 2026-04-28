@@ -1,14 +1,16 @@
-import { Type } from "class-transformer";
 import { EntityExists } from "../../../../common/decorators/entity-exists.decorator";
-import { IsPositiveInt } from "../../../../common/decorators/is-positive-int.decorator";
+import { IdExists } from "../../../../common/decorators/id-exists.decorator";
+import { IsIdPermitted } from "../../../../common/decorators/is-permitted-id.decorator";
 import { GetContextDto } from "../../../../common/dto/request/get-context.dto";
-import { IQuery } from "../../../../common/interfaces/query.interface";
-import { IDeletePermission, IUser, PermissionType } from "../../../../types";
+import { IDeletePermission, PermissionType } from "../../../../types";
+import { User } from "../../../../types/prisma";
 import { IUserContext } from "../../../user/interfaces/user-context.interface";
-import { HasWorkspacePermission } from "../../../workspace/decorators/has-workspace-permission.decorator";
 
-export class DeletePermissionDto extends GetContextDto<IUserContext & IQuery<IUser>> implements IDeletePermission {
-    @Type(() => Number)
+interface IDeletePermissionContext extends IUserContext {
+    newUser: User
+}
+
+export class DeletePermissionDto extends GetContextDto<IDeletePermissionContext> implements IDeletePermission {
     @EntityExists('permission', {
         findArgs: ({ value, obj }) => ({
             where: {
@@ -20,13 +22,9 @@ export class DeletePermissionDto extends GetContextDto<IUserContext & IQuery<IUs
             `Permission doesn't exist for user id ${value} in workspace id ${(object as IDeletePermission).workspaceId}`
         )
     })
-    @EntityExists('user', { contextField: 'user' })
-    @IsPositiveInt()
+    @IdExists('user', { contextField: 'newUser' })
     userId: number;
 
-    @Type(() => Number)
-    @HasWorkspacePermission(PermissionType.MANAGER, obj => obj.context.user)
-    @EntityExists('workspace')
-    @IsPositiveInt()
+    @IsIdPermitted('workspace', PermissionType.MANAGER)
     workspaceId: number;
 }

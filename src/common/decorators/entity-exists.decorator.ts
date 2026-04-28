@@ -37,9 +37,7 @@ export type PredicateParams<
 interface IEntityExistsOptions<
   TDto,
   TDtoField extends keyof TDto,
-  TModel extends Models,
-// TContext extends Object,
-// TContextField extends keyof TContext
+  TModel extends Models
 > {
   contextField?: string
   failIfExists?: boolean
@@ -50,20 +48,15 @@ interface IEntityExistsOptions<
 interface IEntityExistsConstraints<
   TDto,
   TDtoField extends keyof TDto,
-  TModel extends Models,
-// TContext extends Object,
-// TContextField extends keyof TContext
-> extends
-  IEntityExistsOptions<TDto, TDtoField, TModel> {
+  TModel extends Models
+> extends IEntityExistsOptions<TDto, TDtoField, TModel> {
   model: TModel
 }
 
 export interface IEntityExistsValidationOptions<
   TDto,
   TDtoField extends keyof TDto,
-  TModel extends Models,
-// TContext extends Object,
-// TContextField extends keyof TContext
+  TModel extends Models
 > extends
   ValidationOptions,
   IEntityExistsOptions<TDto, TDtoField, TModel> { }
@@ -72,9 +65,7 @@ export interface IEntityExistsValidationOptions<
 export async function entityExists<
   TDto extends Object,
   TDtoField extends keyof TDto,
-  TModel extends Models,
-// TContext extends Object,
-// TContextField extends keyof TContext
+  TModel extends Models
 >(
   prisma: PrismaService,
   value: ExtractValue<TDto, TDtoField>,
@@ -117,9 +108,7 @@ export async function entityExists<
 export class EntityExistsConstraint<
   TDto extends Object,
   TDtoField extends keyof TDto,
-  TModel extends Models,
-// TContext extends Object,
-// TContextField extends keyof TContext
+  TModel extends Models
 > implements ValidatorConstraintInterface {
   constructor(private readonly prisma: PrismaService) { }
 
@@ -137,9 +126,7 @@ export class EntityExistsConstraint<
 export function EntityExists<
   TDto extends Object,
   TDtoField extends keyof TDto,
-  TModel extends Models,
-// TContext extends Object,
-// TContextField extends keyof TContext
+  TModel extends Models
 >(
   model: TModel,
   {

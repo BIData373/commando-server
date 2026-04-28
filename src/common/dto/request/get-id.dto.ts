@@ -6,7 +6,19 @@ import { GetContextDto } from "./get-context.dto"
 
 export function GetIdDto<TModel extends Models>(
     model: TModel,
-    contextField: string = model,
+    options: IEntityExistsValidationOptions<IId, 'id', TModel> = {}
+) {
+    class GetIdDtoClass implements IId {
+        @IdExists(model, options)
+        id: number
+    }
+
+    return GetIdDtoClass
+}
+
+export function GetIdContextDto<TModel extends Models>(
+    model: TModel,
+    contextField: string,
     options: IEntityExistsValidationOptions<
         IId & IContext<Record<typeof contextField, TModel>>,
         'id',
