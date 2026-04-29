@@ -1,25 +1,16 @@
-import { CallHandler, ExecutionContext, NestInterceptor, UseInterceptors } from "@nestjs/common";
 import { ClassConstructor } from "class-transformer";
 import type { Request } from "express";
 import { UserDto } from "../../entities/user/dto/response/user.dto";
-import { addDtosToContext, DtoToAdd } from "../functions/transform";
+import { DtoToAdd } from "../functions/transform";
+import { AddDtosToContext } from "./add-dtos-to-context.interceptor";
 
-export function AddUserToContext(to: keyof Request | (keyof Request)[]) {
-    class AddDtosToContextInterceptor implements NestInterceptor {
-        intercept(context: ExecutionContext, next: CallHandler) {
-            let request = context.switchToHttp().getRequest<Request>()
+const fields: (keyof Request)[] = ['params', 'query', 'body']
 
-            const dtosToAdd = (Array.isArray(to) ? to : [to]).map(to => ({
-                from: 'user',
-                to,
-                dto: UserDto
-            })) as DtoToAdd<ClassConstructor<Object>>[]
+const dtosToAdd = fields.map(to => ({
+    from: 'user',
+    to,
+    dto: UserDto,
+    field: 'user'
+})) as DtoToAdd<ClassConstructor<Object>>[]
 
-            addDtosToContext(request, dtosToAdd)
-
-            return next.handle()
-        }
-    }
-
-    return UseInterceptors(AddDtosToContextInterceptor)
-}
+export class AddUserToContextInterceptor extends AddDtosToContext(...dtosToAdd) { }

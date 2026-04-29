@@ -9,28 +9,16 @@ import {
 import { Prisma } from '../../types/prisma';
 import { IContext } from '../interfaces/context.interface';
 import { PrismaService } from '../prisma.service';
-
-// FIX Move
-export type ExtractValue<TObject, TField extends keyof TObject> = TObject[TField] extends any[]
-  ? TObject[TField][0]
-  : TObject[TField]
-
-export type Models = Prisma.TypeMap['meta']['modelProps']
-export type ModelTypes<TModel extends Models> = Prisma.TypeMap['model'][Capitalize<TModel>]
+import { ExtractValue } from '../types/extract-value.type';
+import { Models } from '../types/models.type';
+import { PredicateParams } from '../types/predicate-params.type';
 
 type ModelFindFirst<TModel extends Models> = Prisma.TypeMap['model'][Capitalize<TModel>]['operations']['findFirst']
-type ModelFindFirstArgs<TModel extends Models> = Prisma.SelectSubset<ModelFindFirst<TModel>['args'], ModelFindFirst<TModel>['args']>
+type ModelFindFirstArgs<TModel extends Models> = ModelFindFirst<TModel>['args']
+type ModelFindFirstSelectArgs<TModel extends Models> = Prisma.SelectSubset<ModelFindFirstArgs<TModel>, ModelFindFirstArgs<TModel>>
 
 type ModelDelegate<TModel extends Models> = {
-  findFirst(args: ModelFindFirstArgs<TModel>): Promise<ModelFindFirst<TModel>['result']>
-}
-
-export type PredicateParams<
-  TDto,
-  TDtoField extends keyof TDto
-> = {
-  value: ExtractValue<TDto, TDtoField>
-  obj: TDto
+  findFirst(args: ModelFindFirstSelectArgs<TModel>): Promise<ModelFindFirst<TModel>['result']>
 }
 
 interface IEntityExistsOptions<
@@ -41,15 +29,14 @@ interface IEntityExistsOptions<
   contextField?: string
   failIfExists?: boolean
   validateIf?: (params: PredicateParams<TDto, TDtoField>) => boolean
-  findArgs?(params: PredicateParams<TDto, TDtoField>): ModelFindFirstArgs<TModel>
+  findArgs?(params: PredicateParams<TDto, TDtoField>): ModelFindFirstSelectArgs<TModel>
 }
 
 interface IEntityExistsConstraints<
   TDto,
   TDtoField extends keyof TDto,
   TModel extends Models
-> extends
-  IEntityExistsOptions<TDto, TDtoField, TModel> {
+> extends IEntityExistsOptions<TDto, TDtoField, TModel> {
   model: TModel
 }
 
@@ -63,7 +50,7 @@ export interface IEntityExistsValidationOptions<
 
 
 export async function entityExists<
-  TDto extends object,
+  TDto extends Object,
   TDtoField extends keyof TDto,
   TModel extends Models
 >(
@@ -85,7 +72,7 @@ export async function entityExists<
     return true
   }
 
-  const defaultFindArgs = { where: { id: value } } as unknown as ModelFindFirstArgs<TModel>
+  const defaultFindArgs = { where: { id: value } } as unknown as ModelFindFirstSelectArgs<TModel>
   const findArgs = customFindArgs?.({ value, obj }) ?? defaultFindArgs
 
   const record = await (prisma[model] as ModelDelegate<TModel>).findFirst(findArgs)
@@ -106,7 +93,7 @@ export async function entityExists<
 @ValidatorConstraint({ async: true })
 @Injectable()
 export class EntityExistsConstraint<
-  TDto extends object,
+  TDto extends Object,
   TDtoField extends keyof TDto,
   TModel extends Models
 > implements ValidatorConstraintInterface {
@@ -124,7 +111,7 @@ export class EntityExistsConstraint<
 }
 
 export function EntityExists<
-  TDto extends object,
+  TDto extends Object,
   TDtoField extends keyof TDto,
   TModel extends Models
 >(
@@ -138,9 +125,9 @@ export function EntityExists<
     ...entityExistsOptions
   }: IEntityExistsValidationOptions<TDto, TDtoField, TModel> = {}
 ) {
-  return function (object: TDto, propertyName: TDtoField) {
+  return function (target: TDto, propertyName: TDtoField) {
     registerDecorator({
-      target: object.constructor,
+      target: target.constructor,
       propertyName: propertyName as string,
       options: { each, message, groups, always, context },
       constraints: [{ model, ...entityExistsOptions }],

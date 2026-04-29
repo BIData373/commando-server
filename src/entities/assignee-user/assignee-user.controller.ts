@@ -1,5 +1,6 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post } from '@nestjs/common';
 import { TransformPlainToInstance } from 'class-transformer';
+import { GetManagerAssigneeIdFieldDto, GetViewerAssigneeIdFieldDto } from '../assignee/dto/request/get-assignee-id-field.dto';
 import { GetUserIdFieldDto } from '../user/dto/request/get-user-id-field.dto';
 import { AssigneeUserService } from './assignee-user.service';
 import { CreateAssigneeUserDto } from './dto/request/create-assignee-user.dto';
@@ -25,21 +26,19 @@ export class AssigneeUserController {
     return await this.assigneeUserService.findAll();
   }
 
-  // FIX Use GetIdDto
   @Get(':assigneeId/:userId')
   @TransformPlainToInstance(AssigneeUserDto)
   async findOne(
-    @Param('assigneeId', ParseIntPipe) assigneeId: number,
-    @Param() { userId }: GetUserIdFieldDto,
+    @Param() { assigneeId }: GetViewerAssigneeIdFieldDto,
+    @Param() { userId }: GetUserIdFieldDto
   ) {
     return await this.assigneeUserService.findOne(assigneeId, userId);
   }
 
-  // FIX Use GetIdDto
   @Delete(':assigneeId/:userId')
   @TransformPlainToInstance(AssigneeUserDto)
   async remove(
-    @Param('assigneeId', ParseIntPipe) assigneeId: number,
+    @Param() { assigneeId }: GetManagerAssigneeIdFieldDto,
     @Param() { userId }: GetUserIdFieldDto,
   ) {
     return await this.assigneeUserService.remove(assigneeId, userId);

@@ -20,6 +20,10 @@ export class AssigneeUserService {
     });
   }
 
+  async findByFilter(assigneeId?: number, userId?: number) {
+    
+  }
+
   remove(assigneeId: number, userId: number) {
     return this.prisma.assigneeUser.delete({
       where: { assigneeId_userId: { assigneeId, userId } },

@@ -1,14 +1,13 @@
 import { Type } from 'class-transformer';
 import { IsBoolean, IsDate, IsObject, IsOptional, IsString } from 'class-validator';
-import { EntityExists } from '../../../../common/decorators/entity-exists.decorator';
-import { IsPositiveInt } from '../../../../common/decorators/is-positive-int.decorator';
+import { IdExists } from '../../../../common/decorators/id-exists.decorator';
 import { ICreateTask } from '../../../../types';
-import { GetWorkspaceIdFieldDto } from '../../../workspace/dto/request/get-workspace-id-field.dto';
+import { GetManagerWorkspaceIdFieldDto } from '../../../workspace/dto/request/get-workspace-id-field.dto';
 
-export class CreateTaskDto extends GetWorkspaceIdFieldDto implements ICreateTask {
-  @Type(() => Number)
-  @EntityExists('source')
-  @IsPositiveInt()
+// FIX Remove workspaceId
+export class CreateTaskDto extends GetManagerWorkspaceIdFieldDto implements ICreateTask {
+  // FIX Permission
+  @IdExists('source')
   sourceId: number
 
   @IsString()

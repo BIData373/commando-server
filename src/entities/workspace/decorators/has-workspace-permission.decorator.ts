@@ -1,25 +1,27 @@
 import { Injectable } from "@nestjs/common";
 import { FORBIDDEN_MESSAGE } from "@nestjs/core/guards";
 import { registerDecorator, ValidationArguments, ValidatorConstraint, ValidatorConstraintInterface } from "class-validator";
-import { entityExists, ExtractValue, IEntityExistsValidationOptions, PredicateParams } from "../../../common/decorators/entity-exists.decorator";
+import { entityExists, IEntityExistsValidationOptions } from "../../../common/decorators/entity-exists.decorator";
 import { PrismaService } from "../../../common/prisma.service";
+import { ExtractValue } from "../../../common/types/extract-value.type";
+import { PredicateParams } from "../../../common/types/predicate-params.type";
 import { IUser, PermissionType } from "../../../types";
 import { Prisma } from "../../../types/prisma";
 
 interface IPermissionExistsValidationOptions<
-    TDtoField extends string,
+    TDtoField extends keyof TDto,
     TDto extends Record<TDtoField, number>
 > extends IEntityExistsValidationOptions<TDto, TDtoField, "permission"> { }
 
-interface IHasWorkspacePermissionOptions<
-    TDtoField extends string,
+export interface IHasWorkspacePermissionOptions<
+    TDtoField extends keyof TDto,
     TDto extends Record<TDtoField, number>
 > extends IPermissionExistsValidationOptions<TDtoField, TDto> {
     workspaceFindArgs?: (params: PredicateParams<TDto, TDtoField>) => Prisma.PermissionWhereInput['workspace']
 }
 
 interface IHasWorkspacePermissionContraints<
-    TDtoField extends string,
+    TDtoField extends keyof TDto,
     TDto extends Record<TDtoField, number>
 > extends IHasWorkspacePermissionOptions<TDtoField, TDto> {
     type: PermissionType,
@@ -37,7 +39,7 @@ const allowedTypes = {
 @ValidatorConstraint({ async: true })
 @Injectable()
 export class HasWorkspacePermissionConstraint<
-    TDtoField extends string,
+    TDtoField extends keyof TDto,
     TDto extends Record<TDtoField, number>
 > implements ValidatorConstraintInterface {
     constructor(private readonly prisma: PrismaService) { }
@@ -53,22 +55,26 @@ export class HasWorkspacePermissionConstraint<
             ...entityExistsArgs
         } = constraints[0] as IHasWorkspacePermissionContraints<TDtoField, TDto>
 
-        return await entityExists<TDto, TDtoField, 'permission'>(this.prisma, value, {
-            ...args,
-            constraints: [{
-                model: 'permission',
-                message: FORBIDDEN_MESSAGE,
-                validateIf: ({ obj }) => !(extractUser(obj).info?.isBI ?? false),
-                findArgs: ({ value, obj }) => ({
-                    where: {
-                        type: { in: allowedTypes[type] },
-                        userId: extractUser(obj).id,
-                        workspace: workspaceFindArgs?.({ value, obj }) ?? { id: value }
-                    }
-                }),
-                ...entityExistsArgs
-            } as IPermissionExistsValidationOptions<TDtoField, TDto>],
-        })
+        return await entityExists<TDto, TDtoField, 'permission'>(
+            this.prisma,
+            value,
+            {
+                ...args,
+                constraints: [{
+                    model: 'permission',
+                    message: FORBIDDEN_MESSAGE,
+                    validateIf: ({ obj }) => !(extractUser(obj).info?.isBI ?? false),
+                    findArgs: ({ value, obj }) => ({
+                        where: {
+                            type: { in: allowedTypes[type] },
+                            userId: extractUser(obj).id,
+                            workspace: workspaceFindArgs?.({ value, obj }) ?? { id: value }
+                        }
+                    }),
+                    ...entityExistsArgs
+                } as IPermissionExistsValidationOptions<TDtoField, TDto>],
+            }
+        )
     }
 
     defaultMessage(_: ValidationArguments): string {
@@ -77,19 +83,27 @@ export class HasWorkspacePermissionConstraint<
 }
 
 export function HasWorkspacePermission<
-    TDtoField extends string,
+    TDtoField extends keyof TDto,
     TDto extends Record<TDtoField, number>
 >(
     type: PermissionType,
     extractUser: (obj: TDto) => IUser,
-    { workspaceFindArgs, ...options }: IHasWorkspacePermissionOptions<TDtoField, TDto> = {}
+    {
+        workspaceFindArgs,
+        each,
+        message,
+        groups,
+        always,
+        context,
+        ...entityExistsOptions
+    }: IHasWorkspacePermissionOptions<TDtoField, TDto> = {}
 ) {
-    return function (object: TDto, propertyName: TDtoField) {
+    return function (target: TDto, propertyName: TDtoField) {
         registerDecorator({
-            target: object.constructor,
+            target: target.constructor,
             propertyName: propertyName as string,
-            options,
-            constraints: [{ type, extractUser, workspaceFindArgs }],
+            options: { each, message, groups, always, context },
+            constraints: [{ type, extractUser, workspaceFindArgs, ...entityExistsOptions }],
             validator: HasWorkspacePermissionConstraint<TDtoField, TDto>
         });
     }

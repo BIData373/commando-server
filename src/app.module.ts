@@ -1,9 +1,10 @@
 import { MiddlewareConsumer, Module, NestModule, ValidationPipe } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { APP_PIPE } from '@nestjs/core';
+import { APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
 import path from 'node:path';
 import { forbiddenExceptionFactory } from './common/functions/transform';
 import { BIGuard } from './common/guards/bi.guard';
+import { AddUserToContextInterceptor } from './common/interceptors/add-user-to-context.interceptor';
 import { CookieMiddleware } from './common/middleware/cookie.middleware';
 import { WritableQueryMiddleware } from './common/middleware/writable-query.middleware';
 import { PrismaModule } from './common/prisma.module';
@@ -21,10 +22,6 @@ import { UserModule } from './entities/user/user.module';
 import { WorkspaceStatusModule } from './entities/workspace-status/workspace-status.module';
 import { WorkspaceModule } from './entities/workspace/workspace.module';
 
-// FIX Use CrudService on all services
-// FIX Use GetIdDto instead of all ParseIntPipe's
-// FIX Add & use read, edit, manager, bi guards
-// FIX Use types
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -60,6 +57,10 @@ import { WorkspaceModule } from './entities/workspace/workspace.module';
         validateCustomDecorators: true,
         exceptionFactory: forbiddenExceptionFactory
       })
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: AddUserToContextInterceptor
     },
   ]
 })

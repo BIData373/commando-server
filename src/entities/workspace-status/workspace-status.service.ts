@@ -1,13 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../common/prisma.service';
-import { CreateWorkspaceStatusDto } from './dto/request/create-workspace-status.dto';
+import { ICreateWorkspaceStatus } from '../../types';
 import { UpdateWorkspaceStatusDto } from './dto/request/update-workspace-status.dto';
 
 @Injectable()
 export class WorkspaceStatusService {
   constructor(private readonly prisma: PrismaService) { }
 
-  create(dto: CreateWorkspaceStatusDto) {
+  create(dto: ICreateWorkspaceStatus) {
     return this.prisma.workspaceStatus.create({ data: dto });
   }
 

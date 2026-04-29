@@ -1,11 +1,22 @@
-import { Type } from "class-transformer";
-import { EntityExists } from "../../../../common/decorators/entity-exists.decorator";
-import { IsPositiveInt } from "../../../../common/decorators/is-positive-int.decorator";
+import { IdExists } from "../../../../common/decorators/id-exists.decorator";
+import { IsIdPermitted } from "../../../../common/decorators/is-permitted-id.decorator";
+import { GetContextDto } from "../../../../common/dto/request/get-context.dto";
+import { PermissionType } from "../../../../types";
+import { IUserContext } from "../../../user/interfaces/user-context.interface";
 
-// FIX Add permission check
 export class GetTaskIdFieldDto {
-    @Type(() => Number)
-    @EntityExists('task')
-    @IsPositiveInt()
+    @IdExists('task')
     taskId: number
 }
+
+export function GetPermittedTaskIdFieldDto(type: PermissionType) {
+    class GetTaskIdDto extends GetContextDto<IUserContext> {
+        @IsIdPermitted('task', type)
+        taskId: number
+    }
+
+    return GetTaskIdDto
+}
+
+export class GetViewerTaskIdFieldDto extends GetPermittedTaskIdFieldDto(PermissionType.VIEWER) { }
+export class GetManagerTaskIdFieldDto extends GetPermittedTaskIdFieldDto(PermissionType.MANAGER) { }

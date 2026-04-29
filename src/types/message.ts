@@ -5,4 +5,4 @@ export interface IMessage extends Message { }
 
 export interface ICreateMessage extends Omit<Prisma.MessageUncheckedCreateInput, OmittedMetaFields> { }
 
-export interface IUpdateMessage extends Partial<ICreateMessage> { }
+export interface IUpdateMessage extends Omit<Partial<ICreateMessage>, 'taskId' | 'assigneeId'> { }
