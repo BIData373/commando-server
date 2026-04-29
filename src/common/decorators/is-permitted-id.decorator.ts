@@ -3,7 +3,7 @@ import { IUserContext } from "../../entities/user/interfaces/user-context.interf
 import { HasWorkspacePermission, IHasWorkspacePermissionOptions } from "../../entities/workspace/decorators/has-workspace-permission.decorator";
 import { PermissionType } from "../../types";
 import { IContext } from "../interfaces/context.interface";
-import { Models } from "./entity-exists.decorator";
+import { Models } from "../types/models.type";
 import { IdExists } from "./id-exists.decorator";
 
 // FIX Add parameter for IdExists options

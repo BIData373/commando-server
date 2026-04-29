@@ -11,7 +11,6 @@ export type DtoToAdd<TDto> = {
     field?: string
 }
 
-// FIX Check
 export async function addDtosToContext(
     request: Request,
     dtosToAdd: DtoToAdd<ClassConstructor<Object>>[]

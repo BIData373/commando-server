@@ -9,14 +9,9 @@ import {
 import { Prisma } from '../../types/prisma';
 import { IContext } from '../interfaces/context.interface';
 import { PrismaService } from '../prisma.service';
-
-// FIX Move
-export type ExtractValue<TObject, TField extends keyof TObject> = TObject[TField] extends any[]
-  ? TObject[TField][0]
-  : TObject[TField]
-
-export type Models = Prisma.TypeMap['meta']['modelProps']
-export type ModelTypes<TModel extends Models> = Prisma.TypeMap['model'][Capitalize<TModel>]
+import { ExtractValue } from '../types/extract-value.type';
+import { Models } from '../types/models.type';
+import { PredicateParams } from '../types/predicate-params.type';
 
 type ModelFindFirst<TModel extends Models> = Prisma.TypeMap['model'][Capitalize<TModel>]['operations']['findFirst']
 type ModelFindFirstArgs<TModel extends Models> = ModelFindFirst<TModel>['args']
@@ -24,14 +19,6 @@ type ModelFindFirstSelectArgs<TModel extends Models> = Prisma.SelectSubset<Model
 
 type ModelDelegate<TModel extends Models> = {
   findFirst(args: ModelFindFirstSelectArgs<TModel>): Promise<ModelFindFirst<TModel>['result']>
-}
-
-export type PredicateParams<
-  TDto,
-  TDtoField extends keyof TDto
-> = {
-  value: ExtractValue<TDto, TDtoField>
-  obj: TDto
 }
 
 interface IEntityExistsOptions<

@@ -1,8 +1,10 @@
 import { Injectable } from "@nestjs/common";
 import { FORBIDDEN_MESSAGE } from "@nestjs/core/guards";
 import { registerDecorator, ValidationArguments, ValidatorConstraint, ValidatorConstraintInterface } from "class-validator";
-import { entityExists, ExtractValue, IEntityExistsValidationOptions, PredicateParams } from "../../../common/decorators/entity-exists.decorator";
+import { entityExists, IEntityExistsValidationOptions } from "../../../common/decorators/entity-exists.decorator";
 import { PrismaService } from "../../../common/prisma.service";
+import { ExtractValue } from "../../../common/types/extract-value.type";
+import { PredicateParams } from "../../../common/types/predicate-params.type";
 import { IUser, PermissionType } from "../../../types";
 import { Prisma } from "../../../types/prisma";
 

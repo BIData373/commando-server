@@ -7,11 +7,11 @@ import { UpdateAssigneeTaskStatusDto } from './dto/request/update-assignee-task-
 import { AssigneeTaskStatusDto } from './dto/response/assignee-task-status.dto';
 
 // FIX Remove controller, move to tasks?
-// FIX Guards
 @Controller('assignee-task-status')
 export class AssigneeTaskStatusController {
   constructor(private readonly assigneeTaskStatusService: AssigneeTaskStatusService) { }
 
+  // FIX Filter by task? Guard
   @Get()
   @TransformPlainToInstance(AssigneeTaskStatusDto)
   async findAll() {

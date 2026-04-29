@@ -1,7 +1,8 @@
 import { IId } from "../../../types"
-import { IEntityExistsValidationOptions, Models } from "../../decorators/entity-exists.decorator"
+import { IEntityExistsValidationOptions } from "../../decorators/entity-exists.decorator"
 import { IdExists } from "../../decorators/id-exists.decorator"
 import { IContext } from "../../interfaces/context.interface"
+import { Models } from "../../types/models.type"
 import { GetContextDto } from "./get-context.dto"
 
 export function GetIdDto<TModel extends Models>(

@@ -1,14 +1,13 @@
 import { applyDecorators } from "@nestjs/common";
 import { Type } from "class-transformer";
-import { EntityExists, IEntityExistsValidationOptions, Models } from "./entity-exists.decorator";
+import { Models } from "../types/models.type";
+import { EntityExists, IEntityExistsValidationOptions } from "./entity-exists.decorator";
 import { IsPositiveInt } from "./is-positive-int.decorator";
 
 export function IdExists<
     TModel extends Models,
     TDto extends Object,
-    TDtoField extends keyof TDto,
-// TContext extends Object,
-// TContextField extends keyof TContext,
+    TDtoField extends keyof TDto
 >(
     model: TModel,
     options: IEntityExistsValidationOptions<TDto, TDtoField, TModel> = {}
