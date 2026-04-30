@@ -33,18 +33,18 @@ import { WorkspaceModule } from './entities/workspace/workspace.module';
     }),
     PrismaModule,
     PikudModule,
-    WorkspaceModule,
-    TagModule,
-    SourceModule,
-    TaskModule,
-    WorkspaceStatusModule,
-    AssigneeModule,
-    UserModule,
-    AssigneeTaskStatusModule,
-    AssigneeUserModule,
-    PermissionModule,
-    MessageModule,
-    TaskHistoryModule,
+    // WorkspaceModule,
+    // TagModule,
+    // SourceModule,
+    // TaskModule,
+    // WorkspaceStatusModule,
+    // AssigneeModule,
+    // UserModule,
+    // AssigneeTaskStatusModule,
+    // AssigneeUserModule,
+    // PermissionModule,
+    // MessageModule,
+    // TaskHistoryModule,
   ],
   providers: [
     BIGuard,
@@ -66,9 +66,11 @@ import { WorkspaceModule } from './entities/workspace/workspace.module';
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer): void {
-    consumer.apply(
-      WritableQueryMiddleware,
-      CookieMiddleware
-    ).forRoutes('*');
+    // consumer.apply(
+    //   WritableQueryMiddleware,
+    //   CookieMiddleware
+    // )
+    //   .exclude('open-api/*')
+    //   .forRoutes('*');
   }
 }

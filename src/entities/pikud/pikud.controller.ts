@@ -7,13 +7,17 @@ import { GetPikudIdDto } from './dto/request/get-pikud-id.dto';
 import { UpdatePikudDto } from './dto/request/update-pikud.dto';
 import { PikudDto } from './dto/response/pikud.dto';
 import { PikudService } from './pikud.service';
+import { ApiBody, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiParam } from '@nestjs/swagger';
 
 @Controller('pikud')
 export class PikudController {
   constructor(private readonly pikudService: PikudService) { }
 
   @UseGuards(BIGuard)
+  @ApiOperation({ operationId: 'createPikud' })
   @Post()
+  @ApiCreatedResponse({ type: PikudDto })
+  @ApiBody({ type: CreatePikudDto })
   @TransformPlainToInstance(PikudDto)
   async create(
     @Req() { user }: Request,
@@ -22,13 +26,16 @@ export class PikudController {
     return await this.pikudService.create(dto, user.id);
   }
 
+  @ApiOperation({ operationId: 'listPikuds' })
   @Get()
+  @ApiBody({ type: [CreatePikudDto] })
   @TransformPlainToInstance(PikudDto)
   async findAll() {
     return await this.pikudService.findAll();
   }
 
   @Get(':id')
+  @ApiParam({ name: 'id', type: Number })
   @TransformPlainToInstance(PikudDto)
   async findOne(
     @Param() { id }: GetPikudIdDto
@@ -38,6 +45,7 @@ export class PikudController {
 
   @UseGuards(BIGuard)
   @Patch(':id')
+  @ApiParam({ name: 'id', type: Number })
   @TransformPlainToInstance(PikudDto)
   async update(
     @Req() { user }: Request,
@@ -49,6 +57,7 @@ export class PikudController {
 
   @UseGuards(BIGuard)
   @Delete(':id')
+  @ApiParam({ name: 'id', type: Number })
   @TransformPlainToInstance(PikudDto)
   async remove(
     @Req() { user }: Request,

@@ -1,3 +1,4 @@
+import { ApiProperty } from "@nestjs/swagger"
 import { IId } from "../../../types"
 import { IEntityExistsValidationOptions } from "../../decorators/entity-exists.decorator"
 import { IdExists } from "../../decorators/id-exists.decorator"
