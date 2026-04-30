@@ -100,7 +100,7 @@ model Pikud {
 
 generator client {
   provider = "prisma-client-js"
-  output   = "../../prisma/"
+  output   = "../../src/types/prisma/"
 }
 
 datasource db {
@@ -121,6 +121,8 @@ model Source {
 
   tasks Task[]
 
+  tags Tag[] @relation("sources_tags")
+
   @@map("sources")
 }
 
@@ -136,7 +138,9 @@ model Tag {
 
   workspaceId Int       @map("workspace_id")
   workspace   Workspace @relation(fields: [workspaceId], references: [id])
-  tasks       Task[]    @relation("TaskToTag")
+
+  tasks   Task[]   @relation("tasks_tags")
+  sources Source[] @relation("sources_tags")
 
   @@map("tags")
 }
@@ -165,7 +169,7 @@ model Task {
   sourceId Int    @map("source_id")
   source   Source @relation(fields: [sourceId], references: [id])
 
-  tags             Tag[]                @relation("TaskToTag")
+  tags             Tag[]                @relation("tasks_tags")
   assigneeStatuses AssigneeTaskStatus[]
   messages         Message[]
   history          TaskHistory[]

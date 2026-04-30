@@ -6,17 +6,17 @@
     "build": "nest build",
     "start:dist": "node dist/main.js",
     "start": "cross-env-shell ENV=%npm_config_env% nest start --watch",
-    "start:debug": "nest start --debug --watch",
+    "start:debug": "cross-env-shell ENV=%npm_config_env% nest start --debug --watch",
     "test": "echo \"Error: no test specified\" && exit 1",
     "build:webpack": "npx nest build --webpack --webpackPath webpack.config.js",
-    "prisma:repl": "prisma-repl",
-    "prisma:format": "prisma format",
+    "prisma:repl": "cross-env-shell ENV=%npm_config_env% prisma-repl",
+    "prisma:format": "cross-env-shell ENV=%npm_config_env% prisma format",
     "prisma:client:generate": "cross-env-shell ENV=%npm_config_env% prisma generate",
     "prisma:db:push": "cross-env-shell ENV=%npm_config_env% prisma db push",
     "prisma:migration:generate": "cross-env-shell ENV=%npm_config_env% prisma migrate dev --create-only",
     "prisma:migration:deploy": "cross-env-shell ENV=%npm_config_env% prisma migrate deploy",
     "prisma:migration:reset": "cross-env-shell ENV=%npm_config_env% prisma migrate reset",
-    "prisma:studio": "prisma studio"
+    "prisma:studio": "cross-env-shell ENV=%npm_config_env% prisma studio"
   },
   "repository": {
     "type": "git",
