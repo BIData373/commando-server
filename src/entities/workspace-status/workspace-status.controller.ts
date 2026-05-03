@@ -2,11 +2,11 @@ import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, Query 
 import { TransformPlainToInstance } from 'class-transformer';
 import { GetViewerWorkspaceIdFieldDto } from '../workspace/dto/request/get-workspace-id-field.dto';
 import { CreateWorkspaceStatusDto } from './dto/request/create-workspace-status.dto';
+import { GetManagerWorkspaceStatusIdDto, GetViewerWorkspaceStatusIdDto } from './dto/request/get-workspace-status-id.dto';
 import { UpdateWorkspaceStatusDto } from './dto/request/update-workspace-status.dto';
 import { WorkspaceStatusDto } from './dto/response/workspace-status.dto';
 import { WorkspaceStatusService } from './workspace-status.service';
 
-// FIX Guards
 @Controller('workspace-status')
 export class WorkspaceStatusController {
   constructor(private readonly workspaceStatusService: WorkspaceStatusService) { }
@@ -27,24 +27,23 @@ export class WorkspaceStatusController {
     return await this.workspaceStatusService.findInWorkspace(workspaceId);
   }
 
-  // FIX Use GetIdDto
   @Get(':id')
   @TransformPlainToInstance(WorkspaceStatusDto)
-  async findOne(@Param('id', ParseIntPipe) id: number) {
+  async findOne(
+    @Param() { id }: GetViewerWorkspaceStatusIdDto
+  ) {
     return await this.workspaceStatusService.findOne(id);
   }
 
-  // FIX Use GetIdDto
   @TransformPlainToInstance(WorkspaceStatusDto)
   @Patch(':id')
   async update(
-    @Param('id', ParseIntPipe) id: number,
+    @Param() { id }: GetManagerWorkspaceStatusIdDto,
     @Body() dto: UpdateWorkspaceStatusDto,
   ) {
     return await this.workspaceStatusService.update(id, dto);
   }
 
-  // FIX Use GetIdDto
   @Delete(':id')
   @TransformPlainToInstance(WorkspaceStatusDto)
   async remove(
