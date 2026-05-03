@@ -17,6 +17,10 @@ export class AssigneeService {
     });
   }
 
+  async findInWorkspace(workspaceId: number) {
+    return await this.prisma.assignee.findMany({ where: { workspaceId } });
+  }
+
   findAll() {
     return this.prisma.assignee.findMany({ where: { deletedAt: null } });
   }

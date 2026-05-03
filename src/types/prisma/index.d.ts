@@ -2262,6 +2262,7 @@ export namespace Prisma {
     permissions: number
     tasksHistory: number
     sources: number
+    assignees: number
   }
 
   export type WorkspaceCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -2271,6 +2272,7 @@ export namespace Prisma {
     permissions?: boolean | WorkspaceCountOutputTypeCountPermissionsArgs
     tasksHistory?: boolean | WorkspaceCountOutputTypeCountTasksHistoryArgs
     sources?: boolean | WorkspaceCountOutputTypeCountSourcesArgs
+    assignees?: boolean | WorkspaceCountOutputTypeCountAssigneesArgs
   }
 
   // Custom InputTypes
@@ -2326,6 +2328,13 @@ export namespace Prisma {
     where?: SourceWhereInput
   }
 
+  /**
+   * WorkspaceCountOutputType without action
+   */
+  export type WorkspaceCountOutputTypeCountAssigneesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: AssigneeWhereInput
+  }
+
 
   /**
    * Count Type WorkspaceStatusCountOutputType
@@ -2376,6 +2385,7 @@ export namespace Prisma {
 
   export type AssigneeAvgAggregateOutputType = {
     id: number | null
+    workspaceId: number | null
     createdBy: number | null
     updatedBy: number | null
     deletedBy: number | null
@@ -2383,6 +2393,7 @@ export namespace Prisma {
 
   export type AssigneeSumAggregateOutputType = {
     id: number | null
+    workspaceId: number | null
     createdBy: number | null
     updatedBy: number | null
     deletedBy: number | null
@@ -2392,6 +2403,8 @@ export namespace Prisma {
     id: number | null
     name: string | null
     color: string | null
+    icon: string | null
+    workspaceId: number | null
     createdAt: Date | null
     createdBy: number | null
     updatedAt: Date | null
@@ -2404,6 +2417,8 @@ export namespace Prisma {
     id: number | null
     name: string | null
     color: string | null
+    icon: string | null
+    workspaceId: number | null
     createdAt: Date | null
     createdBy: number | null
     updatedAt: Date | null
@@ -2416,6 +2431,8 @@ export namespace Prisma {
     id: number
     name: number
     color: number
+    icon: number
+    workspaceId: number
     createdAt: number
     createdBy: number
     updatedAt: number
@@ -2428,6 +2445,7 @@ export namespace Prisma {
 
   export type AssigneeAvgAggregateInputType = {
     id?: true
+    workspaceId?: true
     createdBy?: true
     updatedBy?: true
     deletedBy?: true
@@ -2435,6 +2453,7 @@ export namespace Prisma {
 
   export type AssigneeSumAggregateInputType = {
     id?: true
+    workspaceId?: true
     createdBy?: true
     updatedBy?: true
     deletedBy?: true
@@ -2444,6 +2463,8 @@ export namespace Prisma {
     id?: true
     name?: true
     color?: true
+    icon?: true
+    workspaceId?: true
     createdAt?: true
     createdBy?: true
     updatedAt?: true
@@ -2456,6 +2477,8 @@ export namespace Prisma {
     id?: true
     name?: true
     color?: true
+    icon?: true
+    workspaceId?: true
     createdAt?: true
     createdBy?: true
     updatedAt?: true
@@ -2468,6 +2491,8 @@ export namespace Prisma {
     id?: true
     name?: true
     color?: true
+    icon?: true
+    workspaceId?: true
     createdAt?: true
     createdBy?: true
     updatedAt?: true
@@ -2567,6 +2592,8 @@ export namespace Prisma {
     id: number
     name: string
     color: string
+    icon: string | null
+    workspaceId: number
     createdAt: Date
     createdBy: number
     updatedAt: Date
@@ -2598,12 +2625,15 @@ export namespace Prisma {
     id?: boolean
     name?: boolean
     color?: boolean
+    icon?: boolean
+    workspaceId?: boolean
     createdAt?: boolean
     createdBy?: boolean
     updatedAt?: boolean
     updatedBy?: boolean
     deletedAt?: boolean
     deletedBy?: boolean
+    workspace?: boolean | WorkspaceDefaultArgs<ExtArgs>
     users?: boolean | Assignee$usersArgs<ExtArgs>
     taskStatuses?: boolean | Assignee$taskStatusesArgs<ExtArgs>
     messages?: boolean | Assignee$messagesArgs<ExtArgs>
@@ -2614,30 +2644,38 @@ export namespace Prisma {
     id?: boolean
     name?: boolean
     color?: boolean
+    icon?: boolean
+    workspaceId?: boolean
     createdAt?: boolean
     createdBy?: boolean
     updatedAt?: boolean
     updatedBy?: boolean
     deletedAt?: boolean
     deletedBy?: boolean
+    workspace?: boolean | WorkspaceDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["assignee"]>
 
   export type AssigneeSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     name?: boolean
     color?: boolean
+    icon?: boolean
+    workspaceId?: boolean
     createdAt?: boolean
     createdBy?: boolean
     updatedAt?: boolean
     updatedBy?: boolean
     deletedAt?: boolean
     deletedBy?: boolean
+    workspace?: boolean | WorkspaceDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["assignee"]>
 
   export type AssigneeSelectScalar = {
     id?: boolean
     name?: boolean
     color?: boolean
+    icon?: boolean
+    workspaceId?: boolean
     createdAt?: boolean
     createdBy?: boolean
     updatedAt?: boolean
@@ -2646,19 +2684,25 @@ export namespace Prisma {
     deletedBy?: boolean
   }
 
-  export type AssigneeOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "color" | "createdAt" | "createdBy" | "updatedAt" | "updatedBy" | "deletedAt" | "deletedBy", ExtArgs["result"]["assignee"]>
+  export type AssigneeOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "color" | "icon" | "workspaceId" | "createdAt" | "createdBy" | "updatedAt" | "updatedBy" | "deletedAt" | "deletedBy", ExtArgs["result"]["assignee"]>
   export type AssigneeInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    workspace?: boolean | WorkspaceDefaultArgs<ExtArgs>
     users?: boolean | Assignee$usersArgs<ExtArgs>
     taskStatuses?: boolean | Assignee$taskStatusesArgs<ExtArgs>
     messages?: boolean | Assignee$messagesArgs<ExtArgs>
     _count?: boolean | AssigneeCountOutputTypeDefaultArgs<ExtArgs>
   }
-  export type AssigneeIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
-  export type AssigneeIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
+  export type AssigneeIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    workspace?: boolean | WorkspaceDefaultArgs<ExtArgs>
+  }
+  export type AssigneeIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    workspace?: boolean | WorkspaceDefaultArgs<ExtArgs>
+  }
 
   export type $AssigneePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "Assignee"
     objects: {
+      workspace: Prisma.$WorkspacePayload<ExtArgs>
       users: Prisma.$AssigneeUserPayload<ExtArgs>[]
       taskStatuses: Prisma.$AssigneeTaskStatusPayload<ExtArgs>[]
       messages: Prisma.$MessagePayload<ExtArgs>[]
@@ -2667,6 +2711,8 @@ export namespace Prisma {
       id: number
       name: string
       color: string
+      icon: string | null
+      workspaceId: number
       createdAt: Date
       createdBy: number
       updatedAt: Date
@@ -3067,6 +3113,7 @@ export namespace Prisma {
    */
   export interface Prisma__AssigneeClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
+    workspace<T extends WorkspaceDefaultArgs<ExtArgs> = {}>(args?: Subset<T, WorkspaceDefaultArgs<ExtArgs>>): Prisma__WorkspaceClient<$Result.GetResult<Prisma.$WorkspacePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     users<T extends Assignee$usersArgs<ExtArgs> = {}>(args?: Subset<T, Assignee$usersArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AssigneeUserPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     taskStatuses<T extends Assignee$taskStatusesArgs<ExtArgs> = {}>(args?: Subset<T, Assignee$taskStatusesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AssigneeTaskStatusPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     messages<T extends Assignee$messagesArgs<ExtArgs> = {}>(args?: Subset<T, Assignee$messagesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MessagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -3102,6 +3149,8 @@ export namespace Prisma {
     readonly id: FieldRef<"Assignee", 'Int'>
     readonly name: FieldRef<"Assignee", 'String'>
     readonly color: FieldRef<"Assignee", 'String'>
+    readonly icon: FieldRef<"Assignee", 'String'>
+    readonly workspaceId: FieldRef<"Assignee", 'Int'>
     readonly createdAt: FieldRef<"Assignee", 'DateTime'>
     readonly createdBy: FieldRef<"Assignee", 'Int'>
     readonly updatedAt: FieldRef<"Assignee", 'DateTime'>
@@ -3362,6 +3411,10 @@ export namespace Prisma {
      */
     data: AssigneeCreateManyInput | AssigneeCreateManyInput[]
     skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AssigneeIncludeCreateManyAndReturn<ExtArgs> | null
   }
 
   /**
@@ -3432,6 +3485,10 @@ export namespace Prisma {
      * Limit how many Assignees to update.
      */
     limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AssigneeIncludeUpdateManyAndReturn<ExtArgs> | null
   }
 
   /**
@@ -15572,6 +15629,7 @@ export namespace Prisma {
     permissions?: boolean | Workspace$permissionsArgs<ExtArgs>
     tasksHistory?: boolean | Workspace$tasksHistoryArgs<ExtArgs>
     sources?: boolean | Workspace$sourcesArgs<ExtArgs>
+    assignees?: boolean | Workspace$assigneesArgs<ExtArgs>
     _count?: boolean | WorkspaceCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["workspace"]>
 
@@ -15631,6 +15689,7 @@ export namespace Prisma {
     permissions?: boolean | Workspace$permissionsArgs<ExtArgs>
     tasksHistory?: boolean | Workspace$tasksHistoryArgs<ExtArgs>
     sources?: boolean | Workspace$sourcesArgs<ExtArgs>
+    assignees?: boolean | Workspace$assigneesArgs<ExtArgs>
     _count?: boolean | WorkspaceCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type WorkspaceIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -15650,6 +15709,7 @@ export namespace Prisma {
       permissions: Prisma.$PermissionPayload<ExtArgs>[]
       tasksHistory: Prisma.$TaskHistoryPayload<ExtArgs>[]
       sources: Prisma.$SourcePayload<ExtArgs>[]
+      assignees: Prisma.$AssigneePayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: number
@@ -16065,6 +16125,7 @@ export namespace Prisma {
     permissions<T extends Workspace$permissionsArgs<ExtArgs> = {}>(args?: Subset<T, Workspace$permissionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PermissionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     tasksHistory<T extends Workspace$tasksHistoryArgs<ExtArgs> = {}>(args?: Subset<T, Workspace$tasksHistoryArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TaskHistoryPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     sources<T extends Workspace$sourcesArgs<ExtArgs> = {}>(args?: Subset<T, Workspace$sourcesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SourcePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    assignees<T extends Workspace$assigneesArgs<ExtArgs> = {}>(args?: Subset<T, Workspace$assigneesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AssigneePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -16648,6 +16709,30 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: SourceScalarFieldEnum | SourceScalarFieldEnum[]
+  }
+
+  /**
+   * Workspace.assignees
+   */
+  export type Workspace$assigneesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Assignee
+     */
+    select?: AssigneeSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Assignee
+     */
+    omit?: AssigneeOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AssigneeInclude<ExtArgs> | null
+    where?: AssigneeWhereInput
+    orderBy?: AssigneeOrderByWithRelationInput | AssigneeOrderByWithRelationInput[]
+    cursor?: AssigneeWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: AssigneeScalarFieldEnum | AssigneeScalarFieldEnum[]
   }
 
   /**
@@ -17818,6 +17903,8 @@ export namespace Prisma {
     id: 'id',
     name: 'name',
     color: 'color',
+    icon: 'icon',
+    workspaceId: 'workspaceId',
     createdAt: 'createdAt',
     createdBy: 'createdBy',
     updatedAt: 'updatedAt',
@@ -18149,12 +18236,15 @@ export namespace Prisma {
     id?: IntFilter<"Assignee"> | number
     name?: StringFilter<"Assignee"> | string
     color?: StringFilter<"Assignee"> | string
+    icon?: StringNullableFilter<"Assignee"> | string | null
+    workspaceId?: IntFilter<"Assignee"> | number
     createdAt?: DateTimeFilter<"Assignee"> | Date | string
     createdBy?: IntFilter<"Assignee"> | number
     updatedAt?: DateTimeFilter<"Assignee"> | Date | string
     updatedBy?: IntFilter<"Assignee"> | number
     deletedAt?: DateTimeNullableFilter<"Assignee"> | Date | string | null
     deletedBy?: IntNullableFilter<"Assignee"> | number | null
+    workspace?: XOR<WorkspaceScalarRelationFilter, WorkspaceWhereInput>
     users?: AssigneeUserListRelationFilter
     taskStatuses?: AssigneeTaskStatusListRelationFilter
     messages?: MessageListRelationFilter
@@ -18164,12 +18254,15 @@ export namespace Prisma {
     id?: SortOrder
     name?: SortOrder
     color?: SortOrder
+    icon?: SortOrderInput | SortOrder
+    workspaceId?: SortOrder
     createdAt?: SortOrder
     createdBy?: SortOrder
     updatedAt?: SortOrder
     updatedBy?: SortOrder
     deletedAt?: SortOrderInput | SortOrder
     deletedBy?: SortOrderInput | SortOrder
+    workspace?: WorkspaceOrderByWithRelationInput
     users?: AssigneeUserOrderByRelationAggregateInput
     taskStatuses?: AssigneeTaskStatusOrderByRelationAggregateInput
     messages?: MessageOrderByRelationAggregateInput
@@ -18182,12 +18275,15 @@ export namespace Prisma {
     NOT?: AssigneeWhereInput | AssigneeWhereInput[]
     name?: StringFilter<"Assignee"> | string
     color?: StringFilter<"Assignee"> | string
+    icon?: StringNullableFilter<"Assignee"> | string | null
+    workspaceId?: IntFilter<"Assignee"> | number
     createdAt?: DateTimeFilter<"Assignee"> | Date | string
     createdBy?: IntFilter<"Assignee"> | number
     updatedAt?: DateTimeFilter<"Assignee"> | Date | string
     updatedBy?: IntFilter<"Assignee"> | number
     deletedAt?: DateTimeNullableFilter<"Assignee"> | Date | string | null
     deletedBy?: IntNullableFilter<"Assignee"> | number | null
+    workspace?: XOR<WorkspaceScalarRelationFilter, WorkspaceWhereInput>
     users?: AssigneeUserListRelationFilter
     taskStatuses?: AssigneeTaskStatusListRelationFilter
     messages?: MessageListRelationFilter
@@ -18197,6 +18293,8 @@ export namespace Prisma {
     id?: SortOrder
     name?: SortOrder
     color?: SortOrder
+    icon?: SortOrderInput | SortOrder
+    workspaceId?: SortOrder
     createdAt?: SortOrder
     createdBy?: SortOrder
     updatedAt?: SortOrder
@@ -18217,6 +18315,8 @@ export namespace Prisma {
     id?: IntWithAggregatesFilter<"Assignee"> | number
     name?: StringWithAggregatesFilter<"Assignee"> | string
     color?: StringWithAggregatesFilter<"Assignee"> | string
+    icon?: StringNullableWithAggregatesFilter<"Assignee"> | string | null
+    workspaceId?: IntWithAggregatesFilter<"Assignee"> | number
     createdAt?: DateTimeWithAggregatesFilter<"Assignee"> | Date | string
     createdBy?: IntWithAggregatesFilter<"Assignee"> | number
     updatedAt?: DateTimeWithAggregatesFilter<"Assignee"> | Date | string
@@ -18975,6 +19075,7 @@ export namespace Prisma {
     permissions?: PermissionListRelationFilter
     tasksHistory?: TaskHistoryListRelationFilter
     sources?: SourceListRelationFilter
+    assignees?: AssigneeListRelationFilter
   }
 
   export type WorkspaceOrderByWithRelationInput = {
@@ -18997,6 +19098,7 @@ export namespace Prisma {
     permissions?: PermissionOrderByRelationAggregateInput
     tasksHistory?: TaskHistoryOrderByRelationAggregateInput
     sources?: SourceOrderByRelationAggregateInput
+    assignees?: AssigneeOrderByRelationAggregateInput
   }
 
   export type WorkspaceWhereUniqueInput = Prisma.AtLeast<{
@@ -19022,6 +19124,7 @@ export namespace Prisma {
     permissions?: PermissionListRelationFilter
     tasksHistory?: TaskHistoryListRelationFilter
     sources?: SourceListRelationFilter
+    assignees?: AssigneeListRelationFilter
   }, "id">
 
   export type WorkspaceOrderByWithAggregationInput = {
@@ -19125,12 +19228,14 @@ export namespace Prisma {
   export type AssigneeCreateInput = {
     name: string
     color: string
+    icon?: string | null
     createdAt?: Date | string
     createdBy: number
     updatedAt?: Date | string
     updatedBy: number
     deletedAt?: Date | string | null
     deletedBy?: number | null
+    workspace: WorkspaceCreateNestedOneWithoutAssigneesInput
     users?: AssigneeUserCreateNestedManyWithoutAssigneeInput
     taskStatuses?: AssigneeTaskStatusCreateNestedManyWithoutAssigneeInput
     messages?: MessageCreateNestedManyWithoutAssigneeInput
@@ -19140,6 +19245,8 @@ export namespace Prisma {
     id?: number
     name: string
     color: string
+    icon?: string | null
+    workspaceId: number
     createdAt?: Date | string
     createdBy: number
     updatedAt?: Date | string
@@ -19154,12 +19261,14 @@ export namespace Prisma {
   export type AssigneeUpdateInput = {
     name?: StringFieldUpdateOperationsInput | string
     color?: StringFieldUpdateOperationsInput | string
+    icon?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdBy?: IntFieldUpdateOperationsInput | number
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedBy?: IntFieldUpdateOperationsInput | number
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedBy?: NullableIntFieldUpdateOperationsInput | number | null
+    workspace?: WorkspaceUpdateOneRequiredWithoutAssigneesNestedInput
     users?: AssigneeUserUpdateManyWithoutAssigneeNestedInput
     taskStatuses?: AssigneeTaskStatusUpdateManyWithoutAssigneeNestedInput
     messages?: MessageUpdateManyWithoutAssigneeNestedInput
@@ -19169,6 +19278,8 @@ export namespace Prisma {
     id?: IntFieldUpdateOperationsInput | number
     name?: StringFieldUpdateOperationsInput | string
     color?: StringFieldUpdateOperationsInput | string
+    icon?: NullableStringFieldUpdateOperationsInput | string | null
+    workspaceId?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdBy?: IntFieldUpdateOperationsInput | number
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -19184,6 +19295,8 @@ export namespace Prisma {
     id?: number
     name: string
     color: string
+    icon?: string | null
+    workspaceId: number
     createdAt?: Date | string
     createdBy: number
     updatedAt?: Date | string
@@ -19195,6 +19308,7 @@ export namespace Prisma {
   export type AssigneeUpdateManyMutationInput = {
     name?: StringFieldUpdateOperationsInput | string
     color?: StringFieldUpdateOperationsInput | string
+    icon?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdBy?: IntFieldUpdateOperationsInput | number
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -19207,6 +19321,8 @@ export namespace Prisma {
     id?: IntFieldUpdateOperationsInput | number
     name?: StringFieldUpdateOperationsInput | string
     color?: StringFieldUpdateOperationsInput | string
+    icon?: NullableStringFieldUpdateOperationsInput | string | null
+    workspaceId?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdBy?: IntFieldUpdateOperationsInput | number
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -19946,6 +20062,7 @@ export namespace Prisma {
     permissions?: PermissionCreateNestedManyWithoutWorkspaceInput
     tasksHistory?: TaskHistoryCreateNestedManyWithoutWorkspaceInput
     sources?: SourceCreateNestedManyWithoutWorkspaceInput
+    assignees?: AssigneeCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceUncheckedCreateInput = {
@@ -19967,6 +20084,7 @@ export namespace Prisma {
     permissions?: PermissionUncheckedCreateNestedManyWithoutWorkspaceInput
     tasksHistory?: TaskHistoryUncheckedCreateNestedManyWithoutWorkspaceInput
     sources?: SourceUncheckedCreateNestedManyWithoutWorkspaceInput
+    assignees?: AssigneeUncheckedCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceUpdateInput = {
@@ -19987,6 +20105,7 @@ export namespace Prisma {
     permissions?: PermissionUpdateManyWithoutWorkspaceNestedInput
     tasksHistory?: TaskHistoryUpdateManyWithoutWorkspaceNestedInput
     sources?: SourceUpdateManyWithoutWorkspaceNestedInput
+    assignees?: AssigneeUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type WorkspaceUncheckedUpdateInput = {
@@ -20008,6 +20127,7 @@ export namespace Prisma {
     permissions?: PermissionUncheckedUpdateManyWithoutWorkspaceNestedInput
     tasksHistory?: TaskHistoryUncheckedUpdateManyWithoutWorkspaceNestedInput
     sources?: SourceUncheckedUpdateManyWithoutWorkspaceNestedInput
+    assignees?: AssigneeUncheckedUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type WorkspaceCreateManyInput = {
@@ -20135,6 +20255,21 @@ export namespace Prisma {
     not?: NestedStringFilter<$PrismaModel> | string
   }
 
+  export type StringNullableFilter<$PrismaModel = never> = {
+    equals?: string | StringFieldRefInput<$PrismaModel> | null
+    in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    notIn?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    lt?: string | StringFieldRefInput<$PrismaModel>
+    lte?: string | StringFieldRefInput<$PrismaModel>
+    gt?: string | StringFieldRefInput<$PrismaModel>
+    gte?: string | StringFieldRefInput<$PrismaModel>
+    contains?: string | StringFieldRefInput<$PrismaModel>
+    startsWith?: string | StringFieldRefInput<$PrismaModel>
+    endsWith?: string | StringFieldRefInput<$PrismaModel>
+    mode?: QueryMode
+    not?: NestedStringNullableFilter<$PrismaModel> | string | null
+  }
+
   export type DateTimeFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel>
@@ -20166,6 +20301,11 @@ export namespace Prisma {
     gt?: number | IntFieldRefInput<$PrismaModel>
     gte?: number | IntFieldRefInput<$PrismaModel>
     not?: NestedIntNullableFilter<$PrismaModel> | number | null
+  }
+
+  export type WorkspaceScalarRelationFilter = {
+    is?: WorkspaceWhereInput
+    isNot?: WorkspaceWhereInput
   }
 
   export type AssigneeUserListRelationFilter = {
@@ -20207,6 +20347,8 @@ export namespace Prisma {
     id?: SortOrder
     name?: SortOrder
     color?: SortOrder
+    icon?: SortOrder
+    workspaceId?: SortOrder
     createdAt?: SortOrder
     createdBy?: SortOrder
     updatedAt?: SortOrder
@@ -20217,6 +20359,7 @@ export namespace Prisma {
 
   export type AssigneeAvgOrderByAggregateInput = {
     id?: SortOrder
+    workspaceId?: SortOrder
     createdBy?: SortOrder
     updatedBy?: SortOrder
     deletedBy?: SortOrder
@@ -20226,6 +20369,8 @@ export namespace Prisma {
     id?: SortOrder
     name?: SortOrder
     color?: SortOrder
+    icon?: SortOrder
+    workspaceId?: SortOrder
     createdAt?: SortOrder
     createdBy?: SortOrder
     updatedAt?: SortOrder
@@ -20238,6 +20383,8 @@ export namespace Prisma {
     id?: SortOrder
     name?: SortOrder
     color?: SortOrder
+    icon?: SortOrder
+    workspaceId?: SortOrder
     createdAt?: SortOrder
     createdBy?: SortOrder
     updatedAt?: SortOrder
@@ -20248,6 +20395,7 @@ export namespace Prisma {
 
   export type AssigneeSumOrderByAggregateInput = {
     id?: SortOrder
+    workspaceId?: SortOrder
     createdBy?: SortOrder
     updatedBy?: SortOrder
     deletedBy?: SortOrder
@@ -20285,6 +20433,24 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedStringFilter<$PrismaModel>
     _max?: NestedStringFilter<$PrismaModel>
+  }
+
+  export type StringNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: string | StringFieldRefInput<$PrismaModel> | null
+    in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    notIn?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    lt?: string | StringFieldRefInput<$PrismaModel>
+    lte?: string | StringFieldRefInput<$PrismaModel>
+    gt?: string | StringFieldRefInput<$PrismaModel>
+    gte?: string | StringFieldRefInput<$PrismaModel>
+    contains?: string | StringFieldRefInput<$PrismaModel>
+    startsWith?: string | StringFieldRefInput<$PrismaModel>
+    endsWith?: string | StringFieldRefInput<$PrismaModel>
+    mode?: QueryMode
+    not?: NestedStringNullableWithAggregatesFilter<$PrismaModel> | string | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedStringNullableFilter<$PrismaModel>
+    _max?: NestedStringNullableFilter<$PrismaModel>
   }
 
   export type DateTimeWithAggregatesFilter<$PrismaModel = never> = {
@@ -20480,11 +20646,6 @@ export namespace Prisma {
     not?: NestedEnumPermissionTypeFilter<$PrismaModel> | $Enums.PermissionType
   }
 
-  export type WorkspaceScalarRelationFilter = {
-    is?: WorkspaceWhereInput
-    isNot?: WorkspaceWhereInput
-  }
-
   export type PermissionUserIdWorkspaceIdCompoundUniqueInput = {
     userId: number
     workspaceId: number
@@ -20526,21 +20687,6 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumPermissionTypeFilter<$PrismaModel>
     _max?: NestedEnumPermissionTypeFilter<$PrismaModel>
-  }
-
-  export type StringNullableFilter<$PrismaModel = never> = {
-    equals?: string | StringFieldRefInput<$PrismaModel> | null
-    in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
-    notIn?: string[] | ListStringFieldRefInput<$PrismaModel> | null
-    lt?: string | StringFieldRefInput<$PrismaModel>
-    lte?: string | StringFieldRefInput<$PrismaModel>
-    gt?: string | StringFieldRefInput<$PrismaModel>
-    gte?: string | StringFieldRefInput<$PrismaModel>
-    contains?: string | StringFieldRefInput<$PrismaModel>
-    startsWith?: string | StringFieldRefInput<$PrismaModel>
-    endsWith?: string | StringFieldRefInput<$PrismaModel>
-    mode?: QueryMode
-    not?: NestedStringNullableFilter<$PrismaModel> | string | null
   }
 
   export type WorkspaceListRelationFilter = {
@@ -20601,24 +20747,6 @@ export namespace Prisma {
     createdBy?: SortOrder
     updatedBy?: SortOrder
     deletedBy?: SortOrder
-  }
-
-  export type StringNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: string | StringFieldRefInput<$PrismaModel> | null
-    in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
-    notIn?: string[] | ListStringFieldRefInput<$PrismaModel> | null
-    lt?: string | StringFieldRefInput<$PrismaModel>
-    lte?: string | StringFieldRefInput<$PrismaModel>
-    gt?: string | StringFieldRefInput<$PrismaModel>
-    gte?: string | StringFieldRefInput<$PrismaModel>
-    contains?: string | StringFieldRefInput<$PrismaModel>
-    startsWith?: string | StringFieldRefInput<$PrismaModel>
-    endsWith?: string | StringFieldRefInput<$PrismaModel>
-    mode?: QueryMode
-    not?: NestedStringNullableWithAggregatesFilter<$PrismaModel> | string | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedStringNullableFilter<$PrismaModel>
-    _max?: NestedStringNullableFilter<$PrismaModel>
   }
 
   export type TaskListRelationFilter = {
@@ -21006,7 +21134,17 @@ export namespace Prisma {
     none?: WorkspaceStatusWhereInput
   }
 
+  export type AssigneeListRelationFilter = {
+    every?: AssigneeWhereInput
+    some?: AssigneeWhereInput
+    none?: AssigneeWhereInput
+  }
+
   export type WorkspaceStatusOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type AssigneeOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -21105,6 +21243,12 @@ export namespace Prisma {
     workspaceId?: SortOrder
   }
 
+  export type WorkspaceCreateNestedOneWithoutAssigneesInput = {
+    create?: XOR<WorkspaceCreateWithoutAssigneesInput, WorkspaceUncheckedCreateWithoutAssigneesInput>
+    connectOrCreate?: WorkspaceCreateOrConnectWithoutAssigneesInput
+    connect?: WorkspaceWhereUniqueInput
+  }
+
   export type AssigneeUserCreateNestedManyWithoutAssigneeInput = {
     create?: XOR<AssigneeUserCreateWithoutAssigneeInput, AssigneeUserUncheckedCreateWithoutAssigneeInput> | AssigneeUserCreateWithoutAssigneeInput[] | AssigneeUserUncheckedCreateWithoutAssigneeInput[]
     connectOrCreate?: AssigneeUserCreateOrConnectWithoutAssigneeInput | AssigneeUserCreateOrConnectWithoutAssigneeInput[]
@@ -21151,6 +21295,10 @@ export namespace Prisma {
     set?: string
   }
 
+  export type NullableStringFieldUpdateOperationsInput = {
+    set?: string | null
+  }
+
   export type DateTimeFieldUpdateOperationsInput = {
     set?: Date | string
   }
@@ -21173,6 +21321,14 @@ export namespace Prisma {
     decrement?: number
     multiply?: number
     divide?: number
+  }
+
+  export type WorkspaceUpdateOneRequiredWithoutAssigneesNestedInput = {
+    create?: XOR<WorkspaceCreateWithoutAssigneesInput, WorkspaceUncheckedCreateWithoutAssigneesInput>
+    connectOrCreate?: WorkspaceCreateOrConnectWithoutAssigneesInput
+    upsert?: WorkspaceUpsertWithoutAssigneesInput
+    connect?: WorkspaceWhereUniqueInput
+    update?: XOR<XOR<WorkspaceUpdateToOneWithWhereWithoutAssigneesInput, WorkspaceUpdateWithoutAssigneesInput>, WorkspaceUncheckedUpdateWithoutAssigneesInput>
   }
 
   export type AssigneeUserUpdateManyWithoutAssigneeNestedInput = {
@@ -21401,10 +21557,6 @@ export namespace Prisma {
     connectOrCreate?: WorkspaceCreateOrConnectWithoutPikudInput | WorkspaceCreateOrConnectWithoutPikudInput[]
     createMany?: WorkspaceCreateManyPikudInputEnvelope
     connect?: WorkspaceWhereUniqueInput | WorkspaceWhereUniqueInput[]
-  }
-
-  export type NullableStringFieldUpdateOperationsInput = {
-    set?: string | null
   }
 
   export type WorkspaceUpdateManyWithoutPikudNestedInput = {
@@ -22035,6 +22187,13 @@ export namespace Prisma {
     connect?: SourceWhereUniqueInput | SourceWhereUniqueInput[]
   }
 
+  export type AssigneeCreateNestedManyWithoutWorkspaceInput = {
+    create?: XOR<AssigneeCreateWithoutWorkspaceInput, AssigneeUncheckedCreateWithoutWorkspaceInput> | AssigneeCreateWithoutWorkspaceInput[] | AssigneeUncheckedCreateWithoutWorkspaceInput[]
+    connectOrCreate?: AssigneeCreateOrConnectWithoutWorkspaceInput | AssigneeCreateOrConnectWithoutWorkspaceInput[]
+    createMany?: AssigneeCreateManyWorkspaceInputEnvelope
+    connect?: AssigneeWhereUniqueInput | AssigneeWhereUniqueInput[]
+  }
+
   export type TagUncheckedCreateNestedManyWithoutWorkspaceInput = {
     create?: XOR<TagCreateWithoutWorkspaceInput, TagUncheckedCreateWithoutWorkspaceInput> | TagCreateWithoutWorkspaceInput[] | TagUncheckedCreateWithoutWorkspaceInput[]
     connectOrCreate?: TagCreateOrConnectWithoutWorkspaceInput | TagCreateOrConnectWithoutWorkspaceInput[]
@@ -22075,6 +22234,13 @@ export namespace Prisma {
     connectOrCreate?: SourceCreateOrConnectWithoutWorkspaceInput | SourceCreateOrConnectWithoutWorkspaceInput[]
     createMany?: SourceCreateManyWorkspaceInputEnvelope
     connect?: SourceWhereUniqueInput | SourceWhereUniqueInput[]
+  }
+
+  export type AssigneeUncheckedCreateNestedManyWithoutWorkspaceInput = {
+    create?: XOR<AssigneeCreateWithoutWorkspaceInput, AssigneeUncheckedCreateWithoutWorkspaceInput> | AssigneeCreateWithoutWorkspaceInput[] | AssigneeUncheckedCreateWithoutWorkspaceInput[]
+    connectOrCreate?: AssigneeCreateOrConnectWithoutWorkspaceInput | AssigneeCreateOrConnectWithoutWorkspaceInput[]
+    createMany?: AssigneeCreateManyWorkspaceInputEnvelope
+    connect?: AssigneeWhereUniqueInput | AssigneeWhereUniqueInput[]
   }
 
   export type PikudUpdateOneRequiredWithoutWorkspacesNestedInput = {
@@ -22169,6 +22335,20 @@ export namespace Prisma {
     deleteMany?: SourceScalarWhereInput | SourceScalarWhereInput[]
   }
 
+  export type AssigneeUpdateManyWithoutWorkspaceNestedInput = {
+    create?: XOR<AssigneeCreateWithoutWorkspaceInput, AssigneeUncheckedCreateWithoutWorkspaceInput> | AssigneeCreateWithoutWorkspaceInput[] | AssigneeUncheckedCreateWithoutWorkspaceInput[]
+    connectOrCreate?: AssigneeCreateOrConnectWithoutWorkspaceInput | AssigneeCreateOrConnectWithoutWorkspaceInput[]
+    upsert?: AssigneeUpsertWithWhereUniqueWithoutWorkspaceInput | AssigneeUpsertWithWhereUniqueWithoutWorkspaceInput[]
+    createMany?: AssigneeCreateManyWorkspaceInputEnvelope
+    set?: AssigneeWhereUniqueInput | AssigneeWhereUniqueInput[]
+    disconnect?: AssigneeWhereUniqueInput | AssigneeWhereUniqueInput[]
+    delete?: AssigneeWhereUniqueInput | AssigneeWhereUniqueInput[]
+    connect?: AssigneeWhereUniqueInput | AssigneeWhereUniqueInput[]
+    update?: AssigneeUpdateWithWhereUniqueWithoutWorkspaceInput | AssigneeUpdateWithWhereUniqueWithoutWorkspaceInput[]
+    updateMany?: AssigneeUpdateManyWithWhereWithoutWorkspaceInput | AssigneeUpdateManyWithWhereWithoutWorkspaceInput[]
+    deleteMany?: AssigneeScalarWhereInput | AssigneeScalarWhereInput[]
+  }
+
   export type TagUncheckedUpdateManyWithoutWorkspaceNestedInput = {
     create?: XOR<TagCreateWithoutWorkspaceInput, TagUncheckedCreateWithoutWorkspaceInput> | TagCreateWithoutWorkspaceInput[] | TagUncheckedCreateWithoutWorkspaceInput[]
     connectOrCreate?: TagCreateOrConnectWithoutWorkspaceInput | TagCreateOrConnectWithoutWorkspaceInput[]
@@ -22253,6 +22433,20 @@ export namespace Prisma {
     deleteMany?: SourceScalarWhereInput | SourceScalarWhereInput[]
   }
 
+  export type AssigneeUncheckedUpdateManyWithoutWorkspaceNestedInput = {
+    create?: XOR<AssigneeCreateWithoutWorkspaceInput, AssigneeUncheckedCreateWithoutWorkspaceInput> | AssigneeCreateWithoutWorkspaceInput[] | AssigneeUncheckedCreateWithoutWorkspaceInput[]
+    connectOrCreate?: AssigneeCreateOrConnectWithoutWorkspaceInput | AssigneeCreateOrConnectWithoutWorkspaceInput[]
+    upsert?: AssigneeUpsertWithWhereUniqueWithoutWorkspaceInput | AssigneeUpsertWithWhereUniqueWithoutWorkspaceInput[]
+    createMany?: AssigneeCreateManyWorkspaceInputEnvelope
+    set?: AssigneeWhereUniqueInput | AssigneeWhereUniqueInput[]
+    disconnect?: AssigneeWhereUniqueInput | AssigneeWhereUniqueInput[]
+    delete?: AssigneeWhereUniqueInput | AssigneeWhereUniqueInput[]
+    connect?: AssigneeWhereUniqueInput | AssigneeWhereUniqueInput[]
+    update?: AssigneeUpdateWithWhereUniqueWithoutWorkspaceInput | AssigneeUpdateWithWhereUniqueWithoutWorkspaceInput[]
+    updateMany?: AssigneeUpdateManyWithWhereWithoutWorkspaceInput | AssigneeUpdateManyWithWhereWithoutWorkspaceInput[]
+    deleteMany?: AssigneeScalarWhereInput | AssigneeScalarWhereInput[]
+  }
+
   export type WorkspaceCreateNestedOneWithoutWorkspaceStatusesInput = {
     create?: XOR<WorkspaceCreateWithoutWorkspaceStatusesInput, WorkspaceUncheckedCreateWithoutWorkspaceStatusesInput>
     connectOrCreate?: WorkspaceCreateOrConnectWithoutWorkspaceStatusesInput
@@ -22334,6 +22528,20 @@ export namespace Prisma {
     not?: NestedStringFilter<$PrismaModel> | string
   }
 
+  export type NestedStringNullableFilter<$PrismaModel = never> = {
+    equals?: string | StringFieldRefInput<$PrismaModel> | null
+    in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    notIn?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    lt?: string | StringFieldRefInput<$PrismaModel>
+    lte?: string | StringFieldRefInput<$PrismaModel>
+    gt?: string | StringFieldRefInput<$PrismaModel>
+    gte?: string | StringFieldRefInput<$PrismaModel>
+    contains?: string | StringFieldRefInput<$PrismaModel>
+    startsWith?: string | StringFieldRefInput<$PrismaModel>
+    endsWith?: string | StringFieldRefInput<$PrismaModel>
+    not?: NestedStringNullableFilter<$PrismaModel> | string | null
+  }
+
   export type NestedDateTimeFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel>
@@ -22411,6 +22619,23 @@ export namespace Prisma {
     _max?: NestedStringFilter<$PrismaModel>
   }
 
+  export type NestedStringNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: string | StringFieldRefInput<$PrismaModel> | null
+    in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    notIn?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    lt?: string | StringFieldRefInput<$PrismaModel>
+    lte?: string | StringFieldRefInput<$PrismaModel>
+    gt?: string | StringFieldRefInput<$PrismaModel>
+    gte?: string | StringFieldRefInput<$PrismaModel>
+    contains?: string | StringFieldRefInput<$PrismaModel>
+    startsWith?: string | StringFieldRefInput<$PrismaModel>
+    endsWith?: string | StringFieldRefInput<$PrismaModel>
+    not?: NestedStringNullableWithAggregatesFilter<$PrismaModel> | string | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedStringNullableFilter<$PrismaModel>
+    _max?: NestedStringNullableFilter<$PrismaModel>
+  }
+
   export type NestedDateTimeWithAggregatesFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel>
@@ -22483,37 +22708,6 @@ export namespace Prisma {
     _max?: NestedEnumPermissionTypeFilter<$PrismaModel>
   }
 
-  export type NestedStringNullableFilter<$PrismaModel = never> = {
-    equals?: string | StringFieldRefInput<$PrismaModel> | null
-    in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
-    notIn?: string[] | ListStringFieldRefInput<$PrismaModel> | null
-    lt?: string | StringFieldRefInput<$PrismaModel>
-    lte?: string | StringFieldRefInput<$PrismaModel>
-    gt?: string | StringFieldRefInput<$PrismaModel>
-    gte?: string | StringFieldRefInput<$PrismaModel>
-    contains?: string | StringFieldRefInput<$PrismaModel>
-    startsWith?: string | StringFieldRefInput<$PrismaModel>
-    endsWith?: string | StringFieldRefInput<$PrismaModel>
-    not?: NestedStringNullableFilter<$PrismaModel> | string | null
-  }
-
-  export type NestedStringNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: string | StringFieldRefInput<$PrismaModel> | null
-    in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
-    notIn?: string[] | ListStringFieldRefInput<$PrismaModel> | null
-    lt?: string | StringFieldRefInput<$PrismaModel>
-    lte?: string | StringFieldRefInput<$PrismaModel>
-    gt?: string | StringFieldRefInput<$PrismaModel>
-    gte?: string | StringFieldRefInput<$PrismaModel>
-    contains?: string | StringFieldRefInput<$PrismaModel>
-    startsWith?: string | StringFieldRefInput<$PrismaModel>
-    endsWith?: string | StringFieldRefInput<$PrismaModel>
-    not?: NestedStringNullableWithAggregatesFilter<$PrismaModel> | string | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedStringNullableFilter<$PrismaModel>
-    _max?: NestedStringNullableFilter<$PrismaModel>
-  }
-
   export type NestedBoolFilter<$PrismaModel = never> = {
     equals?: boolean | BooleanFieldRefInput<$PrismaModel>
     not?: NestedBoolFilter<$PrismaModel> | boolean
@@ -22565,6 +22759,52 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumHistoryActionFilter<$PrismaModel>
     _max?: NestedEnumHistoryActionFilter<$PrismaModel>
+  }
+
+  export type WorkspaceCreateWithoutAssigneesInput = {
+    title: string
+    urlName: string
+    icon?: string | null
+    assigneeStatusEditable?: boolean
+    createdAt?: Date | string
+    createdBy: number
+    updatedAt?: Date | string
+    updatedBy: number
+    deletedAt?: Date | string | null
+    deletedBy?: number | null
+    pikud: PikudCreateNestedOneWithoutWorkspacesInput
+    tags?: TagCreateNestedManyWithoutWorkspaceInput
+    tasks?: TaskCreateNestedManyWithoutWorkspaceInput
+    workspaceStatuses?: WorkspaceStatusCreateNestedManyWithoutWorkspaceInput
+    permissions?: PermissionCreateNestedManyWithoutWorkspaceInput
+    tasksHistory?: TaskHistoryCreateNestedManyWithoutWorkspaceInput
+    sources?: SourceCreateNestedManyWithoutWorkspaceInput
+  }
+
+  export type WorkspaceUncheckedCreateWithoutAssigneesInput = {
+    id?: number
+    title: string
+    urlName: string
+    icon?: string | null
+    assigneeStatusEditable?: boolean
+    createdAt?: Date | string
+    createdBy: number
+    updatedAt?: Date | string
+    updatedBy: number
+    deletedAt?: Date | string | null
+    deletedBy?: number | null
+    pikudId: number
+    tags?: TagUncheckedCreateNestedManyWithoutWorkspaceInput
+    tasks?: TaskUncheckedCreateNestedManyWithoutWorkspaceInput
+    workspaceStatuses?: WorkspaceStatusUncheckedCreateNestedManyWithoutWorkspaceInput
+    permissions?: PermissionUncheckedCreateNestedManyWithoutWorkspaceInput
+    tasksHistory?: TaskHistoryUncheckedCreateNestedManyWithoutWorkspaceInput
+    sources?: SourceUncheckedCreateNestedManyWithoutWorkspaceInput
+  }
+
+  export type WorkspaceCreateOrConnectWithoutAssigneesInput = {
+    where: WorkspaceWhereUniqueInput
+    create: XOR<WorkspaceCreateWithoutAssigneesInput, WorkspaceUncheckedCreateWithoutAssigneesInput>
   }
 
   export type AssigneeUserCreateWithoutAssigneeInput = {
@@ -22636,6 +22876,58 @@ export namespace Prisma {
   export type MessageCreateManyAssigneeInputEnvelope = {
     data: MessageCreateManyAssigneeInput | MessageCreateManyAssigneeInput[]
     skipDuplicates?: boolean
+  }
+
+  export type WorkspaceUpsertWithoutAssigneesInput = {
+    update: XOR<WorkspaceUpdateWithoutAssigneesInput, WorkspaceUncheckedUpdateWithoutAssigneesInput>
+    create: XOR<WorkspaceCreateWithoutAssigneesInput, WorkspaceUncheckedCreateWithoutAssigneesInput>
+    where?: WorkspaceWhereInput
+  }
+
+  export type WorkspaceUpdateToOneWithWhereWithoutAssigneesInput = {
+    where?: WorkspaceWhereInput
+    data: XOR<WorkspaceUpdateWithoutAssigneesInput, WorkspaceUncheckedUpdateWithoutAssigneesInput>
+  }
+
+  export type WorkspaceUpdateWithoutAssigneesInput = {
+    title?: StringFieldUpdateOperationsInput | string
+    urlName?: StringFieldUpdateOperationsInput | string
+    icon?: NullableStringFieldUpdateOperationsInput | string | null
+    assigneeStatusEditable?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdBy?: IntFieldUpdateOperationsInput | number
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedBy?: IntFieldUpdateOperationsInput | number
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableIntFieldUpdateOperationsInput | number | null
+    pikud?: PikudUpdateOneRequiredWithoutWorkspacesNestedInput
+    tags?: TagUpdateManyWithoutWorkspaceNestedInput
+    tasks?: TaskUpdateManyWithoutWorkspaceNestedInput
+    workspaceStatuses?: WorkspaceStatusUpdateManyWithoutWorkspaceNestedInput
+    permissions?: PermissionUpdateManyWithoutWorkspaceNestedInput
+    tasksHistory?: TaskHistoryUpdateManyWithoutWorkspaceNestedInput
+    sources?: SourceUpdateManyWithoutWorkspaceNestedInput
+  }
+
+  export type WorkspaceUncheckedUpdateWithoutAssigneesInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    title?: StringFieldUpdateOperationsInput | string
+    urlName?: StringFieldUpdateOperationsInput | string
+    icon?: NullableStringFieldUpdateOperationsInput | string | null
+    assigneeStatusEditable?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdBy?: IntFieldUpdateOperationsInput | number
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedBy?: IntFieldUpdateOperationsInput | number
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableIntFieldUpdateOperationsInput | number | null
+    pikudId?: IntFieldUpdateOperationsInput | number
+    tags?: TagUncheckedUpdateManyWithoutWorkspaceNestedInput
+    tasks?: TaskUncheckedUpdateManyWithoutWorkspaceNestedInput
+    workspaceStatuses?: WorkspaceStatusUncheckedUpdateManyWithoutWorkspaceNestedInput
+    permissions?: PermissionUncheckedUpdateManyWithoutWorkspaceNestedInput
+    tasksHistory?: TaskHistoryUncheckedUpdateManyWithoutWorkspaceNestedInput
+    sources?: SourceUncheckedUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type AssigneeUserUpsertWithWhereUniqueWithoutAssigneeInput = {
@@ -22770,12 +23062,14 @@ export namespace Prisma {
   export type AssigneeCreateWithoutTaskStatusesInput = {
     name: string
     color: string
+    icon?: string | null
     createdAt?: Date | string
     createdBy: number
     updatedAt?: Date | string
     updatedBy: number
     deletedAt?: Date | string | null
     deletedBy?: number | null
+    workspace: WorkspaceCreateNestedOneWithoutAssigneesInput
     users?: AssigneeUserCreateNestedManyWithoutAssigneeInput
     messages?: MessageCreateNestedManyWithoutAssigneeInput
   }
@@ -22784,6 +23078,8 @@ export namespace Prisma {
     id?: number
     name: string
     color: string
+    icon?: string | null
+    workspaceId: number
     createdAt?: Date | string
     createdBy: number
     updatedAt?: Date | string
@@ -22887,12 +23183,14 @@ export namespace Prisma {
   export type AssigneeUpdateWithoutTaskStatusesInput = {
     name?: StringFieldUpdateOperationsInput | string
     color?: StringFieldUpdateOperationsInput | string
+    icon?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdBy?: IntFieldUpdateOperationsInput | number
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedBy?: IntFieldUpdateOperationsInput | number
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedBy?: NullableIntFieldUpdateOperationsInput | number | null
+    workspace?: WorkspaceUpdateOneRequiredWithoutAssigneesNestedInput
     users?: AssigneeUserUpdateManyWithoutAssigneeNestedInput
     messages?: MessageUpdateManyWithoutAssigneeNestedInput
   }
@@ -22901,6 +23199,8 @@ export namespace Prisma {
     id?: IntFieldUpdateOperationsInput | number
     name?: StringFieldUpdateOperationsInput | string
     color?: StringFieldUpdateOperationsInput | string
+    icon?: NullableStringFieldUpdateOperationsInput | string | null
+    workspaceId?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdBy?: IntFieldUpdateOperationsInput | number
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -22940,12 +23240,14 @@ export namespace Prisma {
   export type AssigneeCreateWithoutUsersInput = {
     name: string
     color: string
+    icon?: string | null
     createdAt?: Date | string
     createdBy: number
     updatedAt?: Date | string
     updatedBy: number
     deletedAt?: Date | string | null
     deletedBy?: number | null
+    workspace: WorkspaceCreateNestedOneWithoutAssigneesInput
     taskStatuses?: AssigneeTaskStatusCreateNestedManyWithoutAssigneeInput
     messages?: MessageCreateNestedManyWithoutAssigneeInput
   }
@@ -22954,6 +23256,8 @@ export namespace Prisma {
     id?: number
     name: string
     color: string
+    icon?: string | null
+    workspaceId: number
     createdAt?: Date | string
     createdBy: number
     updatedAt?: Date | string
@@ -23003,12 +23307,14 @@ export namespace Prisma {
   export type AssigneeUpdateWithoutUsersInput = {
     name?: StringFieldUpdateOperationsInput | string
     color?: StringFieldUpdateOperationsInput | string
+    icon?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdBy?: IntFieldUpdateOperationsInput | number
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedBy?: IntFieldUpdateOperationsInput | number
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedBy?: NullableIntFieldUpdateOperationsInput | number | null
+    workspace?: WorkspaceUpdateOneRequiredWithoutAssigneesNestedInput
     taskStatuses?: AssigneeTaskStatusUpdateManyWithoutAssigneeNestedInput
     messages?: MessageUpdateManyWithoutAssigneeNestedInput
   }
@@ -23017,6 +23323,8 @@ export namespace Prisma {
     id?: IntFieldUpdateOperationsInput | number
     name?: StringFieldUpdateOperationsInput | string
     color?: StringFieldUpdateOperationsInput | string
+    icon?: NullableStringFieldUpdateOperationsInput | string | null
+    workspaceId?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdBy?: IntFieldUpdateOperationsInput | number
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -23056,12 +23364,14 @@ export namespace Prisma {
   export type AssigneeCreateWithoutMessagesInput = {
     name: string
     color: string
+    icon?: string | null
     createdAt?: Date | string
     createdBy: number
     updatedAt?: Date | string
     updatedBy: number
     deletedAt?: Date | string | null
     deletedBy?: number | null
+    workspace: WorkspaceCreateNestedOneWithoutAssigneesInput
     users?: AssigneeUserCreateNestedManyWithoutAssigneeInput
     taskStatuses?: AssigneeTaskStatusCreateNestedManyWithoutAssigneeInput
   }
@@ -23070,6 +23380,8 @@ export namespace Prisma {
     id?: number
     name: string
     color: string
+    icon?: string | null
+    workspaceId: number
     createdAt?: Date | string
     createdBy: number
     updatedAt?: Date | string
@@ -23147,12 +23459,14 @@ export namespace Prisma {
   export type AssigneeUpdateWithoutMessagesInput = {
     name?: StringFieldUpdateOperationsInput | string
     color?: StringFieldUpdateOperationsInput | string
+    icon?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdBy?: IntFieldUpdateOperationsInput | number
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedBy?: IntFieldUpdateOperationsInput | number
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedBy?: NullableIntFieldUpdateOperationsInput | number | null
+    workspace?: WorkspaceUpdateOneRequiredWithoutAssigneesNestedInput
     users?: AssigneeUserUpdateManyWithoutAssigneeNestedInput
     taskStatuses?: AssigneeTaskStatusUpdateManyWithoutAssigneeNestedInput
   }
@@ -23161,6 +23475,8 @@ export namespace Prisma {
     id?: IntFieldUpdateOperationsInput | number
     name?: StringFieldUpdateOperationsInput | string
     color?: StringFieldUpdateOperationsInput | string
+    icon?: NullableStringFieldUpdateOperationsInput | string | null
+    workspaceId?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdBy?: IntFieldUpdateOperationsInput | number
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -23262,6 +23578,7 @@ export namespace Prisma {
     workspaceStatuses?: WorkspaceStatusCreateNestedManyWithoutWorkspaceInput
     tasksHistory?: TaskHistoryCreateNestedManyWithoutWorkspaceInput
     sources?: SourceCreateNestedManyWithoutWorkspaceInput
+    assignees?: AssigneeCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceUncheckedCreateWithoutPermissionsInput = {
@@ -23282,6 +23599,7 @@ export namespace Prisma {
     workspaceStatuses?: WorkspaceStatusUncheckedCreateNestedManyWithoutWorkspaceInput
     tasksHistory?: TaskHistoryUncheckedCreateNestedManyWithoutWorkspaceInput
     sources?: SourceUncheckedCreateNestedManyWithoutWorkspaceInput
+    assignees?: AssigneeUncheckedCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceCreateOrConnectWithoutPermissionsInput = {
@@ -23343,6 +23661,7 @@ export namespace Prisma {
     workspaceStatuses?: WorkspaceStatusUpdateManyWithoutWorkspaceNestedInput
     tasksHistory?: TaskHistoryUpdateManyWithoutWorkspaceNestedInput
     sources?: SourceUpdateManyWithoutWorkspaceNestedInput
+    assignees?: AssigneeUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type WorkspaceUncheckedUpdateWithoutPermissionsInput = {
@@ -23363,6 +23682,7 @@ export namespace Prisma {
     workspaceStatuses?: WorkspaceStatusUncheckedUpdateManyWithoutWorkspaceNestedInput
     tasksHistory?: TaskHistoryUncheckedUpdateManyWithoutWorkspaceNestedInput
     sources?: SourceUncheckedUpdateManyWithoutWorkspaceNestedInput
+    assignees?: AssigneeUncheckedUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type WorkspaceCreateWithoutPikudInput = {
@@ -23382,6 +23702,7 @@ export namespace Prisma {
     permissions?: PermissionCreateNestedManyWithoutWorkspaceInput
     tasksHistory?: TaskHistoryCreateNestedManyWithoutWorkspaceInput
     sources?: SourceCreateNestedManyWithoutWorkspaceInput
+    assignees?: AssigneeCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceUncheckedCreateWithoutPikudInput = {
@@ -23402,6 +23723,7 @@ export namespace Prisma {
     permissions?: PermissionUncheckedCreateNestedManyWithoutWorkspaceInput
     tasksHistory?: TaskHistoryUncheckedCreateNestedManyWithoutWorkspaceInput
     sources?: SourceUncheckedCreateNestedManyWithoutWorkspaceInput
+    assignees?: AssigneeUncheckedCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceCreateOrConnectWithoutPikudInput = {
@@ -23465,6 +23787,7 @@ export namespace Prisma {
     workspaceStatuses?: WorkspaceStatusCreateNestedManyWithoutWorkspaceInput
     permissions?: PermissionCreateNestedManyWithoutWorkspaceInput
     tasksHistory?: TaskHistoryCreateNestedManyWithoutWorkspaceInput
+    assignees?: AssigneeCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceUncheckedCreateWithoutSourcesInput = {
@@ -23485,6 +23808,7 @@ export namespace Prisma {
     workspaceStatuses?: WorkspaceStatusUncheckedCreateNestedManyWithoutWorkspaceInput
     permissions?: PermissionUncheckedCreateNestedManyWithoutWorkspaceInput
     tasksHistory?: TaskHistoryUncheckedCreateNestedManyWithoutWorkspaceInput
+    assignees?: AssigneeUncheckedCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceCreateOrConnectWithoutSourcesInput = {
@@ -23599,6 +23923,7 @@ export namespace Prisma {
     workspaceStatuses?: WorkspaceStatusUpdateManyWithoutWorkspaceNestedInput
     permissions?: PermissionUpdateManyWithoutWorkspaceNestedInput
     tasksHistory?: TaskHistoryUpdateManyWithoutWorkspaceNestedInput
+    assignees?: AssigneeUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type WorkspaceUncheckedUpdateWithoutSourcesInput = {
@@ -23619,6 +23944,7 @@ export namespace Prisma {
     workspaceStatuses?: WorkspaceStatusUncheckedUpdateManyWithoutWorkspaceNestedInput
     permissions?: PermissionUncheckedUpdateManyWithoutWorkspaceNestedInput
     tasksHistory?: TaskHistoryUncheckedUpdateManyWithoutWorkspaceNestedInput
+    assignees?: AssigneeUncheckedUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type TaskUpsertWithWhereUniqueWithoutSourceInput = {
@@ -23705,6 +24031,7 @@ export namespace Prisma {
     permissions?: PermissionCreateNestedManyWithoutWorkspaceInput
     tasksHistory?: TaskHistoryCreateNestedManyWithoutWorkspaceInput
     sources?: SourceCreateNestedManyWithoutWorkspaceInput
+    assignees?: AssigneeCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceUncheckedCreateWithoutTagsInput = {
@@ -23725,6 +24052,7 @@ export namespace Prisma {
     permissions?: PermissionUncheckedCreateNestedManyWithoutWorkspaceInput
     tasksHistory?: TaskHistoryUncheckedCreateNestedManyWithoutWorkspaceInput
     sources?: SourceUncheckedCreateNestedManyWithoutWorkspaceInput
+    assignees?: AssigneeUncheckedCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceCreateOrConnectWithoutTagsInput = {
@@ -23838,6 +24166,7 @@ export namespace Prisma {
     permissions?: PermissionUpdateManyWithoutWorkspaceNestedInput
     tasksHistory?: TaskHistoryUpdateManyWithoutWorkspaceNestedInput
     sources?: SourceUpdateManyWithoutWorkspaceNestedInput
+    assignees?: AssigneeUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type WorkspaceUncheckedUpdateWithoutTagsInput = {
@@ -23858,6 +24187,7 @@ export namespace Prisma {
     permissions?: PermissionUncheckedUpdateManyWithoutWorkspaceNestedInput
     tasksHistory?: TaskHistoryUncheckedUpdateManyWithoutWorkspaceNestedInput
     sources?: SourceUncheckedUpdateManyWithoutWorkspaceNestedInput
+    assignees?: AssigneeUncheckedUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type TaskUpsertWithWhereUniqueWithoutTagsInput = {
@@ -23924,6 +24254,7 @@ export namespace Prisma {
     permissions?: PermissionCreateNestedManyWithoutWorkspaceInput
     tasksHistory?: TaskHistoryCreateNestedManyWithoutWorkspaceInput
     sources?: SourceCreateNestedManyWithoutWorkspaceInput
+    assignees?: AssigneeCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceUncheckedCreateWithoutTasksInput = {
@@ -23944,6 +24275,7 @@ export namespace Prisma {
     permissions?: PermissionUncheckedCreateNestedManyWithoutWorkspaceInput
     tasksHistory?: TaskHistoryUncheckedCreateNestedManyWithoutWorkspaceInput
     sources?: SourceUncheckedCreateNestedManyWithoutWorkspaceInput
+    assignees?: AssigneeUncheckedCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceCreateOrConnectWithoutTasksInput = {
@@ -24117,6 +24449,7 @@ export namespace Prisma {
     permissions?: PermissionUpdateManyWithoutWorkspaceNestedInput
     tasksHistory?: TaskHistoryUpdateManyWithoutWorkspaceNestedInput
     sources?: SourceUpdateManyWithoutWorkspaceNestedInput
+    assignees?: AssigneeUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type WorkspaceUncheckedUpdateWithoutTasksInput = {
@@ -24137,6 +24470,7 @@ export namespace Prisma {
     permissions?: PermissionUncheckedUpdateManyWithoutWorkspaceNestedInput
     tasksHistory?: TaskHistoryUncheckedUpdateManyWithoutWorkspaceNestedInput
     sources?: SourceUncheckedUpdateManyWithoutWorkspaceNestedInput
+    assignees?: AssigneeUncheckedUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type SourceUpsertWithoutTasksInput = {
@@ -24318,6 +24652,7 @@ export namespace Prisma {
     workspaceStatuses?: WorkspaceStatusCreateNestedManyWithoutWorkspaceInput
     permissions?: PermissionCreateNestedManyWithoutWorkspaceInput
     sources?: SourceCreateNestedManyWithoutWorkspaceInput
+    assignees?: AssigneeCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceUncheckedCreateWithoutTasksHistoryInput = {
@@ -24338,6 +24673,7 @@ export namespace Prisma {
     workspaceStatuses?: WorkspaceStatusUncheckedCreateNestedManyWithoutWorkspaceInput
     permissions?: PermissionUncheckedCreateNestedManyWithoutWorkspaceInput
     sources?: SourceUncheckedCreateNestedManyWithoutWorkspaceInput
+    assignees?: AssigneeUncheckedCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceCreateOrConnectWithoutTasksHistoryInput = {
@@ -24447,6 +24783,7 @@ export namespace Prisma {
     workspaceStatuses?: WorkspaceStatusUpdateManyWithoutWorkspaceNestedInput
     permissions?: PermissionUpdateManyWithoutWorkspaceNestedInput
     sources?: SourceUpdateManyWithoutWorkspaceNestedInput
+    assignees?: AssigneeUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type WorkspaceUncheckedUpdateWithoutTasksHistoryInput = {
@@ -24467,6 +24804,7 @@ export namespace Prisma {
     workspaceStatuses?: WorkspaceStatusUncheckedUpdateManyWithoutWorkspaceNestedInput
     permissions?: PermissionUncheckedUpdateManyWithoutWorkspaceNestedInput
     sources?: SourceUncheckedUpdateManyWithoutWorkspaceNestedInput
+    assignees?: AssigneeUncheckedUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type UserUpsertWithoutHistoryInput = {
@@ -24840,6 +25178,47 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type AssigneeCreateWithoutWorkspaceInput = {
+    name: string
+    color: string
+    icon?: string | null
+    createdAt?: Date | string
+    createdBy: number
+    updatedAt?: Date | string
+    updatedBy: number
+    deletedAt?: Date | string | null
+    deletedBy?: number | null
+    users?: AssigneeUserCreateNestedManyWithoutAssigneeInput
+    taskStatuses?: AssigneeTaskStatusCreateNestedManyWithoutAssigneeInput
+    messages?: MessageCreateNestedManyWithoutAssigneeInput
+  }
+
+  export type AssigneeUncheckedCreateWithoutWorkspaceInput = {
+    id?: number
+    name: string
+    color: string
+    icon?: string | null
+    createdAt?: Date | string
+    createdBy: number
+    updatedAt?: Date | string
+    updatedBy: number
+    deletedAt?: Date | string | null
+    deletedBy?: number | null
+    users?: AssigneeUserUncheckedCreateNestedManyWithoutAssigneeInput
+    taskStatuses?: AssigneeTaskStatusUncheckedCreateNestedManyWithoutAssigneeInput
+    messages?: MessageUncheckedCreateNestedManyWithoutAssigneeInput
+  }
+
+  export type AssigneeCreateOrConnectWithoutWorkspaceInput = {
+    where: AssigneeWhereUniqueInput
+    create: XOR<AssigneeCreateWithoutWorkspaceInput, AssigneeUncheckedCreateWithoutWorkspaceInput>
+  }
+
+  export type AssigneeCreateManyWorkspaceInputEnvelope = {
+    data: AssigneeCreateManyWorkspaceInput | AssigneeCreateManyWorkspaceInput[]
+    skipDuplicates?: boolean
+  }
+
   export type PikudUpsertWithoutWorkspacesInput = {
     update: XOR<PikudUpdateWithoutWorkspacesInput, PikudUncheckedUpdateWithoutWorkspacesInput>
     create: XOR<PikudCreateWithoutWorkspacesInput, PikudUncheckedCreateWithoutWorkspacesInput>
@@ -24981,6 +25360,39 @@ export namespace Prisma {
     data: XOR<SourceUpdateManyMutationInput, SourceUncheckedUpdateManyWithoutWorkspaceInput>
   }
 
+  export type AssigneeUpsertWithWhereUniqueWithoutWorkspaceInput = {
+    where: AssigneeWhereUniqueInput
+    update: XOR<AssigneeUpdateWithoutWorkspaceInput, AssigneeUncheckedUpdateWithoutWorkspaceInput>
+    create: XOR<AssigneeCreateWithoutWorkspaceInput, AssigneeUncheckedCreateWithoutWorkspaceInput>
+  }
+
+  export type AssigneeUpdateWithWhereUniqueWithoutWorkspaceInput = {
+    where: AssigneeWhereUniqueInput
+    data: XOR<AssigneeUpdateWithoutWorkspaceInput, AssigneeUncheckedUpdateWithoutWorkspaceInput>
+  }
+
+  export type AssigneeUpdateManyWithWhereWithoutWorkspaceInput = {
+    where: AssigneeScalarWhereInput
+    data: XOR<AssigneeUpdateManyMutationInput, AssigneeUncheckedUpdateManyWithoutWorkspaceInput>
+  }
+
+  export type AssigneeScalarWhereInput = {
+    AND?: AssigneeScalarWhereInput | AssigneeScalarWhereInput[]
+    OR?: AssigneeScalarWhereInput[]
+    NOT?: AssigneeScalarWhereInput | AssigneeScalarWhereInput[]
+    id?: IntFilter<"Assignee"> | number
+    name?: StringFilter<"Assignee"> | string
+    color?: StringFilter<"Assignee"> | string
+    icon?: StringNullableFilter<"Assignee"> | string | null
+    workspaceId?: IntFilter<"Assignee"> | number
+    createdAt?: DateTimeFilter<"Assignee"> | Date | string
+    createdBy?: IntFilter<"Assignee"> | number
+    updatedAt?: DateTimeFilter<"Assignee"> | Date | string
+    updatedBy?: IntFilter<"Assignee"> | number
+    deletedAt?: DateTimeNullableFilter<"Assignee"> | Date | string | null
+    deletedBy?: IntNullableFilter<"Assignee"> | number | null
+  }
+
   export type WorkspaceCreateWithoutWorkspaceStatusesInput = {
     title: string
     urlName: string
@@ -24998,6 +25410,7 @@ export namespace Prisma {
     permissions?: PermissionCreateNestedManyWithoutWorkspaceInput
     tasksHistory?: TaskHistoryCreateNestedManyWithoutWorkspaceInput
     sources?: SourceCreateNestedManyWithoutWorkspaceInput
+    assignees?: AssigneeCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceUncheckedCreateWithoutWorkspaceStatusesInput = {
@@ -25018,6 +25431,7 @@ export namespace Prisma {
     permissions?: PermissionUncheckedCreateNestedManyWithoutWorkspaceInput
     tasksHistory?: TaskHistoryUncheckedCreateNestedManyWithoutWorkspaceInput
     sources?: SourceUncheckedCreateNestedManyWithoutWorkspaceInput
+    assignees?: AssigneeUncheckedCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceCreateOrConnectWithoutWorkspaceStatusesInput = {
@@ -25073,6 +25487,7 @@ export namespace Prisma {
     permissions?: PermissionUpdateManyWithoutWorkspaceNestedInput
     tasksHistory?: TaskHistoryUpdateManyWithoutWorkspaceNestedInput
     sources?: SourceUpdateManyWithoutWorkspaceNestedInput
+    assignees?: AssigneeUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type WorkspaceUncheckedUpdateWithoutWorkspaceStatusesInput = {
@@ -25093,6 +25508,7 @@ export namespace Prisma {
     permissions?: PermissionUncheckedUpdateManyWithoutWorkspaceNestedInput
     tasksHistory?: TaskHistoryUncheckedUpdateManyWithoutWorkspaceNestedInput
     sources?: SourceUncheckedUpdateManyWithoutWorkspaceNestedInput
+    assignees?: AssigneeUncheckedUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type AssigneeTaskStatusUpsertWithWhereUniqueWithoutStatusInput = {
@@ -25225,6 +25641,7 @@ export namespace Prisma {
     permissions?: PermissionUpdateManyWithoutWorkspaceNestedInput
     tasksHistory?: TaskHistoryUpdateManyWithoutWorkspaceNestedInput
     sources?: SourceUpdateManyWithoutWorkspaceNestedInput
+    assignees?: AssigneeUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type WorkspaceUncheckedUpdateWithoutPikudInput = {
@@ -25245,6 +25662,7 @@ export namespace Prisma {
     permissions?: PermissionUncheckedUpdateManyWithoutWorkspaceNestedInput
     tasksHistory?: TaskHistoryUncheckedUpdateManyWithoutWorkspaceNestedInput
     sources?: SourceUncheckedUpdateManyWithoutWorkspaceNestedInput
+    assignees?: AssigneeUncheckedUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type WorkspaceUncheckedUpdateManyWithoutPikudInput = {
@@ -25742,6 +26160,19 @@ export namespace Prisma {
     deletedBy?: number | null
   }
 
+  export type AssigneeCreateManyWorkspaceInput = {
+    id?: number
+    name: string
+    color: string
+    icon?: string | null
+    createdAt?: Date | string
+    createdBy: number
+    updatedAt?: Date | string
+    updatedBy: number
+    deletedAt?: Date | string | null
+    deletedBy?: number | null
+  }
+
   export type TagUpdateWithoutWorkspaceInput = {
     name?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -25927,6 +26358,50 @@ export namespace Prisma {
   export type SourceUncheckedUpdateManyWithoutWorkspaceInput = {
     id?: IntFieldUpdateOperationsInput | number
     name?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdBy?: IntFieldUpdateOperationsInput | number
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedBy?: IntFieldUpdateOperationsInput | number
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableIntFieldUpdateOperationsInput | number | null
+  }
+
+  export type AssigneeUpdateWithoutWorkspaceInput = {
+    name?: StringFieldUpdateOperationsInput | string
+    color?: StringFieldUpdateOperationsInput | string
+    icon?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdBy?: IntFieldUpdateOperationsInput | number
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedBy?: IntFieldUpdateOperationsInput | number
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableIntFieldUpdateOperationsInput | number | null
+    users?: AssigneeUserUpdateManyWithoutAssigneeNestedInput
+    taskStatuses?: AssigneeTaskStatusUpdateManyWithoutAssigneeNestedInput
+    messages?: MessageUpdateManyWithoutAssigneeNestedInput
+  }
+
+  export type AssigneeUncheckedUpdateWithoutWorkspaceInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    name?: StringFieldUpdateOperationsInput | string
+    color?: StringFieldUpdateOperationsInput | string
+    icon?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdBy?: IntFieldUpdateOperationsInput | number
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedBy?: IntFieldUpdateOperationsInput | number
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableIntFieldUpdateOperationsInput | number | null
+    users?: AssigneeUserUncheckedUpdateManyWithoutAssigneeNestedInput
+    taskStatuses?: AssigneeTaskStatusUncheckedUpdateManyWithoutAssigneeNestedInput
+    messages?: MessageUncheckedUpdateManyWithoutAssigneeNestedInput
+  }
+
+  export type AssigneeUncheckedUpdateManyWithoutWorkspaceInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    name?: StringFieldUpdateOperationsInput | string
+    color?: StringFieldUpdateOperationsInput | string
+    icon?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdBy?: IntFieldUpdateOperationsInput | number
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string

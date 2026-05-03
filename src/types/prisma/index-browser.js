@@ -124,6 +124,8 @@ exports.Prisma.AssigneeScalarFieldEnum = {
   id: 'id',
   name: 'name',
   color: 'color',
+  icon: 'icon',
+  workspaceId: 'workspaceId',
   createdAt: 'createdAt',
   createdBy: 'createdBy',
   updatedAt: 'updatedAt',
