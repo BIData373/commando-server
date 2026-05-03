@@ -1,12 +1,11 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Req } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req } from '@nestjs/common';
 import { Request } from 'express';
+import { GetViewerWorkspaceIdFieldDto } from '../workspace/dto/request/get-workspace-id-field.dto';
 import { CreateSourceDto } from './dto/request/create-source.dto';
-import { GetSourceIdDto } from './dto/request/get-source-id.dto';
+import { GetManagerSourceIdDto, GetViewerSourceIdDto } from './dto/request/get-source-id.dto';
 import { UpdateSourceDto } from './dto/request/update-source.dto';
 import { SourceService } from './source.service';
 
-// FIX Add workspaceId?
-// FIX Guards
 @Controller('source')
 export class SourceController {
   constructor(private readonly sourceService: SourceService) { }
@@ -20,13 +19,15 @@ export class SourceController {
   }
 
   @Get()
-  async findAll() {
-    return await this.sourceService.findAll();
+  async findAll(
+    @Query() { workspaceId }: GetViewerWorkspaceIdFieldDto
+  ) {
+    return await this.sourceService.findInWorkspace(workspaceId);
   }
 
   @Get(':id')
   async findOne(
-    @Param() { id }: GetSourceIdDto
+    @Param() { id }: GetViewerSourceIdDto
   ) {
     return await this.sourceService.findOne(id);
   }
@@ -34,8 +35,8 @@ export class SourceController {
   @Patch(':id')
   async update(
     @Req() { user }: Request,
-    @Param() { id }: GetSourceIdDto,
-    @Body() dto: UpdateSourceDto,
+    @Param() { id }: GetManagerSourceIdDto,
+    @Body() dto: UpdateSourceDto
   ) {
     return await this.sourceService.update(id, dto, user.id);
   }
@@ -43,7 +44,7 @@ export class SourceController {
   @Delete(':id')
   async remove(
     @Req() { user }: Request,
-    @Param() { id }: GetSourceIdDto
+    @Param() { id }: GetManagerSourceIdDto
   ) {
     return await this.sourceService.remove(id, user.id);
   }

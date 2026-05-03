@@ -177,6 +177,7 @@ exports.Prisma.PikudScalarFieldEnum = {
 exports.Prisma.SourceScalarFieldEnum = {
   id: 'id',
   name: 'name',
+  workspaceId: 'workspaceId',
   createdAt: 'createdAt',
   createdBy: 'createdBy',
   updatedAt: 'updatedAt',

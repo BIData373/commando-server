@@ -2261,6 +2261,7 @@ export namespace Prisma {
     workspaceStatuses: number
     permissions: number
     tasksHistory: number
+    sources: number
   }
 
   export type WorkspaceCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -2269,6 +2270,7 @@ export namespace Prisma {
     workspaceStatuses?: boolean | WorkspaceCountOutputTypeCountWorkspaceStatusesArgs
     permissions?: boolean | WorkspaceCountOutputTypeCountPermissionsArgs
     tasksHistory?: boolean | WorkspaceCountOutputTypeCountTasksHistoryArgs
+    sources?: boolean | WorkspaceCountOutputTypeCountSourcesArgs
   }
 
   // Custom InputTypes
@@ -2315,6 +2317,13 @@ export namespace Prisma {
    */
   export type WorkspaceCountOutputTypeCountTasksHistoryArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: TaskHistoryWhereInput
+  }
+
+  /**
+   * WorkspaceCountOutputType without action
+   */
+  export type WorkspaceCountOutputTypeCountSourcesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: SourceWhereInput
   }
 
 
@@ -9207,6 +9216,7 @@ export namespace Prisma {
 
   export type SourceAvgAggregateOutputType = {
     id: number | null
+    workspaceId: number | null
     createdBy: number | null
     updatedBy: number | null
     deletedBy: number | null
@@ -9214,6 +9224,7 @@ export namespace Prisma {
 
   export type SourceSumAggregateOutputType = {
     id: number | null
+    workspaceId: number | null
     createdBy: number | null
     updatedBy: number | null
     deletedBy: number | null
@@ -9222,6 +9233,7 @@ export namespace Prisma {
   export type SourceMinAggregateOutputType = {
     id: number | null
     name: string | null
+    workspaceId: number | null
     createdAt: Date | null
     createdBy: number | null
     updatedAt: Date | null
@@ -9233,6 +9245,7 @@ export namespace Prisma {
   export type SourceMaxAggregateOutputType = {
     id: number | null
     name: string | null
+    workspaceId: number | null
     createdAt: Date | null
     createdBy: number | null
     updatedAt: Date | null
@@ -9244,6 +9257,7 @@ export namespace Prisma {
   export type SourceCountAggregateOutputType = {
     id: number
     name: number
+    workspaceId: number
     createdAt: number
     createdBy: number
     updatedAt: number
@@ -9256,6 +9270,7 @@ export namespace Prisma {
 
   export type SourceAvgAggregateInputType = {
     id?: true
+    workspaceId?: true
     createdBy?: true
     updatedBy?: true
     deletedBy?: true
@@ -9263,6 +9278,7 @@ export namespace Prisma {
 
   export type SourceSumAggregateInputType = {
     id?: true
+    workspaceId?: true
     createdBy?: true
     updatedBy?: true
     deletedBy?: true
@@ -9271,6 +9287,7 @@ export namespace Prisma {
   export type SourceMinAggregateInputType = {
     id?: true
     name?: true
+    workspaceId?: true
     createdAt?: true
     createdBy?: true
     updatedAt?: true
@@ -9282,6 +9299,7 @@ export namespace Prisma {
   export type SourceMaxAggregateInputType = {
     id?: true
     name?: true
+    workspaceId?: true
     createdAt?: true
     createdBy?: true
     updatedAt?: true
@@ -9293,6 +9311,7 @@ export namespace Prisma {
   export type SourceCountAggregateInputType = {
     id?: true
     name?: true
+    workspaceId?: true
     createdAt?: true
     createdBy?: true
     updatedAt?: true
@@ -9391,6 +9410,7 @@ export namespace Prisma {
   export type SourceGroupByOutputType = {
     id: number
     name: string
+    workspaceId: number
     createdAt: Date
     createdBy: number
     updatedAt: Date
@@ -9421,12 +9441,14 @@ export namespace Prisma {
   export type SourceSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     name?: boolean
+    workspaceId?: boolean
     createdAt?: boolean
     createdBy?: boolean
     updatedAt?: boolean
     updatedBy?: boolean
     deletedAt?: boolean
     deletedBy?: boolean
+    workspace?: boolean | WorkspaceDefaultArgs<ExtArgs>
     tasks?: boolean | Source$tasksArgs<ExtArgs>
     tags?: boolean | Source$tagsArgs<ExtArgs>
     _count?: boolean | SourceCountOutputTypeDefaultArgs<ExtArgs>
@@ -9435,28 +9457,33 @@ export namespace Prisma {
   export type SourceSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     name?: boolean
+    workspaceId?: boolean
     createdAt?: boolean
     createdBy?: boolean
     updatedAt?: boolean
     updatedBy?: boolean
     deletedAt?: boolean
     deletedBy?: boolean
+    workspace?: boolean | WorkspaceDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["source"]>
 
   export type SourceSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     name?: boolean
+    workspaceId?: boolean
     createdAt?: boolean
     createdBy?: boolean
     updatedAt?: boolean
     updatedBy?: boolean
     deletedAt?: boolean
     deletedBy?: boolean
+    workspace?: boolean | WorkspaceDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["source"]>
 
   export type SourceSelectScalar = {
     id?: boolean
     name?: boolean
+    workspaceId?: boolean
     createdAt?: boolean
     createdBy?: boolean
     updatedAt?: boolean
@@ -9465,24 +9492,31 @@ export namespace Prisma {
     deletedBy?: boolean
   }
 
-  export type SourceOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "createdAt" | "createdBy" | "updatedAt" | "updatedBy" | "deletedAt" | "deletedBy", ExtArgs["result"]["source"]>
+  export type SourceOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "workspaceId" | "createdAt" | "createdBy" | "updatedAt" | "updatedBy" | "deletedAt" | "deletedBy", ExtArgs["result"]["source"]>
   export type SourceInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    workspace?: boolean | WorkspaceDefaultArgs<ExtArgs>
     tasks?: boolean | Source$tasksArgs<ExtArgs>
     tags?: boolean | Source$tagsArgs<ExtArgs>
     _count?: boolean | SourceCountOutputTypeDefaultArgs<ExtArgs>
   }
-  export type SourceIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
-  export type SourceIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
+  export type SourceIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    workspace?: boolean | WorkspaceDefaultArgs<ExtArgs>
+  }
+  export type SourceIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    workspace?: boolean | WorkspaceDefaultArgs<ExtArgs>
+  }
 
   export type $SourcePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "Source"
     objects: {
+      workspace: Prisma.$WorkspacePayload<ExtArgs>
       tasks: Prisma.$TaskPayload<ExtArgs>[]
       tags: Prisma.$TagPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: number
       name: string
+      workspaceId: number
       createdAt: Date
       createdBy: number
       updatedAt: Date
@@ -9883,6 +9917,7 @@ export namespace Prisma {
    */
   export interface Prisma__SourceClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
+    workspace<T extends WorkspaceDefaultArgs<ExtArgs> = {}>(args?: Subset<T, WorkspaceDefaultArgs<ExtArgs>>): Prisma__WorkspaceClient<$Result.GetResult<Prisma.$WorkspacePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     tasks<T extends Source$tasksArgs<ExtArgs> = {}>(args?: Subset<T, Source$tasksArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TaskPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     tags<T extends Source$tagsArgs<ExtArgs> = {}>(args?: Subset<T, Source$tagsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TagPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
@@ -9916,6 +9951,7 @@ export namespace Prisma {
   interface SourceFieldRefs {
     readonly id: FieldRef<"Source", 'Int'>
     readonly name: FieldRef<"Source", 'String'>
+    readonly workspaceId: FieldRef<"Source", 'Int'>
     readonly createdAt: FieldRef<"Source", 'DateTime'>
     readonly createdBy: FieldRef<"Source", 'Int'>
     readonly updatedAt: FieldRef<"Source", 'DateTime'>
@@ -10176,6 +10212,10 @@ export namespace Prisma {
      */
     data: SourceCreateManyInput | SourceCreateManyInput[]
     skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SourceIncludeCreateManyAndReturn<ExtArgs> | null
   }
 
   /**
@@ -10246,6 +10286,10 @@ export namespace Prisma {
      * Limit how many Sources to update.
      */
     limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SourceIncludeUpdateManyAndReturn<ExtArgs> | null
   }
 
   /**
@@ -15527,6 +15571,7 @@ export namespace Prisma {
     workspaceStatuses?: boolean | Workspace$workspaceStatusesArgs<ExtArgs>
     permissions?: boolean | Workspace$permissionsArgs<ExtArgs>
     tasksHistory?: boolean | Workspace$tasksHistoryArgs<ExtArgs>
+    sources?: boolean | Workspace$sourcesArgs<ExtArgs>
     _count?: boolean | WorkspaceCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["workspace"]>
 
@@ -15585,6 +15630,7 @@ export namespace Prisma {
     workspaceStatuses?: boolean | Workspace$workspaceStatusesArgs<ExtArgs>
     permissions?: boolean | Workspace$permissionsArgs<ExtArgs>
     tasksHistory?: boolean | Workspace$tasksHistoryArgs<ExtArgs>
+    sources?: boolean | Workspace$sourcesArgs<ExtArgs>
     _count?: boolean | WorkspaceCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type WorkspaceIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -15603,6 +15649,7 @@ export namespace Prisma {
       workspaceStatuses: Prisma.$WorkspaceStatusPayload<ExtArgs>[]
       permissions: Prisma.$PermissionPayload<ExtArgs>[]
       tasksHistory: Prisma.$TaskHistoryPayload<ExtArgs>[]
+      sources: Prisma.$SourcePayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: number
@@ -16017,6 +16064,7 @@ export namespace Prisma {
     workspaceStatuses<T extends Workspace$workspaceStatusesArgs<ExtArgs> = {}>(args?: Subset<T, Workspace$workspaceStatusesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$WorkspaceStatusPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     permissions<T extends Workspace$permissionsArgs<ExtArgs> = {}>(args?: Subset<T, Workspace$permissionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PermissionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     tasksHistory<T extends Workspace$tasksHistoryArgs<ExtArgs> = {}>(args?: Subset<T, Workspace$tasksHistoryArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TaskHistoryPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    sources<T extends Workspace$sourcesArgs<ExtArgs> = {}>(args?: Subset<T, Workspace$sourcesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SourcePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -16576,6 +16624,30 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: TaskHistoryScalarFieldEnum | TaskHistoryScalarFieldEnum[]
+  }
+
+  /**
+   * Workspace.sources
+   */
+  export type Workspace$sourcesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Source
+     */
+    select?: SourceSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Source
+     */
+    omit?: SourceOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SourceInclude<ExtArgs> | null
+    where?: SourceWhereInput
+    orderBy?: SourceOrderByWithRelationInput | SourceOrderByWithRelationInput[]
+    cursor?: SourceWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: SourceScalarFieldEnum | SourceScalarFieldEnum[]
   }
 
   /**
@@ -17817,6 +17889,7 @@ export namespace Prisma {
   export const SourceScalarFieldEnum: {
     id: 'id',
     name: 'name',
+    workspaceId: 'workspaceId',
     createdAt: 'createdAt',
     createdBy: 'createdBy',
     updatedAt: 'updatedAt',
@@ -18471,12 +18544,14 @@ export namespace Prisma {
     NOT?: SourceWhereInput | SourceWhereInput[]
     id?: IntFilter<"Source"> | number
     name?: StringFilter<"Source"> | string
+    workspaceId?: IntFilter<"Source"> | number
     createdAt?: DateTimeFilter<"Source"> | Date | string
     createdBy?: IntFilter<"Source"> | number
     updatedAt?: DateTimeFilter<"Source"> | Date | string
     updatedBy?: IntFilter<"Source"> | number
     deletedAt?: DateTimeNullableFilter<"Source"> | Date | string | null
     deletedBy?: IntNullableFilter<"Source"> | number | null
+    workspace?: XOR<WorkspaceScalarRelationFilter, WorkspaceWhereInput>
     tasks?: TaskListRelationFilter
     tags?: TagListRelationFilter
   }
@@ -18484,12 +18559,14 @@ export namespace Prisma {
   export type SourceOrderByWithRelationInput = {
     id?: SortOrder
     name?: SortOrder
+    workspaceId?: SortOrder
     createdAt?: SortOrder
     createdBy?: SortOrder
     updatedAt?: SortOrder
     updatedBy?: SortOrder
     deletedAt?: SortOrderInput | SortOrder
     deletedBy?: SortOrderInput | SortOrder
+    workspace?: WorkspaceOrderByWithRelationInput
     tasks?: TaskOrderByRelationAggregateInput
     tags?: TagOrderByRelationAggregateInput
   }
@@ -18500,12 +18577,14 @@ export namespace Prisma {
     OR?: SourceWhereInput[]
     NOT?: SourceWhereInput | SourceWhereInput[]
     name?: StringFilter<"Source"> | string
+    workspaceId?: IntFilter<"Source"> | number
     createdAt?: DateTimeFilter<"Source"> | Date | string
     createdBy?: IntFilter<"Source"> | number
     updatedAt?: DateTimeFilter<"Source"> | Date | string
     updatedBy?: IntFilter<"Source"> | number
     deletedAt?: DateTimeNullableFilter<"Source"> | Date | string | null
     deletedBy?: IntNullableFilter<"Source"> | number | null
+    workspace?: XOR<WorkspaceScalarRelationFilter, WorkspaceWhereInput>
     tasks?: TaskListRelationFilter
     tags?: TagListRelationFilter
   }, "id">
@@ -18513,6 +18592,7 @@ export namespace Prisma {
   export type SourceOrderByWithAggregationInput = {
     id?: SortOrder
     name?: SortOrder
+    workspaceId?: SortOrder
     createdAt?: SortOrder
     createdBy?: SortOrder
     updatedAt?: SortOrder
@@ -18532,6 +18612,7 @@ export namespace Prisma {
     NOT?: SourceScalarWhereWithAggregatesInput | SourceScalarWhereWithAggregatesInput[]
     id?: IntWithAggregatesFilter<"Source"> | number
     name?: StringWithAggregatesFilter<"Source"> | string
+    workspaceId?: IntWithAggregatesFilter<"Source"> | number
     createdAt?: DateTimeWithAggregatesFilter<"Source"> | Date | string
     createdBy?: IntWithAggregatesFilter<"Source"> | number
     updatedAt?: DateTimeWithAggregatesFilter<"Source"> | Date | string
@@ -18893,6 +18974,7 @@ export namespace Prisma {
     workspaceStatuses?: WorkspaceStatusListRelationFilter
     permissions?: PermissionListRelationFilter
     tasksHistory?: TaskHistoryListRelationFilter
+    sources?: SourceListRelationFilter
   }
 
   export type WorkspaceOrderByWithRelationInput = {
@@ -18914,6 +18996,7 @@ export namespace Prisma {
     workspaceStatuses?: WorkspaceStatusOrderByRelationAggregateInput
     permissions?: PermissionOrderByRelationAggregateInput
     tasksHistory?: TaskHistoryOrderByRelationAggregateInput
+    sources?: SourceOrderByRelationAggregateInput
   }
 
   export type WorkspaceWhereUniqueInput = Prisma.AtLeast<{
@@ -18938,6 +19021,7 @@ export namespace Prisma {
     workspaceStatuses?: WorkspaceStatusListRelationFilter
     permissions?: PermissionListRelationFilter
     tasksHistory?: TaskHistoryListRelationFilter
+    sources?: SourceListRelationFilter
   }, "id">
 
   export type WorkspaceOrderByWithAggregationInput = {
@@ -19424,6 +19508,7 @@ export namespace Prisma {
     updatedBy: number
     deletedAt?: Date | string | null
     deletedBy?: number | null
+    workspace: WorkspaceCreateNestedOneWithoutSourcesInput
     tasks?: TaskCreateNestedManyWithoutSourceInput
     tags?: TagCreateNestedManyWithoutSourcesInput
   }
@@ -19431,6 +19516,7 @@ export namespace Prisma {
   export type SourceUncheckedCreateInput = {
     id?: number
     name: string
+    workspaceId: number
     createdAt?: Date | string
     createdBy: number
     updatedAt?: Date | string
@@ -19449,6 +19535,7 @@ export namespace Prisma {
     updatedBy?: IntFieldUpdateOperationsInput | number
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedBy?: NullableIntFieldUpdateOperationsInput | number | null
+    workspace?: WorkspaceUpdateOneRequiredWithoutSourcesNestedInput
     tasks?: TaskUpdateManyWithoutSourceNestedInput
     tags?: TagUpdateManyWithoutSourcesNestedInput
   }
@@ -19456,6 +19543,7 @@ export namespace Prisma {
   export type SourceUncheckedUpdateInput = {
     id?: IntFieldUpdateOperationsInput | number
     name?: StringFieldUpdateOperationsInput | string
+    workspaceId?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdBy?: IntFieldUpdateOperationsInput | number
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -19469,6 +19557,7 @@ export namespace Prisma {
   export type SourceCreateManyInput = {
     id?: number
     name: string
+    workspaceId: number
     createdAt?: Date | string
     createdBy: number
     updatedAt?: Date | string
@@ -19490,6 +19579,7 @@ export namespace Prisma {
   export type SourceUncheckedUpdateManyInput = {
     id?: IntFieldUpdateOperationsInput | number
     name?: StringFieldUpdateOperationsInput | string
+    workspaceId?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdBy?: IntFieldUpdateOperationsInput | number
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -19855,6 +19945,7 @@ export namespace Prisma {
     workspaceStatuses?: WorkspaceStatusCreateNestedManyWithoutWorkspaceInput
     permissions?: PermissionCreateNestedManyWithoutWorkspaceInput
     tasksHistory?: TaskHistoryCreateNestedManyWithoutWorkspaceInput
+    sources?: SourceCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceUncheckedCreateInput = {
@@ -19875,6 +19966,7 @@ export namespace Prisma {
     workspaceStatuses?: WorkspaceStatusUncheckedCreateNestedManyWithoutWorkspaceInput
     permissions?: PermissionUncheckedCreateNestedManyWithoutWorkspaceInput
     tasksHistory?: TaskHistoryUncheckedCreateNestedManyWithoutWorkspaceInput
+    sources?: SourceUncheckedCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceUpdateInput = {
@@ -19894,6 +19986,7 @@ export namespace Prisma {
     workspaceStatuses?: WorkspaceStatusUpdateManyWithoutWorkspaceNestedInput
     permissions?: PermissionUpdateManyWithoutWorkspaceNestedInput
     tasksHistory?: TaskHistoryUpdateManyWithoutWorkspaceNestedInput
+    sources?: SourceUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type WorkspaceUncheckedUpdateInput = {
@@ -19914,6 +20007,7 @@ export namespace Prisma {
     workspaceStatuses?: WorkspaceStatusUncheckedUpdateManyWithoutWorkspaceNestedInput
     permissions?: PermissionUncheckedUpdateManyWithoutWorkspaceNestedInput
     tasksHistory?: TaskHistoryUncheckedUpdateManyWithoutWorkspaceNestedInput
+    sources?: SourceUncheckedUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type WorkspaceCreateManyInput = {
@@ -20550,6 +20644,7 @@ export namespace Prisma {
   export type SourceCountOrderByAggregateInput = {
     id?: SortOrder
     name?: SortOrder
+    workspaceId?: SortOrder
     createdAt?: SortOrder
     createdBy?: SortOrder
     updatedAt?: SortOrder
@@ -20560,6 +20655,7 @@ export namespace Prisma {
 
   export type SourceAvgOrderByAggregateInput = {
     id?: SortOrder
+    workspaceId?: SortOrder
     createdBy?: SortOrder
     updatedBy?: SortOrder
     deletedBy?: SortOrder
@@ -20568,6 +20664,7 @@ export namespace Prisma {
   export type SourceMaxOrderByAggregateInput = {
     id?: SortOrder
     name?: SortOrder
+    workspaceId?: SortOrder
     createdAt?: SortOrder
     createdBy?: SortOrder
     updatedAt?: SortOrder
@@ -20579,6 +20676,7 @@ export namespace Prisma {
   export type SourceMinOrderByAggregateInput = {
     id?: SortOrder
     name?: SortOrder
+    workspaceId?: SortOrder
     createdAt?: SortOrder
     createdBy?: SortOrder
     updatedAt?: SortOrder
@@ -20589,6 +20687,7 @@ export namespace Prisma {
 
   export type SourceSumOrderByAggregateInput = {
     id?: SortOrder
+    workspaceId?: SortOrder
     createdBy?: SortOrder
     updatedBy?: SortOrder
     deletedBy?: SortOrder
@@ -21336,6 +21435,12 @@ export namespace Prisma {
     deleteMany?: WorkspaceScalarWhereInput | WorkspaceScalarWhereInput[]
   }
 
+  export type WorkspaceCreateNestedOneWithoutSourcesInput = {
+    create?: XOR<WorkspaceCreateWithoutSourcesInput, WorkspaceUncheckedCreateWithoutSourcesInput>
+    connectOrCreate?: WorkspaceCreateOrConnectWithoutSourcesInput
+    connect?: WorkspaceWhereUniqueInput
+  }
+
   export type TaskCreateNestedManyWithoutSourceInput = {
     create?: XOR<TaskCreateWithoutSourceInput, TaskUncheckedCreateWithoutSourceInput> | TaskCreateWithoutSourceInput[] | TaskUncheckedCreateWithoutSourceInput[]
     connectOrCreate?: TaskCreateOrConnectWithoutSourceInput | TaskCreateOrConnectWithoutSourceInput[]
@@ -21360,6 +21465,14 @@ export namespace Prisma {
     create?: XOR<TagCreateWithoutSourcesInput, TagUncheckedCreateWithoutSourcesInput> | TagCreateWithoutSourcesInput[] | TagUncheckedCreateWithoutSourcesInput[]
     connectOrCreate?: TagCreateOrConnectWithoutSourcesInput | TagCreateOrConnectWithoutSourcesInput[]
     connect?: TagWhereUniqueInput | TagWhereUniqueInput[]
+  }
+
+  export type WorkspaceUpdateOneRequiredWithoutSourcesNestedInput = {
+    create?: XOR<WorkspaceCreateWithoutSourcesInput, WorkspaceUncheckedCreateWithoutSourcesInput>
+    connectOrCreate?: WorkspaceCreateOrConnectWithoutSourcesInput
+    upsert?: WorkspaceUpsertWithoutSourcesInput
+    connect?: WorkspaceWhereUniqueInput
+    update?: XOR<XOR<WorkspaceUpdateToOneWithWhereWithoutSourcesInput, WorkspaceUpdateWithoutSourcesInput>, WorkspaceUncheckedUpdateWithoutSourcesInput>
   }
 
   export type TaskUpdateManyWithoutSourceNestedInput = {
@@ -21915,6 +22028,13 @@ export namespace Prisma {
     connect?: TaskHistoryWhereUniqueInput | TaskHistoryWhereUniqueInput[]
   }
 
+  export type SourceCreateNestedManyWithoutWorkspaceInput = {
+    create?: XOR<SourceCreateWithoutWorkspaceInput, SourceUncheckedCreateWithoutWorkspaceInput> | SourceCreateWithoutWorkspaceInput[] | SourceUncheckedCreateWithoutWorkspaceInput[]
+    connectOrCreate?: SourceCreateOrConnectWithoutWorkspaceInput | SourceCreateOrConnectWithoutWorkspaceInput[]
+    createMany?: SourceCreateManyWorkspaceInputEnvelope
+    connect?: SourceWhereUniqueInput | SourceWhereUniqueInput[]
+  }
+
   export type TagUncheckedCreateNestedManyWithoutWorkspaceInput = {
     create?: XOR<TagCreateWithoutWorkspaceInput, TagUncheckedCreateWithoutWorkspaceInput> | TagCreateWithoutWorkspaceInput[] | TagUncheckedCreateWithoutWorkspaceInput[]
     connectOrCreate?: TagCreateOrConnectWithoutWorkspaceInput | TagCreateOrConnectWithoutWorkspaceInput[]
@@ -21948,6 +22068,13 @@ export namespace Prisma {
     connectOrCreate?: TaskHistoryCreateOrConnectWithoutWorkspaceInput | TaskHistoryCreateOrConnectWithoutWorkspaceInput[]
     createMany?: TaskHistoryCreateManyWorkspaceInputEnvelope
     connect?: TaskHistoryWhereUniqueInput | TaskHistoryWhereUniqueInput[]
+  }
+
+  export type SourceUncheckedCreateNestedManyWithoutWorkspaceInput = {
+    create?: XOR<SourceCreateWithoutWorkspaceInput, SourceUncheckedCreateWithoutWorkspaceInput> | SourceCreateWithoutWorkspaceInput[] | SourceUncheckedCreateWithoutWorkspaceInput[]
+    connectOrCreate?: SourceCreateOrConnectWithoutWorkspaceInput | SourceCreateOrConnectWithoutWorkspaceInput[]
+    createMany?: SourceCreateManyWorkspaceInputEnvelope
+    connect?: SourceWhereUniqueInput | SourceWhereUniqueInput[]
   }
 
   export type PikudUpdateOneRequiredWithoutWorkspacesNestedInput = {
@@ -22028,6 +22155,20 @@ export namespace Prisma {
     deleteMany?: TaskHistoryScalarWhereInput | TaskHistoryScalarWhereInput[]
   }
 
+  export type SourceUpdateManyWithoutWorkspaceNestedInput = {
+    create?: XOR<SourceCreateWithoutWorkspaceInput, SourceUncheckedCreateWithoutWorkspaceInput> | SourceCreateWithoutWorkspaceInput[] | SourceUncheckedCreateWithoutWorkspaceInput[]
+    connectOrCreate?: SourceCreateOrConnectWithoutWorkspaceInput | SourceCreateOrConnectWithoutWorkspaceInput[]
+    upsert?: SourceUpsertWithWhereUniqueWithoutWorkspaceInput | SourceUpsertWithWhereUniqueWithoutWorkspaceInput[]
+    createMany?: SourceCreateManyWorkspaceInputEnvelope
+    set?: SourceWhereUniqueInput | SourceWhereUniqueInput[]
+    disconnect?: SourceWhereUniqueInput | SourceWhereUniqueInput[]
+    delete?: SourceWhereUniqueInput | SourceWhereUniqueInput[]
+    connect?: SourceWhereUniqueInput | SourceWhereUniqueInput[]
+    update?: SourceUpdateWithWhereUniqueWithoutWorkspaceInput | SourceUpdateWithWhereUniqueWithoutWorkspaceInput[]
+    updateMany?: SourceUpdateManyWithWhereWithoutWorkspaceInput | SourceUpdateManyWithWhereWithoutWorkspaceInput[]
+    deleteMany?: SourceScalarWhereInput | SourceScalarWhereInput[]
+  }
+
   export type TagUncheckedUpdateManyWithoutWorkspaceNestedInput = {
     create?: XOR<TagCreateWithoutWorkspaceInput, TagUncheckedCreateWithoutWorkspaceInput> | TagCreateWithoutWorkspaceInput[] | TagUncheckedCreateWithoutWorkspaceInput[]
     connectOrCreate?: TagCreateOrConnectWithoutWorkspaceInput | TagCreateOrConnectWithoutWorkspaceInput[]
@@ -22096,6 +22237,20 @@ export namespace Prisma {
     update?: TaskHistoryUpdateWithWhereUniqueWithoutWorkspaceInput | TaskHistoryUpdateWithWhereUniqueWithoutWorkspaceInput[]
     updateMany?: TaskHistoryUpdateManyWithWhereWithoutWorkspaceInput | TaskHistoryUpdateManyWithWhereWithoutWorkspaceInput[]
     deleteMany?: TaskHistoryScalarWhereInput | TaskHistoryScalarWhereInput[]
+  }
+
+  export type SourceUncheckedUpdateManyWithoutWorkspaceNestedInput = {
+    create?: XOR<SourceCreateWithoutWorkspaceInput, SourceUncheckedCreateWithoutWorkspaceInput> | SourceCreateWithoutWorkspaceInput[] | SourceUncheckedCreateWithoutWorkspaceInput[]
+    connectOrCreate?: SourceCreateOrConnectWithoutWorkspaceInput | SourceCreateOrConnectWithoutWorkspaceInput[]
+    upsert?: SourceUpsertWithWhereUniqueWithoutWorkspaceInput | SourceUpsertWithWhereUniqueWithoutWorkspaceInput[]
+    createMany?: SourceCreateManyWorkspaceInputEnvelope
+    set?: SourceWhereUniqueInput | SourceWhereUniqueInput[]
+    disconnect?: SourceWhereUniqueInput | SourceWhereUniqueInput[]
+    delete?: SourceWhereUniqueInput | SourceWhereUniqueInput[]
+    connect?: SourceWhereUniqueInput | SourceWhereUniqueInput[]
+    update?: SourceUpdateWithWhereUniqueWithoutWorkspaceInput | SourceUpdateWithWhereUniqueWithoutWorkspaceInput[]
+    updateMany?: SourceUpdateManyWithWhereWithoutWorkspaceInput | SourceUpdateManyWithWhereWithoutWorkspaceInput[]
+    deleteMany?: SourceScalarWhereInput | SourceScalarWhereInput[]
   }
 
   export type WorkspaceCreateNestedOneWithoutWorkspaceStatusesInput = {
@@ -23106,6 +23261,7 @@ export namespace Prisma {
     tasks?: TaskCreateNestedManyWithoutWorkspaceInput
     workspaceStatuses?: WorkspaceStatusCreateNestedManyWithoutWorkspaceInput
     tasksHistory?: TaskHistoryCreateNestedManyWithoutWorkspaceInput
+    sources?: SourceCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceUncheckedCreateWithoutPermissionsInput = {
@@ -23125,6 +23281,7 @@ export namespace Prisma {
     tasks?: TaskUncheckedCreateNestedManyWithoutWorkspaceInput
     workspaceStatuses?: WorkspaceStatusUncheckedCreateNestedManyWithoutWorkspaceInput
     tasksHistory?: TaskHistoryUncheckedCreateNestedManyWithoutWorkspaceInput
+    sources?: SourceUncheckedCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceCreateOrConnectWithoutPermissionsInput = {
@@ -23185,6 +23342,7 @@ export namespace Prisma {
     tasks?: TaskUpdateManyWithoutWorkspaceNestedInput
     workspaceStatuses?: WorkspaceStatusUpdateManyWithoutWorkspaceNestedInput
     tasksHistory?: TaskHistoryUpdateManyWithoutWorkspaceNestedInput
+    sources?: SourceUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type WorkspaceUncheckedUpdateWithoutPermissionsInput = {
@@ -23204,6 +23362,7 @@ export namespace Prisma {
     tasks?: TaskUncheckedUpdateManyWithoutWorkspaceNestedInput
     workspaceStatuses?: WorkspaceStatusUncheckedUpdateManyWithoutWorkspaceNestedInput
     tasksHistory?: TaskHistoryUncheckedUpdateManyWithoutWorkspaceNestedInput
+    sources?: SourceUncheckedUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type WorkspaceCreateWithoutPikudInput = {
@@ -23222,6 +23381,7 @@ export namespace Prisma {
     workspaceStatuses?: WorkspaceStatusCreateNestedManyWithoutWorkspaceInput
     permissions?: PermissionCreateNestedManyWithoutWorkspaceInput
     tasksHistory?: TaskHistoryCreateNestedManyWithoutWorkspaceInput
+    sources?: SourceCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceUncheckedCreateWithoutPikudInput = {
@@ -23241,6 +23401,7 @@ export namespace Prisma {
     workspaceStatuses?: WorkspaceStatusUncheckedCreateNestedManyWithoutWorkspaceInput
     permissions?: PermissionUncheckedCreateNestedManyWithoutWorkspaceInput
     tasksHistory?: TaskHistoryUncheckedCreateNestedManyWithoutWorkspaceInput
+    sources?: SourceUncheckedCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceCreateOrConnectWithoutPikudInput = {
@@ -23285,6 +23446,50 @@ export namespace Prisma {
     deletedAt?: DateTimeNullableFilter<"Workspace"> | Date | string | null
     deletedBy?: IntNullableFilter<"Workspace"> | number | null
     pikudId?: IntFilter<"Workspace"> | number
+  }
+
+  export type WorkspaceCreateWithoutSourcesInput = {
+    title: string
+    urlName: string
+    icon?: string | null
+    assigneeStatusEditable?: boolean
+    createdAt?: Date | string
+    createdBy: number
+    updatedAt?: Date | string
+    updatedBy: number
+    deletedAt?: Date | string | null
+    deletedBy?: number | null
+    pikud: PikudCreateNestedOneWithoutWorkspacesInput
+    tags?: TagCreateNestedManyWithoutWorkspaceInput
+    tasks?: TaskCreateNestedManyWithoutWorkspaceInput
+    workspaceStatuses?: WorkspaceStatusCreateNestedManyWithoutWorkspaceInput
+    permissions?: PermissionCreateNestedManyWithoutWorkspaceInput
+    tasksHistory?: TaskHistoryCreateNestedManyWithoutWorkspaceInput
+  }
+
+  export type WorkspaceUncheckedCreateWithoutSourcesInput = {
+    id?: number
+    title: string
+    urlName: string
+    icon?: string | null
+    assigneeStatusEditable?: boolean
+    createdAt?: Date | string
+    createdBy: number
+    updatedAt?: Date | string
+    updatedBy: number
+    deletedAt?: Date | string | null
+    deletedBy?: number | null
+    pikudId: number
+    tags?: TagUncheckedCreateNestedManyWithoutWorkspaceInput
+    tasks?: TaskUncheckedCreateNestedManyWithoutWorkspaceInput
+    workspaceStatuses?: WorkspaceStatusUncheckedCreateNestedManyWithoutWorkspaceInput
+    permissions?: PermissionUncheckedCreateNestedManyWithoutWorkspaceInput
+    tasksHistory?: TaskHistoryUncheckedCreateNestedManyWithoutWorkspaceInput
+  }
+
+  export type WorkspaceCreateOrConnectWithoutSourcesInput = {
+    where: WorkspaceWhereUniqueInput
+    create: XOR<WorkspaceCreateWithoutSourcesInput, WorkspaceUncheckedCreateWithoutSourcesInput>
   }
 
   export type TaskCreateWithoutSourceInput = {
@@ -23364,6 +23569,56 @@ export namespace Prisma {
   export type TagCreateOrConnectWithoutSourcesInput = {
     where: TagWhereUniqueInput
     create: XOR<TagCreateWithoutSourcesInput, TagUncheckedCreateWithoutSourcesInput>
+  }
+
+  export type WorkspaceUpsertWithoutSourcesInput = {
+    update: XOR<WorkspaceUpdateWithoutSourcesInput, WorkspaceUncheckedUpdateWithoutSourcesInput>
+    create: XOR<WorkspaceCreateWithoutSourcesInput, WorkspaceUncheckedCreateWithoutSourcesInput>
+    where?: WorkspaceWhereInput
+  }
+
+  export type WorkspaceUpdateToOneWithWhereWithoutSourcesInput = {
+    where?: WorkspaceWhereInput
+    data: XOR<WorkspaceUpdateWithoutSourcesInput, WorkspaceUncheckedUpdateWithoutSourcesInput>
+  }
+
+  export type WorkspaceUpdateWithoutSourcesInput = {
+    title?: StringFieldUpdateOperationsInput | string
+    urlName?: StringFieldUpdateOperationsInput | string
+    icon?: NullableStringFieldUpdateOperationsInput | string | null
+    assigneeStatusEditable?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdBy?: IntFieldUpdateOperationsInput | number
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedBy?: IntFieldUpdateOperationsInput | number
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableIntFieldUpdateOperationsInput | number | null
+    pikud?: PikudUpdateOneRequiredWithoutWorkspacesNestedInput
+    tags?: TagUpdateManyWithoutWorkspaceNestedInput
+    tasks?: TaskUpdateManyWithoutWorkspaceNestedInput
+    workspaceStatuses?: WorkspaceStatusUpdateManyWithoutWorkspaceNestedInput
+    permissions?: PermissionUpdateManyWithoutWorkspaceNestedInput
+    tasksHistory?: TaskHistoryUpdateManyWithoutWorkspaceNestedInput
+  }
+
+  export type WorkspaceUncheckedUpdateWithoutSourcesInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    title?: StringFieldUpdateOperationsInput | string
+    urlName?: StringFieldUpdateOperationsInput | string
+    icon?: NullableStringFieldUpdateOperationsInput | string | null
+    assigneeStatusEditable?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdBy?: IntFieldUpdateOperationsInput | number
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedBy?: IntFieldUpdateOperationsInput | number
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableIntFieldUpdateOperationsInput | number | null
+    pikudId?: IntFieldUpdateOperationsInput | number
+    tags?: TagUncheckedUpdateManyWithoutWorkspaceNestedInput
+    tasks?: TaskUncheckedUpdateManyWithoutWorkspaceNestedInput
+    workspaceStatuses?: WorkspaceStatusUncheckedUpdateManyWithoutWorkspaceNestedInput
+    permissions?: PermissionUncheckedUpdateManyWithoutWorkspaceNestedInput
+    tasksHistory?: TaskHistoryUncheckedUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type TaskUpsertWithWhereUniqueWithoutSourceInput = {
@@ -23449,6 +23704,7 @@ export namespace Prisma {
     workspaceStatuses?: WorkspaceStatusCreateNestedManyWithoutWorkspaceInput
     permissions?: PermissionCreateNestedManyWithoutWorkspaceInput
     tasksHistory?: TaskHistoryCreateNestedManyWithoutWorkspaceInput
+    sources?: SourceCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceUncheckedCreateWithoutTagsInput = {
@@ -23468,6 +23724,7 @@ export namespace Prisma {
     workspaceStatuses?: WorkspaceStatusUncheckedCreateNestedManyWithoutWorkspaceInput
     permissions?: PermissionUncheckedCreateNestedManyWithoutWorkspaceInput
     tasksHistory?: TaskHistoryUncheckedCreateNestedManyWithoutWorkspaceInput
+    sources?: SourceUncheckedCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceCreateOrConnectWithoutTagsInput = {
@@ -23531,12 +23788,14 @@ export namespace Prisma {
     updatedBy: number
     deletedAt?: Date | string | null
     deletedBy?: number | null
+    workspace: WorkspaceCreateNestedOneWithoutSourcesInput
     tasks?: TaskCreateNestedManyWithoutSourceInput
   }
 
   export type SourceUncheckedCreateWithoutTagsInput = {
     id?: number
     name: string
+    workspaceId: number
     createdAt?: Date | string
     createdBy: number
     updatedAt?: Date | string
@@ -23578,6 +23837,7 @@ export namespace Prisma {
     workspaceStatuses?: WorkspaceStatusUpdateManyWithoutWorkspaceNestedInput
     permissions?: PermissionUpdateManyWithoutWorkspaceNestedInput
     tasksHistory?: TaskHistoryUpdateManyWithoutWorkspaceNestedInput
+    sources?: SourceUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type WorkspaceUncheckedUpdateWithoutTagsInput = {
@@ -23597,6 +23857,7 @@ export namespace Prisma {
     workspaceStatuses?: WorkspaceStatusUncheckedUpdateManyWithoutWorkspaceNestedInput
     permissions?: PermissionUncheckedUpdateManyWithoutWorkspaceNestedInput
     tasksHistory?: TaskHistoryUncheckedUpdateManyWithoutWorkspaceNestedInput
+    sources?: SourceUncheckedUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type TaskUpsertWithWhereUniqueWithoutTagsInput = {
@@ -23637,6 +23898,7 @@ export namespace Prisma {
     NOT?: SourceScalarWhereInput | SourceScalarWhereInput[]
     id?: IntFilter<"Source"> | number
     name?: StringFilter<"Source"> | string
+    workspaceId?: IntFilter<"Source"> | number
     createdAt?: DateTimeFilter<"Source"> | Date | string
     createdBy?: IntFilter<"Source"> | number
     updatedAt?: DateTimeFilter<"Source"> | Date | string
@@ -23661,6 +23923,7 @@ export namespace Prisma {
     workspaceStatuses?: WorkspaceStatusCreateNestedManyWithoutWorkspaceInput
     permissions?: PermissionCreateNestedManyWithoutWorkspaceInput
     tasksHistory?: TaskHistoryCreateNestedManyWithoutWorkspaceInput
+    sources?: SourceCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceUncheckedCreateWithoutTasksInput = {
@@ -23680,6 +23943,7 @@ export namespace Prisma {
     workspaceStatuses?: WorkspaceStatusUncheckedCreateNestedManyWithoutWorkspaceInput
     permissions?: PermissionUncheckedCreateNestedManyWithoutWorkspaceInput
     tasksHistory?: TaskHistoryUncheckedCreateNestedManyWithoutWorkspaceInput
+    sources?: SourceUncheckedCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceCreateOrConnectWithoutTasksInput = {
@@ -23695,12 +23959,14 @@ export namespace Prisma {
     updatedBy: number
     deletedAt?: Date | string | null
     deletedBy?: number | null
+    workspace: WorkspaceCreateNestedOneWithoutSourcesInput
     tags?: TagCreateNestedManyWithoutSourcesInput
   }
 
   export type SourceUncheckedCreateWithoutTasksInput = {
     id?: number
     name: string
+    workspaceId: number
     createdAt?: Date | string
     createdBy: number
     updatedAt?: Date | string
@@ -23850,6 +24116,7 @@ export namespace Prisma {
     workspaceStatuses?: WorkspaceStatusUpdateManyWithoutWorkspaceNestedInput
     permissions?: PermissionUpdateManyWithoutWorkspaceNestedInput
     tasksHistory?: TaskHistoryUpdateManyWithoutWorkspaceNestedInput
+    sources?: SourceUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type WorkspaceUncheckedUpdateWithoutTasksInput = {
@@ -23869,6 +24136,7 @@ export namespace Prisma {
     workspaceStatuses?: WorkspaceStatusUncheckedUpdateManyWithoutWorkspaceNestedInput
     permissions?: PermissionUncheckedUpdateManyWithoutWorkspaceNestedInput
     tasksHistory?: TaskHistoryUncheckedUpdateManyWithoutWorkspaceNestedInput
+    sources?: SourceUncheckedUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type SourceUpsertWithoutTasksInput = {
@@ -23890,12 +24158,14 @@ export namespace Prisma {
     updatedBy?: IntFieldUpdateOperationsInput | number
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedBy?: NullableIntFieldUpdateOperationsInput | number | null
+    workspace?: WorkspaceUpdateOneRequiredWithoutSourcesNestedInput
     tags?: TagUpdateManyWithoutSourcesNestedInput
   }
 
   export type SourceUncheckedUpdateWithoutTasksInput = {
     id?: IntFieldUpdateOperationsInput | number
     name?: StringFieldUpdateOperationsInput | string
+    workspaceId?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdBy?: IntFieldUpdateOperationsInput | number
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -24047,6 +24317,7 @@ export namespace Prisma {
     tasks?: TaskCreateNestedManyWithoutWorkspaceInput
     workspaceStatuses?: WorkspaceStatusCreateNestedManyWithoutWorkspaceInput
     permissions?: PermissionCreateNestedManyWithoutWorkspaceInput
+    sources?: SourceCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceUncheckedCreateWithoutTasksHistoryInput = {
@@ -24066,6 +24337,7 @@ export namespace Prisma {
     tasks?: TaskUncheckedCreateNestedManyWithoutWorkspaceInput
     workspaceStatuses?: WorkspaceStatusUncheckedCreateNestedManyWithoutWorkspaceInput
     permissions?: PermissionUncheckedCreateNestedManyWithoutWorkspaceInput
+    sources?: SourceUncheckedCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceCreateOrConnectWithoutTasksHistoryInput = {
@@ -24174,6 +24446,7 @@ export namespace Prisma {
     tasks?: TaskUpdateManyWithoutWorkspaceNestedInput
     workspaceStatuses?: WorkspaceStatusUpdateManyWithoutWorkspaceNestedInput
     permissions?: PermissionUpdateManyWithoutWorkspaceNestedInput
+    sources?: SourceUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type WorkspaceUncheckedUpdateWithoutTasksHistoryInput = {
@@ -24193,6 +24466,7 @@ export namespace Prisma {
     tasks?: TaskUncheckedUpdateManyWithoutWorkspaceNestedInput
     workspaceStatuses?: WorkspaceStatusUncheckedUpdateManyWithoutWorkspaceNestedInput
     permissions?: PermissionUncheckedUpdateManyWithoutWorkspaceNestedInput
+    sources?: SourceUncheckedUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type UserUpsertWithoutHistoryInput = {
@@ -24531,6 +24805,41 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type SourceCreateWithoutWorkspaceInput = {
+    name: string
+    createdAt?: Date | string
+    createdBy: number
+    updatedAt?: Date | string
+    updatedBy: number
+    deletedAt?: Date | string | null
+    deletedBy?: number | null
+    tasks?: TaskCreateNestedManyWithoutSourceInput
+    tags?: TagCreateNestedManyWithoutSourcesInput
+  }
+
+  export type SourceUncheckedCreateWithoutWorkspaceInput = {
+    id?: number
+    name: string
+    createdAt?: Date | string
+    createdBy: number
+    updatedAt?: Date | string
+    updatedBy: number
+    deletedAt?: Date | string | null
+    deletedBy?: number | null
+    tasks?: TaskUncheckedCreateNestedManyWithoutSourceInput
+    tags?: TagUncheckedCreateNestedManyWithoutSourcesInput
+  }
+
+  export type SourceCreateOrConnectWithoutWorkspaceInput = {
+    where: SourceWhereUniqueInput
+    create: XOR<SourceCreateWithoutWorkspaceInput, SourceUncheckedCreateWithoutWorkspaceInput>
+  }
+
+  export type SourceCreateManyWorkspaceInputEnvelope = {
+    data: SourceCreateManyWorkspaceInput | SourceCreateManyWorkspaceInput[]
+    skipDuplicates?: boolean
+  }
+
   export type PikudUpsertWithoutWorkspacesInput = {
     update: XOR<PikudUpdateWithoutWorkspacesInput, PikudUncheckedUpdateWithoutWorkspacesInput>
     create: XOR<PikudCreateWithoutWorkspacesInput, PikudUncheckedCreateWithoutWorkspacesInput>
@@ -24656,6 +24965,22 @@ export namespace Prisma {
     data: XOR<TaskHistoryUpdateManyMutationInput, TaskHistoryUncheckedUpdateManyWithoutWorkspaceInput>
   }
 
+  export type SourceUpsertWithWhereUniqueWithoutWorkspaceInput = {
+    where: SourceWhereUniqueInput
+    update: XOR<SourceUpdateWithoutWorkspaceInput, SourceUncheckedUpdateWithoutWorkspaceInput>
+    create: XOR<SourceCreateWithoutWorkspaceInput, SourceUncheckedCreateWithoutWorkspaceInput>
+  }
+
+  export type SourceUpdateWithWhereUniqueWithoutWorkspaceInput = {
+    where: SourceWhereUniqueInput
+    data: XOR<SourceUpdateWithoutWorkspaceInput, SourceUncheckedUpdateWithoutWorkspaceInput>
+  }
+
+  export type SourceUpdateManyWithWhereWithoutWorkspaceInput = {
+    where: SourceScalarWhereInput
+    data: XOR<SourceUpdateManyMutationInput, SourceUncheckedUpdateManyWithoutWorkspaceInput>
+  }
+
   export type WorkspaceCreateWithoutWorkspaceStatusesInput = {
     title: string
     urlName: string
@@ -24672,6 +24997,7 @@ export namespace Prisma {
     tasks?: TaskCreateNestedManyWithoutWorkspaceInput
     permissions?: PermissionCreateNestedManyWithoutWorkspaceInput
     tasksHistory?: TaskHistoryCreateNestedManyWithoutWorkspaceInput
+    sources?: SourceCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceUncheckedCreateWithoutWorkspaceStatusesInput = {
@@ -24691,6 +25017,7 @@ export namespace Prisma {
     tasks?: TaskUncheckedCreateNestedManyWithoutWorkspaceInput
     permissions?: PermissionUncheckedCreateNestedManyWithoutWorkspaceInput
     tasksHistory?: TaskHistoryUncheckedCreateNestedManyWithoutWorkspaceInput
+    sources?: SourceUncheckedCreateNestedManyWithoutWorkspaceInput
   }
 
   export type WorkspaceCreateOrConnectWithoutWorkspaceStatusesInput = {
@@ -24745,6 +25072,7 @@ export namespace Prisma {
     tasks?: TaskUpdateManyWithoutWorkspaceNestedInput
     permissions?: PermissionUpdateManyWithoutWorkspaceNestedInput
     tasksHistory?: TaskHistoryUpdateManyWithoutWorkspaceNestedInput
+    sources?: SourceUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type WorkspaceUncheckedUpdateWithoutWorkspaceStatusesInput = {
@@ -24764,6 +25092,7 @@ export namespace Prisma {
     tasks?: TaskUncheckedUpdateManyWithoutWorkspaceNestedInput
     permissions?: PermissionUncheckedUpdateManyWithoutWorkspaceNestedInput
     tasksHistory?: TaskHistoryUncheckedUpdateManyWithoutWorkspaceNestedInput
+    sources?: SourceUncheckedUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type AssigneeTaskStatusUpsertWithWhereUniqueWithoutStatusInput = {
@@ -24895,6 +25224,7 @@ export namespace Prisma {
     workspaceStatuses?: WorkspaceStatusUpdateManyWithoutWorkspaceNestedInput
     permissions?: PermissionUpdateManyWithoutWorkspaceNestedInput
     tasksHistory?: TaskHistoryUpdateManyWithoutWorkspaceNestedInput
+    sources?: SourceUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type WorkspaceUncheckedUpdateWithoutPikudInput = {
@@ -24914,6 +25244,7 @@ export namespace Prisma {
     workspaceStatuses?: WorkspaceStatusUncheckedUpdateManyWithoutWorkspaceNestedInput
     permissions?: PermissionUncheckedUpdateManyWithoutWorkspaceNestedInput
     tasksHistory?: TaskHistoryUncheckedUpdateManyWithoutWorkspaceNestedInput
+    sources?: SourceUncheckedUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type WorkspaceUncheckedUpdateManyWithoutPikudInput = {
@@ -25110,12 +25441,14 @@ export namespace Prisma {
     updatedBy?: IntFieldUpdateOperationsInput | number
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedBy?: NullableIntFieldUpdateOperationsInput | number | null
+    workspace?: WorkspaceUpdateOneRequiredWithoutSourcesNestedInput
     tasks?: TaskUpdateManyWithoutSourceNestedInput
   }
 
   export type SourceUncheckedUpdateWithoutTagsInput = {
     id?: IntFieldUpdateOperationsInput | number
     name?: StringFieldUpdateOperationsInput | string
+    workspaceId?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdBy?: IntFieldUpdateOperationsInput | number
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -25128,6 +25461,7 @@ export namespace Prisma {
   export type SourceUncheckedUpdateManyWithoutTagsInput = {
     id?: IntFieldUpdateOperationsInput | number
     name?: StringFieldUpdateOperationsInput | string
+    workspaceId?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdBy?: IntFieldUpdateOperationsInput | number
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -25397,6 +25731,17 @@ export namespace Prisma {
     userId: number
   }
 
+  export type SourceCreateManyWorkspaceInput = {
+    id?: number
+    name: string
+    createdAt?: Date | string
+    createdBy: number
+    updatedAt?: Date | string
+    updatedBy: number
+    deletedAt?: Date | string | null
+    deletedBy?: number | null
+  }
+
   export type TagUpdateWithoutWorkspaceInput = {
     name?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -25552,6 +25897,42 @@ export namespace Prisma {
     timestamp?: DateTimeFieldUpdateOperationsInput | Date | string
     taskId?: IntFieldUpdateOperationsInput | number
     userId?: IntFieldUpdateOperationsInput | number
+  }
+
+  export type SourceUpdateWithoutWorkspaceInput = {
+    name?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdBy?: IntFieldUpdateOperationsInput | number
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedBy?: IntFieldUpdateOperationsInput | number
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableIntFieldUpdateOperationsInput | number | null
+    tasks?: TaskUpdateManyWithoutSourceNestedInput
+    tags?: TagUpdateManyWithoutSourcesNestedInput
+  }
+
+  export type SourceUncheckedUpdateWithoutWorkspaceInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    name?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdBy?: IntFieldUpdateOperationsInput | number
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedBy?: IntFieldUpdateOperationsInput | number
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableIntFieldUpdateOperationsInput | number | null
+    tasks?: TaskUncheckedUpdateManyWithoutSourceNestedInput
+    tags?: TagUncheckedUpdateManyWithoutSourcesNestedInput
+  }
+
+  export type SourceUncheckedUpdateManyWithoutWorkspaceInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    name?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdBy?: IntFieldUpdateOperationsInput | number
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedBy?: IntFieldUpdateOperationsInput | number
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedBy?: NullableIntFieldUpdateOperationsInput | number | null
   }
 
   export type AssigneeTaskStatusCreateManyStatusInput = {
