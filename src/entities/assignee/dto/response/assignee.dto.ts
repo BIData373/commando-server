@@ -9,4 +9,10 @@ export class AssigneeDto extends IdMetaFieldsDto implements IAssignee {
 
   @Expose()
   color: string;
+
+  @Expose()
+  icon: string;
+
+  @Expose()
+  workspaceId: number;
 }

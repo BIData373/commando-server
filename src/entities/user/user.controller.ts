@@ -38,7 +38,7 @@ export class UserController {
   @TransformPlainToInstance(UserDto)
   async update(
     @Param() { id }: GetUserIdDto,
-    @Body() dto: UpdateUserDto,
+    @Body() dto: UpdateUserDto
   ) {
     return await this.userService.update(id, dto);
   }

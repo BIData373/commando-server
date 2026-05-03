@@ -39,7 +39,7 @@ export class WorkspaceStatusController {
   @Patch(':id')
   async update(
     @Param() { id }: GetManagerWorkspaceStatusIdDto,
-    @Body() dto: UpdateWorkspaceStatusDto,
+    @Body() dto: UpdateWorkspaceStatusDto
   ) {
     return await this.workspaceStatusService.update(id, dto);
   }
@@ -47,7 +47,7 @@ export class WorkspaceStatusController {
   @Delete(':id')
   @TransformPlainToInstance(WorkspaceStatusDto)
   async remove(
-    @Param('id', ParseIntPipe) id: number,
+    @Param() { id }: GetManagerWorkspaceStatusIdDto
   ) {
     return await this.workspaceStatusService.remove(id);
   }
