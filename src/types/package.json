@@ -1,0 +1,13 @@
+{
+  "name": "bi-373-commando",
+  "version": "1.0.0",
+  "description": "",
+  "license": "ISC",
+  "author": "",
+  "main": "index.ts",
+  "files": [
+    "*.ts",
+    "prisma/**/*.d.ts",
+    "prisma/**/*.ts"
+  ]
+}
