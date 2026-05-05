@@ -1,5 +1,5 @@
 import { PartialType } from '@nestjs/mapped-types';
+import { GetNameDto } from '../../../../common/dto/request/get-name.dto';
 import { IUpdateSource } from '../../../../types';
-import { CreateSourceDto } from './create-source.dto';
 
-export class UpdateSourceDto extends PartialType(CreateSourceDto) implements IUpdateSource {}
+export class UpdateSourceDto extends PartialType(GetNameDto) implements IUpdateSource { }

@@ -5,8 +5,8 @@
   "scripts": {
     "build": "nest build",
     "start:dist": "node dist/main.js",
-    "start": "cross-env-shell ENV=$npm_config_env nest start --watch",
-    "start:debug": "nest start --debug --watch",
+    "start": "cross-env-shell ENV=%npm_config_env% nest start --watch",
+    "start:debug": "cross-env-shell ENV=%npm_config_env% nest start --debug --watch",
     "test": "echo \"Error: no test specified\" && exit 1",
     "build:webpack": "npx nest build --webpack --webpackPath webpack.config.js",
     "types:pack": "tsc -p ./src/types/ && npm pack ./src/types/ && tsc --build --clean ./src/types/",

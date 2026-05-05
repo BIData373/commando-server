@@ -19,13 +19,17 @@ export class AssigneeTaskStatusService {
     return this.prisma.assigneeTaskStatus.findMany();
   }
 
+  async findInTask(taskId: number) {
+    return await this.prisma.assigneeTaskStatus.findMany({ where: { taskId } });
+  }
+
   findOne(taskId: number, assigneeId: number) {
     return this.prisma.assigneeTaskStatus.findUnique({
       where: { taskId_assigneeId: { taskId, assigneeId } },
     });
   }
 
-  update({ taskId, assigneeId, statusId }: IUpdateAssigneeTaskStatus) {
+  upsert({ taskId, assigneeId, statusId }: IUpdateAssigneeTaskStatus) {
     return this.prisma.assigneeTaskStatus.upsert({
       where: { taskId_assigneeId: { taskId, assigneeId } },
       create: { taskId, assigneeId, statusId },

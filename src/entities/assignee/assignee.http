@@ -2,13 +2,13 @@
 
 ### Create Assignee — valid payload
 POST {{baseUrl}}/assignee
-Content-Type: application/json
+...headers
 
 {
   "name": "Alpha Team",
   "color": "#E53935",
-  "createdBy": 1,
-  "updatedBy": 1
+  "icon": "shield",
+  "workspaceId": {{workspaceId}}
 }
 
 {{@response
@@ -17,9 +17,9 @@ Content-Type: application/json
 
 ?? status == 201
 
-### Create Assignee — missing required field (expect 400)
+### Create Assignee — missing required fields (expect 400)
 POST {{baseUrl}}/assignee
-Content-Type: application/json
+...headers
 
 {
   "color": "#E53935"
@@ -27,45 +27,37 @@ Content-Type: application/json
 
 ?? status == 400
 
-### Get all Assignees
-GET {{baseUrl}}/assignee
+### Get all Assignees in workspace
+GET {{baseUrl}}/assignee?workspaceId={{workspaceId}}
+...headers
 
 ?? status == 200
 
 ### Get Assignee by id
 GET {{baseUrl}}/assignee/{{assigneeId}}
+...headers
 
 ?? status == 200
 
 ### Update Assignee
 PATCH {{baseUrl}}/assignee/{{assigneeId}}
-Content-Type: application/json
+...headers
 
 {
   "name": "Alpha Team Updated",
-  "updatedBy": 1
+  "icon": "shield-check"
 }
 
 ?? status == 200
 
-### Delete Assignee — non-existent id (expect 400 from @EntityExists)
+### Delete Assignee — non-existent id (expect 400)
 DELETE {{baseUrl}}/assignee/99999
-Content-Type: application/json
-
-{
-  "id": 99999,
-  "deletedBy": 1
-}
+...headers
 
 ?? status == 400
 
 ### Delete Assignee
 DELETE {{baseUrl}}/assignee/{{assigneeId}}
-Content-Type: application/json
-
-{
-  "id": {{assigneeId}},
-  "deletedBy": 1
-}
+...headers
 
 ?? status == 200

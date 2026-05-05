@@ -1,11 +1,11 @@
 model Task {
-  id           Int       @id @default(autoincrement())
+  id           Int      @id @default(autoincrement())
   title        String
-  description  String?   @db.Text
-  flagged      Boolean   @default(false)
-  deadlineType String    @map("deadline_type")
-  issuedAt     DateTime  @default(now()) @map("issued_at")
-  dueDate      DateTime  @map("due_date")
+  description  String?  @db.Text
+  flagged      Boolean  @default(false)
+  deadlineType String   @map("deadline_type")
+  issuedAt     DateTime @default(now()) @map("issued_at")
+  dueDate      DateTime @map("due_date")
   notes        Json?
 
   // Meta Fields
@@ -22,10 +22,10 @@ model Task {
   sourceId Int    @map("source_id")
   source   Source @relation(fields: [sourceId], references: [id])
 
-  tags             Tag[]                @relation("TaskToTag")
+  tags  Tag[] @relation("tasks_tags")
   assigneeStatuses AssigneeTaskStatus[]
-  messages         Message[]
-  history          TaskHistory[]
+  messages  Message[]
+  history TaskHistory[]
 
   @@map("tasks")
 }

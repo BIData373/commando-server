@@ -41,7 +41,7 @@ export class WorkspaceController {
   async update(
     @Req() { user }: Request,
     @Param() { id }: GetManagerWorkspaceIdDto,
-    @Body() dto: UpdateWorkspaceDto,
+    @Body() dto: UpdateWorkspaceDto
   ) {
     return await this.workspaceService.update(id, dto, user.id);
   }

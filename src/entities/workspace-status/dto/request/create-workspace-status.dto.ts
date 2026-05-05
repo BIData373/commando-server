@@ -1,15 +1,8 @@
-import { IsNotEmptyString } from '../../../../common/decorators/is-not-empty-string.decorator';
-import { ICreateWorkspaceStatus } from '../../../../types';
-import { GetManagerWorkspaceIdFieldDto } from '../../../workspace/dto/request/get-workspace-id-field.dto';
+import { IsIdPermitted } from '../../../../common/decorators/is-permitted-id.decorator';
+import { ICreateWorkspaceStatus, PermissionType } from '../../../../types';
+import { GetWorkspaceStatusFieldsDto } from './get-workspace-status-fields.dto';
 
-export class CreateWorkspaceStatusDto extends GetManagerWorkspaceIdFieldDto implements ICreateWorkspaceStatus {
-  @IsNotEmptyString()
-  name: string;
-
-  @IsNotEmptyString()
-  color: string;
-
-  // FIX Enum?
-  @IsNotEmptyString()
-  statusType: string;
+export class CreateWorkspaceStatusDto extends GetWorkspaceStatusFieldsDto implements ICreateWorkspaceStatus {
+  @IsIdPermitted('workspace', PermissionType.MANAGER)
+  workspaceId: number
 }

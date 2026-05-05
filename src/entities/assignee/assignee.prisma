@@ -1,7 +1,11 @@
 model Assignee {
-  id    Int    @id @default(autoincrement())
+  id    Int     @id @default(autoincrement())
   name  String
   color String
+  icon  String?
+
+  workspaceId Int       @map("workspace_id")
+  workspace   Workspace @relation(fields: [workspaceId], references: [id])
 
   // Meta Fields
   createdAt DateTime  @default(now()) @map("created_at")

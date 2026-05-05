@@ -1,9 +1,9 @@
 model Workspace {
-  id                     Int       @id @default(autoincrement())
+  id                     Int     @id @default(autoincrement())
   title                  String
-  urlName                String    @map("url_name")
+  urlName                String  @map("url_name")
   icon                   String?
-  assigneeStatusEditable Boolean   @default(false) @map("assignee_status_editable")
+  assigneeStatusEditable Boolean @default(false) @map("assignee_status_editable")
 
   // Meta Fields
   createdAt DateTime  @default(now()) @map("created_at")
@@ -21,6 +21,8 @@ model Workspace {
   workspaceStatuses WorkspaceStatus[]
   permissions       Permission[]
   tasksHistory      TaskHistory[]
+  sources           Source[]
+  assignees         Assignee[]
 
   @@map("workspaces")
 }
