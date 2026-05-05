@@ -6,4 +6,7 @@ import { ISource } from '../../../../types';
 export class SourceDto extends IdMetaFieldsDto implements ISource {
   @Expose()
   name: string
+
+  @Expose()
+  workspaceId: number
 }

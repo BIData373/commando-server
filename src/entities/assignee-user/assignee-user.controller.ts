@@ -39,7 +39,7 @@ export class AssigneeUserController {
   @TransformPlainToInstance(AssigneeUserDto)
   async remove(
     @Param() { assigneeId }: GetManagerAssigneeIdFieldDto,
-    @Param() { userId }: GetUserIdFieldDto,
+    @Param() { userId }: GetUserIdFieldDto
   ) {
     return await this.assigneeUserService.remove(assigneeId, userId);
   }

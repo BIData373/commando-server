@@ -22,7 +22,7 @@ export class TaskService {
   }
 
   async findInWorkspace(workspaceId: number) {
-    return await this.prisma.permission.findMany({ where: { workspaceId } });
+    return await this.prisma.task.findMany({ where: { workspaceId, deletedAt: null } });
   }
 
   findOne(id: number) {

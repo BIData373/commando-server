@@ -9,6 +9,8 @@ RUN npm ci
 
 COPY . .
 
+RUN npm run prisma:client:generate --env=production
+
 RUN npm run build
 
 # Production stage

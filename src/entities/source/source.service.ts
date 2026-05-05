@@ -17,6 +17,10 @@ export class SourceService {
     });
   }
 
+  async findInWorkspace(workspaceId: number) {
+    return await this.prisma.source.findMany({ where: { workspaceId } });
+  }
+
   findAll() {
     return this.prisma.source.findMany({ where: { deletedAt: null } });
   }

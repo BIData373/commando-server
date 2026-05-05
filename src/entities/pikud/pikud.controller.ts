@@ -50,7 +50,7 @@ export class PikudController {
   async update(
     @Req() { user }: Request,
     @Param() { id }: GetPikudIdDto,
-    @Body() dto: UpdatePikudDto,
+    @Body() dto: UpdatePikudDto
   ) {
     return await this.pikudService.update(id, dto, user.id);
   }

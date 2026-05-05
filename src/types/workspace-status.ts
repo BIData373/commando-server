@@ -5,4 +5,4 @@ export interface IWorkspaceStatus extends WorkspaceStatus { }
 
 export interface ICreateWorkspaceStatus extends Omit<Prisma.WorkspaceStatusUncheckedCreateInput, OmittedMetaFields> { }
 
-export interface IUpdateWorkspaceStatus extends Partial<ICreateWorkspaceStatus> { }
+export interface IUpdateWorkspaceStatus extends Partial<Omit<ICreateWorkspaceStatus, 'workspaceId'>> { }

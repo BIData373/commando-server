@@ -3,14 +3,9 @@ import { IdExists } from "../../../../common/decorators/id-exists.decorator";
 import { IsIdPermitted } from "../../../../common/decorators/is-permitted-id.decorator";
 import { GetContextDto } from "../../../../common/dto/request/get-context.dto";
 import { IDeletePermission, PermissionType } from "../../../../types";
-import { User } from "../../../../types/prisma";
 import { IUserContext } from "../../../user/interfaces/user-context.interface";
 
-interface IDeletePermissionContext extends IUserContext {
-    newUser: User
-}
-
-export class DeletePermissionDto extends GetContextDto<IDeletePermissionContext> implements IDeletePermission {
+export class DeletePermissionDto extends GetContextDto<IUserContext> implements IDeletePermission {
     @EntityExists('permission', {
         findArgs: ({ value, obj }) => ({
             where: {
@@ -22,7 +17,7 @@ export class DeletePermissionDto extends GetContextDto<IDeletePermissionContext>
             `Permission doesn't exist for user id ${value} in workspace id ${(object as IDeletePermission).workspaceId}`
         )
     })
-    @IdExists('user', { contextField: 'newUser' })
+    @IdExists('user')
     userId: number;
 
     @IsIdPermitted('workspace', PermissionType.MANAGER)

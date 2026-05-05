@@ -12,6 +12,7 @@ import { TaskService } from './task.service';
 export class TaskController {
   constructor(private readonly taskService: TaskService) { }
 
+  // FIX Add to history
   @Post()
   @TransformPlainToInstance(TaskDto)
   async create(
@@ -37,6 +38,7 @@ export class TaskController {
     return await this.taskService.findOne(id);
   }
 
+  // FIX Add to history
   @Patch(':id')
   @TransformPlainToInstance(TaskDto)
   async update(
@@ -47,6 +49,7 @@ export class TaskController {
     return await this.taskService.update(id, dto, user.id);
   }
 
+  // FIX Add to history
   @Delete(':id')
   @TransformPlainToInstance(TaskDto)
   async remove(

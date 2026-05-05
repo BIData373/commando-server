@@ -1,14 +1,13 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Req } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req } from '@nestjs/common';
 import { TransformPlainToInstance } from 'class-transformer';
 import { Request } from 'express';
+import { GetViewerWorkspaceIdFieldDto } from '../workspace/dto/request/get-workspace-id-field.dto';
 import { AssigneeService } from './assignee.service';
 import { CreateAssigneeDto } from './dto/request/create-assignee.dto';
 import { GetManagerAssigneeIdDto, GetViewerAssigneeIdDto } from './dto/request/get-assignee-id.dto';
 import { UpdateAssigneeDto } from './dto/request/update-assignee.dto';
 import { AssigneeDto } from './dto/response/assignee.dto';
 
-// FIX Guards
-// FIX Add workspaceId to table
 @Controller('assignee')
 export class AssigneeController {
   constructor(private readonly assigneeService: AssigneeService) { }
@@ -24,8 +23,10 @@ export class AssigneeController {
 
   @Get()
   @TransformPlainToInstance(AssigneeDto)
-  async findAll() {
-    return await this.assigneeService.findAll();
+  async findInWorkspace(
+    @Query() { workspaceId }: GetViewerWorkspaceIdFieldDto
+  ) {
+    return await this.assigneeService.findInWorkspace(workspaceId);
   }
 
   @Get(':id')
