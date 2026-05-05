@@ -37,3 +37,4 @@ temp/
 Thumbs.db
 
 /src/types/prisma/**
+*.tgz

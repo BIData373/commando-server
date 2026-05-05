@@ -9,6 +9,8 @@
     "start:debug": "cross-env-shell ENV=%npm_config_env% nest start --debug --watch",
     "test": "echo \"Error: no test specified\" && exit 1",
     "build:webpack": "npx nest build --webpack --webpackPath webpack.config.js",
+    "types:pack": "tsc -p ./src/types/ && npm pack ./src/types/ && tsc --build --clean ./src/types/",
+    "types:clean": "tsc --build --clean ./src/types/",
     "prisma:repl": "cross-env-shell ENV=%npm_config_env% prisma-repl",
     "prisma:format": "cross-env-shell ENV=%npm_config_env% prisma format",
     "prisma:client:generate": "cross-env-shell ENV=%npm_config_env% prisma generate",
