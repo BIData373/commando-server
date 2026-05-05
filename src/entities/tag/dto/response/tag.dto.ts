@@ -1,15 +1,16 @@
 import { Exclude, Expose } from 'class-transformer';
 import { PartialMetaFieldsDto } from '../../../../common/dto/response/partial-meta-fields.dto';
 import { ITag } from '../../../../types';
+import { ExposeProperty } from '../../../../common/decorators/expose-property.decorator';
 
 @Exclude()
 export class TagDto extends PartialMetaFieldsDto implements ITag {
-  @Expose()
+  @ExposeProperty()
   id: number;
 
-  @Expose()
+  @ExposeProperty()
   name: string;
 
-  @Expose()
+  @ExposeProperty()
   workspaceId: number;
 }

@@ -1,4 +1,5 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Req, UseGuards } from '@nestjs/common';
+import { ApiBody, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiParam } from '@nestjs/swagger';
 import { TransformPlainToInstance } from 'class-transformer';
 import { Request } from 'express';
 import { BIGuard } from '../../common/guards/bi.guard';
@@ -7,17 +8,16 @@ import { GetPikudIdDto } from './dto/request/get-pikud-id.dto';
 import { UpdatePikudDto } from './dto/request/update-pikud.dto';
 import { PikudDto } from './dto/response/pikud.dto';
 import { PikudService } from './pikud.service';
-import { ApiBody, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiParam } from '@nestjs/swagger';
 
 @Controller('pikud')
 export class PikudController {
   constructor(private readonly pikudService: PikudService) { }
 
-  @UseGuards(BIGuard)
   @ApiOperation({ operationId: 'createPikud' })
+  @UseGuards(BIGuard)
+  @ApiBody({ type: CreatePikudDto })
   @Post()
   @ApiCreatedResponse({ type: PikudDto })
-  @ApiBody({ type: CreatePikudDto })
   @TransformPlainToInstance(PikudDto)
   async create(
     @Req() { user }: Request,
@@ -28,14 +28,16 @@ export class PikudController {
 
   @ApiOperation({ operationId: 'listPikuds' })
   @Get()
-  @ApiBody({ type: [CreatePikudDto] })
+  @ApiOkResponse({ type: [PikudDto] })
   @TransformPlainToInstance(PikudDto)
   async findAll() {
     return await this.pikudService.findAll();
   }
 
-  @Get(':id')
+  @ApiOperation({ operationId: 'getPikud' })
   @ApiParam({ name: 'id', type: Number })
+  @Get(':id')
+  @ApiOkResponse({ type: PikudDto })
   @TransformPlainToInstance(PikudDto)
   async findOne(
     @Param() { id }: GetPikudIdDto
@@ -43,9 +45,12 @@ export class PikudController {
     return await this.pikudService.findOne(id);
   }
 
+  @ApiOperation({ operationId: 'patchPikud' })
   @UseGuards(BIGuard)
-  @Patch(':id')
   @ApiParam({ name: 'id', type: Number })
+  @ApiBody({ type: UpdatePikudDto })
+  @Patch(':id')
+  @ApiOkResponse({ type: PikudDto })
   @TransformPlainToInstance(PikudDto)
   async update(
     @Req() { user }: Request,
@@ -55,9 +60,11 @@ export class PikudController {
     return await this.pikudService.update(id, dto, user.id);
   }
 
+  @ApiOperation({ operationId: 'deletePikud' })
   @UseGuards(BIGuard)
-  @Delete(':id')
   @ApiParam({ name: 'id', type: Number })
+  @Delete(':id')
+  @ApiOkResponse({ type: PikudDto })
   @TransformPlainToInstance(PikudDto)
   async remove(
     @Req() { user }: Request,
