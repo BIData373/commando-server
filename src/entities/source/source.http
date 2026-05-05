@@ -2,12 +2,11 @@
 
 ### Create Source — valid payload
 POST {{baseUrl}}/source
-Content-Type: application/json
+...headers
 
 {
   "name": "Radio",
-  "createdBy": 1,
-  "updatedBy": 1
+  "workspaceId": {{workspaceId}}
 }
 
 {{@response
@@ -18,53 +17,44 @@ Content-Type: application/json
 
 ### Create Source — missing required field (expect 400)
 POST {{baseUrl}}/source
-Content-Type: application/json
+...headers
 
 {
-  "createdBy": 1
+  "workspaceId": {{workspaceId}}
 }
 
 ?? status == 400
 
-### Get all Sources
-GET {{baseUrl}}/source
+### Get all Sources in workspace
+GET {{baseUrl}}/source?workspaceId={{workspaceId}}
+...headers
 
 ?? status == 200
 
 ### Get Source by id
 GET {{baseUrl}}/source/{{sourceId}}
+...headers
 
 ?? status == 200
 
 ### Update Source
 PATCH {{baseUrl}}/source/{{sourceId}}
-Content-Type: application/json
+...headers
 
 {
-  "name": "Radio Updated",
-  "updatedBy": 1
+  "name": "Radio Updated"
 }
 
 ?? status == 200
 
-### Delete Source — non-existent id (expect 400 from @EntityExists)
+### Delete Source — non-existent id (expect 400)
 DELETE {{baseUrl}}/source/99999
-Content-Type: application/json
-
-{
-  "id": 99999,
-  "deletedBy": 1
-}
+...headers
 
 ?? status == 400
 
 ### Delete Source
 DELETE {{baseUrl}}/source/{{sourceId}}
-Content-Type: application/json
-
-{
-  "id": {{sourceId}},
-  "deletedBy": 1
-}
+...headers
 
 ?? status == 200

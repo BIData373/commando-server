@@ -1,9 +1,11 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req } from '@nestjs/common';
+import { TransformPlainToInstance } from 'class-transformer';
 import { Request } from 'express';
 import { GetViewerWorkspaceIdFieldDto } from '../workspace/dto/request/get-workspace-id-field.dto';
 import { CreateSourceDto } from './dto/request/create-source.dto';
 import { GetManagerSourceIdDto, GetViewerSourceIdDto } from './dto/request/get-source-id.dto';
 import { UpdateSourceDto } from './dto/request/update-source.dto';
+import { SourceDto } from './dto/response/source.dto';
 import { SourceService } from './source.service';
 
 @Controller('source')
@@ -11,6 +13,7 @@ export class SourceController {
   constructor(private readonly sourceService: SourceService) { }
 
   @Post()
+  @TransformPlainToInstance(SourceDto)
   async create(
     @Req() { user }: Request,
     @Body() dto: CreateSourceDto
@@ -19,6 +22,7 @@ export class SourceController {
   }
 
   @Get()
+  @TransformPlainToInstance(SourceDto)
   async findAll(
     @Query() { workspaceId }: GetViewerWorkspaceIdFieldDto
   ) {
@@ -26,6 +30,7 @@ export class SourceController {
   }
 
   @Get(':id')
+  @TransformPlainToInstance(SourceDto)
   async findOne(
     @Param() { id }: GetViewerSourceIdDto
   ) {
@@ -33,6 +38,7 @@ export class SourceController {
   }
 
   @Patch(':id')
+  @TransformPlainToInstance(SourceDto)
   async update(
     @Req() { user }: Request,
     @Param() { id }: GetManagerSourceIdDto,
@@ -42,6 +48,7 @@ export class SourceController {
   }
 
   @Delete(':id')
+  @TransformPlainToInstance(SourceDto)
   async remove(
     @Req() { user }: Request,
     @Param() { id }: GetManagerSourceIdDto

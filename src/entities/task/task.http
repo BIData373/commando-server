@@ -2,7 +2,7 @@
 
 ### Create Task — valid payload
 POST {{baseUrl}}/task
-Content-Type: application/json
+...headers
 
 {
   "title": "Secure the perimeter",
@@ -10,10 +10,8 @@ Content-Type: application/json
   "flagged": false,
   "deadlineType": "hard",
   "dueDate": "2026-04-01T12:00:00.000Z",
-  "workspaceId": 1,
-  "sourceId": 1,
-  "createdBy": 1,
-  "updatedBy": 1
+  "workspaceId": {{workspaceId}},
+  "sourceId": {{sourceId}}
 }
 
 {{@response
@@ -22,9 +20,9 @@ Content-Type: application/json
 
 ?? status == 201
 
-### Create Task — missing required field (expect 400)
+### Create Task — missing required fields (expect 400)
 POST {{baseUrl}}/task
-Content-Type: application/json
+...headers
 
 {
   "description": "Missing title and other fields"
@@ -32,46 +30,37 @@ Content-Type: application/json
 
 ?? status == 400
 
-### Get all Tasks
-GET {{baseUrl}}/task
+### Get all Tasks in workspace
+GET {{baseUrl}}/task?workspaceId={{workspaceId}}
+...headers
 
 ?? status == 200
 
 ### Get Task by id
 GET {{baseUrl}}/task/{{taskId}}
+...headers
 
 ?? status == 200
 
 ### Update Task
 PATCH {{baseUrl}}/task/{{taskId}}
-Content-Type: application/json
+...headers
 
 {
   "title": "Secure the perimeter — updated",
-  "flagged": true,
-  "updatedBy": 1
+  "flagged": true
 }
 
 ?? status == 200
 
-### Delete Task — non-existent id (expect 400 from @EntityExists)
+### Delete Task — non-existent id (expect 400)
 DELETE {{baseUrl}}/task/99999
-Content-Type: application/json
-
-{
-  "id": 99999,
-  "deletedBy": 1
-}
+...headers
 
 ?? status == 400
 
 ### Delete Task
 DELETE {{baseUrl}}/task/{{taskId}}
-Content-Type: application/json
-
-{
-  "id": {{taskId}},
-  "deletedBy": 1
-}
+...headers
 
 ?? status == 200
