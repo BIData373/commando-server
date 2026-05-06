@@ -1,4 +1,5 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req } from '@nestjs/common';
+import { ApiBody, ApiOkResponse, ApiOperation, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { TransformPlainToInstance } from 'class-transformer';
 import { Request } from 'express';
 import { GetViewerWorkspaceIdFieldDto } from '../workspace/dto/request/get-workspace-id-field.dto';
@@ -13,7 +14,10 @@ export class TaskController {
   constructor(private readonly taskService: TaskService) { }
 
   // FIX Add to history
+  @ApiOperation({ operationId: 'createTask' })
+  @ApiBody({ type: CreateTaskDto })
   @Post()
+  @ApiOkResponse({ type: TaskDto })
   @TransformPlainToInstance(TaskDto)
   async create(
     @Req() { user }: Request,
@@ -22,7 +26,10 @@ export class TaskController {
     return await this.taskService.create(dto, user.id);
   }
 
+  @ApiOperation({ operationId: 'listTasks' })
+  @ApiQuery({ type: GetViewerWorkspaceIdFieldDto })
   @Get()
+  @ApiOkResponse({ type: [TaskDto] })
   @TransformPlainToInstance(TaskDto)
   async findInWorkspace(
     @Query() { workspaceId }: GetViewerWorkspaceIdFieldDto
@@ -30,7 +37,10 @@ export class TaskController {
     return await this.taskService.findInWorkspace(workspaceId);
   }
 
+  @ApiOperation({ operationId: 'getTask' })
+  @ApiParam({ name: 'id', type: Number })
   @Get(':id')
+  @ApiOkResponse({ type: TaskDto })
   @TransformPlainToInstance(TaskDto)
   async findOne(
     @Param() { id }: GetViewerTaskIdDto
@@ -39,7 +49,11 @@ export class TaskController {
   }
 
   // FIX Add to history
+  @ApiOperation({ operationId: 'patchTask' })
+  @ApiParam({ name: 'id', type: Number })
+  @ApiBody({ type: UpdateTaskDto })
   @Patch(':id')
+  @ApiOkResponse({ type: TaskDto })
   @TransformPlainToInstance(TaskDto)
   async update(
     @Req() { user }: Request,
@@ -50,7 +64,10 @@ export class TaskController {
   }
 
   // FIX Add to history
+  @ApiOperation({ operationId: 'deleteTask' })
+  @ApiParam({ name: 'id', type: Number })
   @Delete(':id')
+  @ApiOkResponse({ type: TaskDto })
   @TransformPlainToInstance(TaskDto)
   async remove(
     @Req() { user }: Request,

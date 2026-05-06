@@ -1,4 +1,4 @@
-import { PartialType } from '@nestjs/mapped-types';
+import { PartialType } from '@nestjs/swagger';
 import { IUpdateWorkspaceStatus } from '../../../../types';
 import { GetWorkspaceStatusFieldsDto } from './get-workspace-status-fields.dto';
 

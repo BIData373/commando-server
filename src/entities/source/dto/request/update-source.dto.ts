@@ -1,4 +1,4 @@
-import { PartialType } from '@nestjs/mapped-types';
+import { PartialType } from '@nestjs/swagger';
 import { GetNameDto } from '../../../../common/dto/request/get-name.dto';
 import { IUpdateSource } from '../../../../types';
 
