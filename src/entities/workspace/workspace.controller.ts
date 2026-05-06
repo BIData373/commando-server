@@ -1,7 +1,7 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Req, UseGuards } from '@nestjs/common';
 import { ApiBody, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiParam } from '@nestjs/swagger';
-import { TransformPlainToInstance } from 'class-transformer';
 import { Request } from 'express';
+import { TransformPlainToInstance } from 'class-transformer';
 import { BIGuard } from '../../common/guards/bi.guard';
 import { CreateWorkspaceDto } from './dto/request/create-workspace.dto';
 import { GetManagerWorkspaceIdDto, GetWorkspaceIdDto } from './dto/request/get-workspace-id.dto';
@@ -17,8 +17,8 @@ export class WorkspaceController {
   @ApiOperation({ operationId: 'createWorkspace' })
   @ApiBody({ type: CreateWorkspaceDto })
   @Post()
-  @TransformPlainToInstance(WorkspaceDto)
   @ApiCreatedResponse({ type: WorkspaceDto })
+  @TransformPlainToInstance(WorkspaceDto)
   async create(
     @Req() { user }: Request,
     @Body() dto: CreateWorkspaceDto
@@ -28,8 +28,8 @@ export class WorkspaceController {
 
   @ApiOperation({ operationId: 'listWorkspaces' })
   @Get()
-  @TransformPlainToInstance(WorkspaceDto)
   @ApiOkResponse({ type: [WorkspaceDto] })
+  @TransformPlainToInstance(WorkspaceDto)
   async findAll() {
     return await this.workspaceService.findAll();
   }
@@ -37,20 +37,20 @@ export class WorkspaceController {
   @ApiOperation({ operationId: 'getWorkspace' })
   @ApiParam({ name: 'id', type: Number })
   @Get(':id')
-  @TransformPlainToInstance(WorkspaceDto)
   @ApiOkResponse({ type: WorkspaceDto })
+  @TransformPlainToInstance(WorkspaceDto)
   async findOne(
     @Param() { id }: GetWorkspaceIdDto
   ) {
     return await this.workspaceService.findOne(id);
   }
 
-  @ApiOperation({ operationId: 'patchWorkspace' })
+  @ApiOperation({ operationId: 'updateWorkspace' })
   @ApiParam({ name: 'id', type: Number })
   @ApiBody({ type: UpdateWorkspaceDto })
   @Patch(':id')
-  @TransformPlainToInstance(WorkspaceDto)
   @ApiOkResponse({ type: WorkspaceDto })
+  @TransformPlainToInstance(WorkspaceDto)
   async update(
     @Req() { user }: Request,
     @Param() { id }: GetManagerWorkspaceIdDto,
@@ -62,8 +62,8 @@ export class WorkspaceController {
   @ApiOperation({ operationId: 'deleteWorkspace' })
   @ApiParam({ name: 'id', type: Number })
   @Delete(':id')
-  @TransformPlainToInstance(WorkspaceDto)
   @ApiOkResponse({ type: WorkspaceDto })
+  @TransformPlainToInstance(WorkspaceDto)
   async remove(
     @Req() { user }: Request,
     @Param() { id }: GetManagerWorkspaceIdDto

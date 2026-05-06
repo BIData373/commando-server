@@ -47,7 +47,7 @@ export class SourceController {
     return await this.sourceService.findOne(id);
   }
 
-  @ApiOperation({ operationId: 'patchSource' })
+  @ApiOperation({ operationId: 'updateSource' })
   @ApiParam({ name: 'id', type: Number })
   @ApiBody({ type: UpdateSourceDto })
   @Patch(':id')

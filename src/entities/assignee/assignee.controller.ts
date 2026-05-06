@@ -47,7 +47,7 @@ export class AssigneeController {
     return await this.assigneeService.findOne(id);
   }
 
-  @ApiOperation({ operationId: 'patchAssignee' })
+  @ApiOperation({ operationId: 'updateAssignee' })
   @ApiParam({ name: 'id', type: Number })
   @ApiBody({ type: UpdateAssigneeDto })
   @Patch(':id')

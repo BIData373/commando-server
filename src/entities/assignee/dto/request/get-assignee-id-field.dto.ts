@@ -1,3 +1,4 @@
+import { ApiProperty } from "@nestjs/swagger";
 import { IsIdPermitted } from "../../../../common/decorators/is-permitted-id.decorator";
 import { GetContextDto } from "../../../../common/dto/request/get-context.dto";
 import { PermissionType } from "../../../../types";
@@ -5,6 +6,7 @@ import { IUserContext } from "../../../user/interfaces/user-context.interface";
 
 export function GetPermittedAssigneeIdFieldDto(type: PermissionType) {
     class GetAssigneeIdDto extends GetContextDto<IUserContext> {
+        @ApiProperty()
         @IsIdPermitted('assignee', type)
         assigneeId: number
     }

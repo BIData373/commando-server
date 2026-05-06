@@ -47,7 +47,7 @@ export class MessageController {
     return await this.messageService.findOne(id);
   }
 
-  @ApiOperation({ operationId: 'patchMessage' })
+  @ApiOperation({ operationId: 'updateMessage' })
   @ApiParam({ name: 'id', type: Number })
   @ApiBody({ type: UpdateMessageDto })
   @Patch(':id')

@@ -43,7 +43,7 @@ export class UserController {
     return await this.userService.findOne(id);
   }
 
-  @ApiOperation({ operationId: 'patchUser' })
+  @ApiOperation({ operationId: 'updateUser' })
   @ApiParam({ name: 'id', type: Number })
   @ApiBody({ type: UpdateUserDto })
   @Patch(':id')

@@ -36,7 +36,7 @@ export class AssigneeUserController {
     return await this.assigneeUserService.findForAssignee(id);
   }
 
-  @ApiOperation({ operationId: 'patchAssigneeUser' })
+  @ApiOperation({ operationId: 'updateAssigneeUser' })
   @ApiParam({ name: 'assigneeId', type: Number })
   @ApiParam({ name: 'userId', type: Number })
   @Get(':assigneeId/:userId')

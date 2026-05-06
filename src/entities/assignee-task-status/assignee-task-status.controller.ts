@@ -22,7 +22,7 @@ export class AssigneeTaskStatusController {
     return await this.assigneeTaskStatusService.findInTask(taskId);
   }
 
-  @ApiOperation({ operationId: 'putAssigneeTaskStatus' })
+  @ApiOperation({ operationId: 'upsertAssigneeTaskStatus' })
   @ApiBody({ type: UpdateAssigneeTaskStatusDto })
   @Put()
   @ApiOkResponse({ type: AssigneeTaskStatusDto })

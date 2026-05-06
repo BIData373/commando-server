@@ -26,7 +26,7 @@ export class WorkspaceStatusController {
   @ApiOperation({ operationId: 'listWorkspaceStatuses' })
   @ApiQuery({ type: GetViewerWorkspaceIdFieldDto })
   @Get()
-  @ApiOkResponse({ type: WorkspaceStatusDto })
+  @ApiOkResponse({ type: [WorkspaceStatusDto] })
   @TransformPlainToInstance(WorkspaceStatusDto)
   async findInWorkspace(
     @Query() { workspaceId }: GetViewerWorkspaceIdFieldDto
@@ -45,12 +45,12 @@ export class WorkspaceStatusController {
     return await this.workspaceStatusService.findOne(id);
   }
 
-  @ApiOperation({ operationId: 'patchWorkspaceStatus' })
+  @ApiOperation({ operationId: 'updateWorkspaceStatus' })
   @ApiParam({ name: 'id', type: Number })
   @ApiBody({ type: UpdateWorkspaceStatusDto })
   @Patch(':id')
-  @TransformPlainToInstance(WorkspaceStatusDto)
   @ApiOkResponse({ type: WorkspaceStatusDto })
+  @TransformPlainToInstance(WorkspaceStatusDto)
   async update(
     @Param() { id }: GetManagerWorkspaceStatusIdDto,
     @Body() dto: UpdateWorkspaceStatusDto

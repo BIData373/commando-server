@@ -45,7 +45,7 @@ export class PikudController {
     return await this.pikudService.findOne(id);
   }
 
-  @ApiOperation({ operationId: 'patchPikud' })
+  @ApiOperation({ operationId: 'updatePikud' })
   @UseGuards(BIGuard)
   @ApiParam({ name: 'id', type: Number })
   @ApiBody({ type: UpdatePikudDto })

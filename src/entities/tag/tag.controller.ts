@@ -28,7 +28,7 @@ export class TagController {
   @ApiOperation({ operationId: 'listTags' })
   @ApiQuery({ type: GetViewerWorkspaceIdFieldDto })
   @Get()
-  @ApiOkResponse({ type: TagDto })
+  @ApiOkResponse({ type: [TagDto] })
   @TransformPlainToInstance(TagDto)
   async findAll(
     @Query() { workspaceId }: GetViewerWorkspaceIdFieldDto
@@ -47,7 +47,7 @@ export class TagController {
     return tag;
   }
 
-  @ApiOperation({ operationId: 'patchTag' })
+  @ApiOperation({ operationId: 'updateTag' })
   @ApiParam({ name: 'id', type: Number })
   @ApiBody({ type: UpdateTagDto })
   @Patch(':id')

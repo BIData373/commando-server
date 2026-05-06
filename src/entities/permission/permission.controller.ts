@@ -35,7 +35,7 @@ export class PermissionController {
     return await this.permissionService.findOne(user.id, workspaceId);
   }
 
-  @ApiOperation({ operationId: 'patchPermission' })
+  @ApiOperation({ operationId: 'updatePermission' })
   @ApiBody({ type: UpdatePermissionDto })
   @Patch()
   @ApiOkResponse({ type: PermissionDto })
