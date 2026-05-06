@@ -6,11 +6,11 @@ import { PrismaClient } from '../types/prisma/client';
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
   constructor(private readonly config: ConfigService) {
-    const host = config.getOrThrow<string>('PG_HOST')
+    const host = config.getOrThrow<string>('PGHOST')
     const port = config.getOrThrow<string>('PG_PORT')
-    const username = config.getOrThrow<string>('PG_USERNAME')
-    const password = config.getOrThrow<string>('PG_PASSWORD')
-    const database = config.getOrThrow<string>('PG_DATABASE')
+    const username = config.getOrThrow<string>('PGUSER')
+    const password = config.getOrThrow<string>('PGPASSWORD')
+    const database = config.getOrThrow<string>('POSTGRES_DATABASE')
 
     const connectionString = `postgres://${username}:${password}@${host}:${port}/${database}`
     const adapter = new PrismaPg({ connectionString })
