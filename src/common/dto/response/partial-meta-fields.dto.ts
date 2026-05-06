@@ -1,16 +1,17 @@
-import { Exclude, Expose } from 'class-transformer';
+import { Exclude } from 'class-transformer';
+import { ExposeProperty } from '../../decorators/expose-property.decorator';
 
 @Exclude()
 export class PartialMetaFieldsDto {
-  @Expose()
+  @ExposeProperty()
   createdAt: Date;
 
-  @Expose()
+  @ExposeProperty()
   createdBy: number;
 
-  @Expose()
+  @ExposeProperty()
   updatedAt: Date;
 
-  @Expose()
+  @ExposeProperty()
   updatedBy: number;
 }

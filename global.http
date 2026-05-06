@@ -6,7 +6,7 @@
         'Content-Type': 'application/json',
         'static-token': 'irwneioriowe',
         // 'requestusername': 's9336069',
-        'is-bi': false
+        'is-bi': true
     }
 
     exports.workspaceId = 1

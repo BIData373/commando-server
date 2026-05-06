@@ -1,4 +1,4 @@
-import { PartialType } from '@nestjs/mapped-types';
+import { PartialType } from '@nestjs/swagger';
 import { IUpdateMessage } from '../../../../types';
 import { GetContentDto } from './get-content.dto';
 

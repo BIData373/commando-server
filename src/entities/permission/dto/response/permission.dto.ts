@@ -1,15 +1,15 @@
-import { Exclude, Expose } from 'class-transformer';
+import { Exclude } from 'class-transformer';
+import { ExposeProperty } from '../../../../common/decorators/expose-property.decorator';
 import { IPermission, PermissionType } from '../../../../types';
 
 @Exclude()
 export class PermissionDto implements IPermission {
-  // FIX Whole relation?
-  @Expose()
+  @ExposeProperty()
   userId: number;
 
-  @Expose()
+  @ExposeProperty()
   workspaceId: number;
 
-  @Expose()
+  @ExposeProperty({ enum: PermissionType })
   type: PermissionType;
 }

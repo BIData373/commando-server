@@ -1,14 +1,15 @@
-import { Exclude, Expose } from 'class-transformer';
+import { Exclude } from 'class-transformer';
+import { ExposeProperty } from '../../../../common/decorators/expose-property.decorator';
 import { IAssigneeTaskStatus } from '../../../../types';
 
 @Exclude()
 export class AssigneeTaskStatusDto implements IAssigneeTaskStatus {
-  @Expose()
+  @ExposeProperty()
   taskId: number;
 
-  @Expose()
+  @ExposeProperty()
   assigneeId: number;
 
-  @Expose()
+  @ExposeProperty()
   statusId: number;
 }

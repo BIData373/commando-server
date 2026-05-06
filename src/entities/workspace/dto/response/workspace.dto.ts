@@ -1,21 +1,22 @@
-import { Exclude, Expose } from 'class-transformer';
+import { Exclude } from 'class-transformer';
+import { ExposeProperty } from '../../../../common/decorators/expose-property.decorator';
 import { IdMetaFieldsDto } from '../../../../common/dto/response/id-meta-fields.dto';
 import { IWorkspace } from '../../../../types';
 
 @Exclude()
 export class WorkspaceDto extends IdMetaFieldsDto implements IWorkspace {
-  @Expose()
+  @ExposeProperty()
   title: string;
 
-  @Expose()
+  @ExposeProperty()
   urlName: string;
 
-  @Expose()
+  @ExposeProperty({ nullable: true })
   icon: string | null;
 
-  @Expose()
+  @ExposeProperty()
   assigneeStatusEditable: boolean;
 
-  @Expose()
+  @ExposeProperty()
   pikudId: number;
 }

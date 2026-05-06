@@ -1,4 +1,4 @@
-import { PartialType } from '@nestjs/mapped-types';
+import { PartialType } from '@nestjs/swagger';
 import { IUpdateAssignee } from '../../../../types';
 import { CreateAssigneeDto } from './create-assignee.dto';
 

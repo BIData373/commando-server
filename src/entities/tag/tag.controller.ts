@@ -1,4 +1,5 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req } from '@nestjs/common';
+import { ApiBody, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { TransformPlainToInstance } from 'class-transformer';
 import { Request } from 'express';
 import { GetViewerWorkspaceIdFieldDto } from '../workspace/dto/request/get-workspace-id-field.dto';
@@ -12,7 +13,10 @@ import { TagService } from './tag.service';
 export class TagController {
   constructor(private readonly tagService: TagService) { }
 
+  @ApiOperation({ operationId: 'createTag' })
+  @ApiBody({ type: CreateTagDto })
   @Post()
+  @ApiCreatedResponse({ type: TagDto })
   @TransformPlainToInstance(TagDto)
   async create(
     @Req() { user }: Request,
@@ -21,7 +25,10 @@ export class TagController {
     return await this.tagService.create(dto, user.id);
   }
 
+  @ApiOperation({ operationId: 'listTags' })
+  @ApiQuery({ type: GetViewerWorkspaceIdFieldDto })
   @Get()
+  @ApiOkResponse({ type: [TagDto] })
   @TransformPlainToInstance(TagDto)
   async findAll(
     @Query() { workspaceId }: GetViewerWorkspaceIdFieldDto
@@ -29,7 +36,10 @@ export class TagController {
     return await this.tagService.findInWorkspace(workspaceId);
   }
 
+  @ApiOperation({ operationId: 'getTag' })
+  @ApiParam({ name: 'id', type: Number })
   @Get(':id')
+  @ApiOkResponse({ type: TagDto })
   @TransformPlainToInstance(TagDto)
   async findOne(
     @Param() { context: { tag } }: GetViewerTagIdDto
@@ -37,7 +47,11 @@ export class TagController {
     return tag;
   }
 
+  @ApiOperation({ operationId: 'updateTag' })
+  @ApiParam({ name: 'id', type: Number })
+  @ApiBody({ type: UpdateTagDto })
   @Patch(':id')
+  @ApiOkResponse({ type: TagDto })
   @TransformPlainToInstance(TagDto)
   async update(
     @Req() { user }: Request,
@@ -47,7 +61,10 @@ export class TagController {
     return await this.tagService.update(id, dto, user.id);
   }
 
+  @ApiOperation({ operationId: 'deleteTag' })
+  @ApiParam({ name: 'id', type: Number })
   @Delete(':id')
+  @ApiOkResponse({ type: TagDto })
   @TransformPlainToInstance(TagDto)
   async remove(
     @Param() { id }: GetManagerTagIdDto

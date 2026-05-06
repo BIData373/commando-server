@@ -1,13 +1,14 @@
-import { Exclude, Expose } from 'class-transformer';
+import { Exclude } from 'class-transformer';
+import { ExposeProperty } from '../../../../common/decorators/expose-property.decorator';
 import { IdDto } from '../../../../common/dto/response/id.dto';
 import { IUser } from '../../../../types';
 import { UserInfoDto } from './user-info.dto';
 
 @Exclude()
 export class UserDto extends IdDto implements IUser {
-  @Expose()
+  @ExposeProperty()
   upn: string;
 
-  @Expose()
+  @ExposeProperty({ nullable: true, type: () => UserInfoDto })
   info: UserInfoDto | null;
 }
