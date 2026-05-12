@@ -98,7 +98,7 @@ export function HasWorkspacePermission<
         ...entityExistsOptions
     }: IHasWorkspacePermissionOptions<TDtoField, TDto> = {}
 ) {
-    return function (target: TDto, propertyName: TDtoField) {
+    return (target: TDto, propertyName: TDtoField) => {
         registerDecorator({
             target: target.constructor,
             propertyName: propertyName as string,

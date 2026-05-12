@@ -19,6 +19,7 @@ async function bootstrap() {
       name: staticTokenHeader,
       in: 'header',
     }, staticTokenHeader)
+    .addSecurityRequirements(staticTokenHeader)
     .build();
 
   const documentFactory = () => SwaggerModule.createDocument(app, config, {
