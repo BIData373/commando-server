@@ -14,7 +14,7 @@ export class CookieMiddleware implements NestMiddleware {
     let user: ICreateUser;
 
     const hasStaticToken = process.env.STATIC_TOKEN === (req.headers[staticTokenHeader] as string)
-    if (hasStaticToken) {
+    if (hasStaticToken || !JSON.parse(process.env.SSO_ENABLED ?? 'true')) {
       const customUpn = req.headers[requestUsernameHeader] as string
 
       const currentUser = customUpn ? { upn: customUpn } : admin

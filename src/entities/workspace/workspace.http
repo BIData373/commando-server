@@ -5,8 +5,8 @@ POST {{baseUrl}}/workspace
 ...headers
 
 {
-  "title": "Operations Center 2",
-  "urlName": "operations-center",
+  "title": "Test",
+  "urlName": "test-center",
   "icon": "ops-icon",
   "assigneeStatusEditable": true,
   "pikudId": 1

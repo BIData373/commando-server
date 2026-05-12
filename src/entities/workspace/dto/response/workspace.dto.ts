@@ -11,7 +11,7 @@ export class WorkspaceDto extends IdMetaFieldsDto implements IWorkspace {
   @ExposeProperty()
   urlName: string;
 
-  @ExposeProperty({ nullable: true })
+  @ExposeProperty({ type: String, nullable: true })
   icon: string | null;
 
   @ExposeProperty()

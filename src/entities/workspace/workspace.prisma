@@ -1,6 +1,7 @@
 model Workspace {
   id                     Int     @id @default(autoincrement())
   title                  String
+  // TODO - unique
   urlName                String  @map("url_name")
   icon                   String?
   assigneeStatusEditable Boolean @default(false) @map("assignee_status_editable")

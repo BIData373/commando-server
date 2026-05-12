@@ -5,12 +5,12 @@ import { PermissionType } from "../../../../types/prisma";
 import { IUserContext } from "../../../user/interfaces/user-context.interface";
 
 export function GetPermittedWorkspaceIdDto(type: PermissionType) {
-    class GetWorkspaceIdDto extends GetContextDto<IUserContext> {
-        @IsIdPermitted('workspace', type)
-        id: number
-    }
+  class GetWorkspaceIdDto extends GetContextDto<IUserContext> {
+    @IsIdPermitted('workspace', type)
+    id: number
+  }
 
-    return GetWorkspaceIdDto
+  return GetWorkspaceIdDto
 }
 
 export class GetWorkspaceIdDto extends GetIdDto('workspace') { }
