@@ -2,10 +2,7 @@ import { config } from 'dotenv';
 import path from 'node:path';
 import { defineConfig } from "prisma/config";
 
-// if (!process.env.ENV) {
-//   throw new Error('ENV was not passed!')
-// }
-
+// allow build to happen without issues
 if (process.env.ENV) {
   config({ path: path.join('./config', process.env.ENV, '.env') })
 }
