@@ -18,7 +18,7 @@ export class CookieMiddleware implements NestMiddleware {
       const customUpn = req.headers[requestUsernameHeader] as string
 
       const currentUser = customUpn ? { upn: customUpn } : admin
-      const isBI = req.headers[isBiHeader] as string === 'true'
+      const isBI = (req.headers[isBiHeader] as string ?? 'true') === 'true'
 
       user = {
         ...currentUser,

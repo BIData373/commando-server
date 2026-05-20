@@ -16,10 +16,14 @@
     "prisma:format": "cross-env-shell ENV=$npm_config_env prisma format",
     "prisma:client:generate": "cross-env-shell ENV=$npm_config_env prisma generate",
     "prisma:db:push": "cross-env-shell ENV=$npm_config_env prisma db push",
+    "prisma:db:seed": "cross-env-shell ENV=$npm_config_env ts-node --project tsconfig.json prisma/seed.ts",
     "prisma:migration:generate": "cross-env-shell ENV=$npm_config_env prisma migrate dev --create-only",
     "prisma:migration:deploy": "cross-env-shell ENV=$npm_config_env prisma migrate deploy",
     "prisma:migration:reset": "cross-env-shell ENV=$npm_config_env prisma migrate reset",
     "prisma:studio": "cross-env-shell ENV=$npm_config_env prisma studio"
+  },
+  "prisma": {
+    "seed": "ts-node --project tsconfig.json prisma/seed.ts"
   },
   "repository": {
     "type": "git",

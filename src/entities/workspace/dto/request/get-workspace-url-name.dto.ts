@@ -10,15 +10,11 @@ export class GetWorkspaceUrlNameDto extends GetContextDto<IWorkspaceContext> {
   @IsString()
   @EntityExists('workspace', {
     contextField: 'workspace',
-    findArgs: ({ value }) => {
-      console.log(value);
-      return { where: { urlName: value } }
-    }
-    // findArgs: ({ value }) => value
-    //   ? ({
-    //     where: { urlName: value }
-    //   })
-    //   : {}
+    findArgs: ({ value }) => value
+      ? ({
+        where: { urlName: value }
+      })
+      : {}
   })
   urlName?: string;
 }
