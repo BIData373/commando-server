@@ -1,13 +1,17 @@
-import { IsNotEmptyString } from "../../../../common/decorators/is-not-empty-string.decorator";
+import { ApiProperty } from '@nestjs/swagger';
+import { IsNotEmptyString } from '../../../../common/decorators/is-not-empty-string.decorator';
 
 export class GetWorkspaceStatusFieldsDto {
-    @IsNotEmptyString()
-    name: string;
+  @ApiProperty()
+  @IsNotEmptyString()
+  name: string;
 
-    @IsNotEmptyString()
-    color: string;
+  @ApiProperty()
+  @IsNotEmptyString()
+  color: string;
 
-    // FIX Enum?
-    @IsNotEmptyString()
-    statusType: string;
+  // FIX Enum?
+  @ApiProperty()
+  @IsNotEmptyString()
+  statusType: string;
 }

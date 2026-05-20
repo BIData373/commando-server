@@ -1,7 +1,8 @@
-import { Exclude, Expose } from 'class-transformer';
+import { Exclude } from 'class-transformer';
+import { ExposeProperty } from '../../decorators/expose-property.decorator';
 
 @Exclude()
 export class IdDto {
-  @Expose()
+  @ExposeProperty()
   id: number;
 }

@@ -1,3 +1,4 @@
+import { ApiProperty } from "@nestjs/swagger"
 import { IId } from "../../../types"
 import { IEntityExistsValidationOptions } from "../../decorators/entity-exists.decorator"
 import { IdExists } from "../../decorators/id-exists.decorator"
@@ -10,6 +11,7 @@ export function GetIdDto<TModel extends Models>(
     options: IEntityExistsValidationOptions<IId, 'id', TModel> = {}
 ) {
     class GetIdDtoClass implements IId {
+        @ApiProperty()
         @IdExists(model, options)
         id: number
     }
@@ -27,6 +29,7 @@ export function GetIdContextDto<TModel extends Models>(
     > = {}
 ) {
     class GetIdDtoClass extends GetContextDto<Record<typeof contextField, TModel>> implements IId {
+        @ApiProperty()
         @IdExists(model, options)
         id: number
     }

@@ -1,18 +1,19 @@
-import { Exclude, Expose } from 'class-transformer';
+import { Exclude } from 'class-transformer';
+import { ExposeProperty } from '../../../../common/decorators/expose-property.decorator';
 import { IdDto } from '../../../../common/dto/response/id.dto';
 import { IWorkspaceStatus } from '../../../../types';
 
 @Exclude()
 export class WorkspaceStatusDto extends IdDto implements IWorkspaceStatus {
-  @Expose()
+  @ExposeProperty()
   name: string;
 
-  @Expose()
+  @ExposeProperty()
   color: string;
 
-  @Expose()
+  @ExposeProperty()
   statusType: string;
 
-  @Expose()
+  @ExposeProperty()
   workspaceId: number;
 }

@@ -4,9 +4,9 @@
     exports.baseUrl = local
     exports.headers = {
         'Content-Type': 'application/json',
-        'static-token': 'irwneioriowe',
+        'static-token': 'd7d47dc2-f442-4e01-8c8b-59f30014050d',
         // 'requestusername': 's9336069',
-        'is-bi': false
+        'is-bi': true
     }
 
     exports.workspaceId = 1

@@ -1,33 +1,34 @@
-import { Exclude, Expose } from 'class-transformer';
+import { Exclude } from 'class-transformer';
+import { ExposeProperty } from '../../../../common/decorators/expose-property.decorator';
 import { IdMetaFieldsDto } from '../../../../common/dto/response/id-meta-fields.dto';
 import { ITask } from '../../../../types';
 
 @Exclude()
 export class TaskDto extends IdMetaFieldsDto implements ITask {
-  @Expose()
+  @ExposeProperty()
   title: string;
 
-  @Expose()
+  @ExposeProperty({ nullable: true })
   description: string | null;
 
-  @Expose()
+  @ExposeProperty()
   flagged: boolean;
 
-  @Expose()
+  @ExposeProperty()
   deadlineType: string;
 
-  @Expose()
+  @ExposeProperty()
   issuedAt: Date;
 
-  @Expose()
+  @ExposeProperty()
   dueDate: Date;
 
-  @Expose()
+  @ExposeProperty({ nullable: true })
   notes: object | null;
 
-  @Expose()
+  @ExposeProperty()
   workspaceId: number;
 
-  @Expose()
+  @ExposeProperty()
   sourceId: number;
 }

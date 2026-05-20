@@ -1,4 +1,4 @@
-import { PartialType } from '@nestjs/mapped-types';
+import { PartialType } from '@nestjs/swagger';
 import { IUpdatePikud } from '../../../../types';
 import { CreatePikudDto } from './create-pikud.dto';
 

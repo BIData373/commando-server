@@ -17,7 +17,7 @@ export class TagService {
   }
 
   async findInWorkspace(workspaceId: number) {
-    return await this.prisma.permission.findMany({ where: { workspaceId } });
+    return await this.prisma.tag.findMany({ where: { workspaceId } });
   }
 
   async findOne(id: number) {
