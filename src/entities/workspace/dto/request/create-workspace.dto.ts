@@ -1,8 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsBoolean, IsInt, IsOptional, IsString } from 'class-validator';
-import { ICreateWorkspace } from '../../../../types';
 
-export class CreateWorkspaceDto implements ICreateWorkspace {
+export class CreateWorkspaceDto {
   @ApiProperty()
   @IsString()
   title: string;

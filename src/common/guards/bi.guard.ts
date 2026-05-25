@@ -1,6 +1,6 @@
 import { CanActivate, ExecutionContext, Injectable } from "@nestjs/common";
 import { Request } from 'express';
-import { IUserInfo } from "../../types";
+import { IUserInfo } from "../interfaces/user-info.interface";
 
 // FIX User info type
 @Injectable()

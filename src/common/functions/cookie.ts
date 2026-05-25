@@ -1,6 +1,6 @@
 import { UnauthorizedException } from "@nestjs/common";
 import { JwtPayload, verify } from "jsonwebtoken";
-import { IUserInfo } from "../../types";
+import { IUserInfo } from "../interfaces/user-info.interface";
 
 export function verifySsoUser(ssoUser: string) {
     try {

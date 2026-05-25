@@ -1,8 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsInt } from 'class-validator';
-import { IUpdateAssigneeTaskStatus } from '../../../../types';
 
-export class CreateAssigneeTaskStatusDto implements IUpdateAssigneeTaskStatus {
+export class CreateAssigneeTaskStatusDto {
   @ApiProperty()
   @IsInt()
   taskId: number;

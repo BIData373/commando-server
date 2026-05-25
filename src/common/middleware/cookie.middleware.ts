@@ -1,7 +1,7 @@
 import { Injectable, NestMiddleware } from '@nestjs/common';
 import { NextFunction, Request, Response } from 'express';
+import { CreateUserDto } from '../../entities/user/dto/request/create-user.dto';
 import { UserService } from '../../entities/user/user.service';
-import { ICreateUser } from '../../types';
 import { admin } from '../consts/admin';
 import { isBiHeader, requestUsernameHeader, staticTokenHeader } from '../consts/headers';
 import { verifySsoUser } from '../functions/cookie';
@@ -11,7 +11,7 @@ export class CookieMiddleware implements NestMiddleware {
   constructor(private readonly userService: UserService) { }
 
   async use(req: Request, _res: Response, next: NextFunction) {
-    let user: ICreateUser;
+    let user: CreateUserDto;
 
     const hasStaticToken = process.env.STATIC_TOKEN === (req.headers[staticTokenHeader] as string)
     if (hasStaticToken || !JSON.parse(process.env.SSO_ENABLED ?? 'true')) {

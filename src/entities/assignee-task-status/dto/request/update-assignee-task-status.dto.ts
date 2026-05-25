@@ -1,9 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsIdPermitted } from '../../../../common/decorators/is-permitted-id.decorator';
-import { IUpdateAssigneeTaskStatus, PermissionType } from '../../../../types';
+import { PermissionType } from '../../../../types/prisma';
 import { GetManagerAssigneeIdFieldDto } from '../../../assignee/dto/request/get-assignee-id-field.dto';
 
-export class UpdateAssigneeTaskStatusDto extends GetManagerAssigneeIdFieldDto implements IUpdateAssigneeTaskStatus {
+export class UpdateAssigneeTaskStatusDto extends GetManagerAssigneeIdFieldDto {
   @ApiProperty()
   @IsIdPermitted('task', PermissionType.MANAGER)
   taskId: number;

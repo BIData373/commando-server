@@ -1,5 +1,4 @@
 import { PartialType } from '@nestjs/swagger';
-import { IUpdateMessage } from '../../../../types';
 import { GetContentDto } from './get-content.dto';
 
-export class UpdateMessageDto extends PartialType(GetContentDto) implements IUpdateMessage { }
+export class UpdateMessageDto extends PartialType(GetContentDto) { }

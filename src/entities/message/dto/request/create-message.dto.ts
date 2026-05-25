@@ -1,9 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsIdPermitted } from '../../../../common/decorators/is-permitted-id.decorator';
-import { ICreateMessage, PermissionType } from '../../../../types';
+import { PermissionType } from '../../../../types/prisma';
 import { GetContentDto } from './get-content.dto';
 
-export class CreateMessageDto extends GetContentDto implements ICreateMessage {
+export class CreateMessageDto extends GetContentDto {
   @ApiProperty()
   @IsIdPermitted('task', PermissionType.MANAGER)
   taskId: number;

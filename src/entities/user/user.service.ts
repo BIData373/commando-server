@@ -1,8 +1,10 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { admin } from '../../common/consts/admin';
+import { IUserInfo } from '../../common/interfaces/user-info.interface';
 import { PrismaService } from '../../common/prisma.service';
-import { ICreateUser, IUpdateUser, IUserInfo } from '../../types';
 import { Prisma } from '../../types/prisma';
+import { CreateUserDto } from './dto/request/create-user.dto';
+import { UpdateUserDto } from './dto/request/update-user.dto';
 
 // FIX Add user search mirage function
 @Injectable()
@@ -17,7 +19,7 @@ export class UserService implements OnModuleInit {
     return (info as Readonly<IUserInfo>) ?? Prisma.JsonNull
   }
 
-  async upsert({ upn, info }: ICreateUser) {
+  async upsert({ upn, info }: CreateUserDto) {
     const infoToSave = UserService.formatInfoForSave(info)
 
     return await this.prisma.user.upsert({
@@ -27,7 +29,7 @@ export class UserService implements OnModuleInit {
     })
   }
 
-  async create({ upn, info }: ICreateUser) {
+  async create({ upn, info }: CreateUserDto) {
     return await this.prisma.user.create({
       data: {
         upn,
@@ -44,7 +46,7 @@ export class UserService implements OnModuleInit {
     return await this.prisma.user.findUnique({ where: { id } });
   }
 
-  async update(id: number, { upn, info }: IUpdateUser) {
+  async update(id: number, { upn, info }: UpdateUserDto) {
     return await this.prisma.user.update({
       where: { id },
       data: {

@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../common/prisma.service';
-import { IUpdateAssigneeTaskStatus } from '../../types';
 import { CreateAssigneeTaskStatusDto } from './dto/request/create-assignee-task-status.dto';
+import { UpdateAssigneeTaskStatusDto } from './dto/request/update-assignee-task-status.dto';
 
 @Injectable()
 export class AssigneeTaskStatusService {
@@ -29,7 +29,7 @@ export class AssigneeTaskStatusService {
     });
   }
 
-  upsert({ taskId, assigneeId, statusId }: IUpdateAssigneeTaskStatus) {
+  upsert({ taskId, assigneeId, statusId }: UpdateAssigneeTaskStatusDto) {
     return this.prisma.assigneeTaskStatus.upsert({
       where: { taskId_assigneeId: { taskId, assigneeId } },
       create: { taskId, assigneeId, statusId },

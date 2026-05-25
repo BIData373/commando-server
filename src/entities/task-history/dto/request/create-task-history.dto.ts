@@ -1,8 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEnum, IsInt, IsOptional, IsString } from 'class-validator';
-import { ICreateTaskHistory, HistoryAction } from '../../../../types';
+import { HistoryAction } from '../../../../types/prisma';
 
-export class CreateTaskHistoryDto implements ICreateTaskHistory {
+export class CreateTaskHistoryDto {
   @ApiProperty({ enum: HistoryAction })
   @IsEnum(HistoryAction)
   action: HistoryAction;

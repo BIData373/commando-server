@@ -1,5 +1,5 @@
-import { IUser } from "../../../types";
+import { UserDto } from "../dto/response/user.dto";
 
 export interface IUserContext {
-    user: IUser
+    user: UserDto
 }

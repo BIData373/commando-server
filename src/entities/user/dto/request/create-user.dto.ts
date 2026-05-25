@@ -1,13 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsObject, IsOptional, IsString } from 'class-validator';
-import { ICreateUser, IUserInfo } from '../../../../types';
+import { IUserInfo } from '../../../../common/interfaces/user-info.interface';
 
-export class CreateUserDto implements ICreateUser {
+export class CreateUserDto {
   @ApiProperty()
   @IsString()
   upn: string;
 
-  // FIX Validation?
+  // FIX Validation? Dto?
   @ApiProperty({ required: false })
   @IsObject()
   @IsOptional()

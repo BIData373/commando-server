@@ -20,7 +20,7 @@ export class TagController {
   @TransformPlainToInstance(TagDto)
   async create(
     @Req() { user }: Request,
-    @Body() { context, ...dto }: CreateTagDto
+    @Body() dto: CreateTagDto
   ) {
     return await this.tagService.create(dto, user.id);
   }
