@@ -1,0 +1,1 @@
+export const ssoEnabled = process.env.SSO_ENABLED === 'true'

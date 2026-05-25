@@ -3,6 +3,7 @@ import { NextFunction, Request, Response } from 'express';
 import { UserService } from '../../entities/user/user.service';
 import { ICreateUser } from '../../types';
 import { admin } from '../consts/admin';
+import { ssoEnabled } from '../consts/env';
 import { isBiHeader, requestUsernameHeader, staticTokenHeader } from '../consts/headers';
 import { verifySsoUser } from '../functions/cookie';
 
@@ -14,7 +15,7 @@ export class CookieMiddleware implements NestMiddleware {
     let user: ICreateUser;
 
     const hasStaticToken = process.env.STATIC_TOKEN === (req.headers[staticTokenHeader] as string)
-    if (hasStaticToken) {
+    if (hasStaticToken || !ssoEnabled) {
       const customUpn = req.headers[requestUsernameHeader] as string
 
       const currentUser = customUpn ? { upn: customUpn } : admin
