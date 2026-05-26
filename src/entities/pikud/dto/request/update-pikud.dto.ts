@@ -1,5 +1,4 @@
-import { PartialType } from '@nestjs/mapped-types';
-import { IUpdatePikud } from '../../../../types';
+import { PartialType } from '@nestjs/swagger';
 import { CreatePikudDto } from './create-pikud.dto';
 
-export class UpdatePikudDto extends PartialType(CreatePikudDto) implements IUpdatePikud {}
+export class UpdatePikudDto extends PartialType(CreatePikudDto) { }

@@ -1,27 +1,28 @@
-import { Exclude, Expose } from 'class-transformer';
+import { Exclude } from 'class-transformer';
+import { ExposeProperty } from '../../../../common/decorators/expose-property.decorator';
 import { IdDto } from '../../../../common/dto/response/id.dto';
-import { ITaskHistory, HistoryAction } from '../../../../types';
+import { HistoryAction } from '../../../../types/prisma';
 
 @Exclude()
-export class TaskHistoryDto extends IdDto implements ITaskHistory {
-  @Expose()
+export class TaskHistoryDto extends IdDto {
+  @ExposeProperty({ enum: HistoryAction })
   action: HistoryAction;
 
-  @Expose()
+  @ExposeProperty()
   field: string;
 
-  @Expose()
+  @ExposeProperty({ nullable: true })
   value: string | null;
 
-  @Expose()
+  @ExposeProperty()
   timestamp: Date;
 
-  @Expose()
+  @ExposeProperty()
   taskId: number;
 
-  @Expose()
+  @ExposeProperty()
   workspaceId: number;
 
-  @Expose()
+  @ExposeProperty()
   userId: number;
 }

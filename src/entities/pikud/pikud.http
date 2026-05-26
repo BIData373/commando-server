@@ -3,6 +3,7 @@
 ### Create Pikud — valid payload
 POST {{baseUrl}}/pikud
 Content-Type: application/json
+...headers
 
 {
   "name": "Pikud HaZafon",

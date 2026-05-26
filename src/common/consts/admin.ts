@@ -1,6 +1,6 @@
-import { ICreateUser } from "../../types";
+import { CreateUserDto } from "../../entities/user/dto/request/create-user.dto";
 
-export const admin: ICreateUser = {
+export const admin: CreateUserDto = {
     upn: 's0000000',
-    info: null
+    info: undefined
 };

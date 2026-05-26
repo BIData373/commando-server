@@ -6,6 +6,13 @@ module.exports = function (options) {
     // This is the "magic" part: 
     // By default, Nest excludes everything in node_modules. 
     // We override this to bundle them IN.
-    externals: [], 
+    externals: [
+      nodeExternals({
+        allowlist: [
+          /^swagger-ui-dist/,
+          /^swagger-ui-express/,
+        ],
+      })
+    ]
   };
 };

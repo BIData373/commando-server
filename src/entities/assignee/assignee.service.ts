@@ -2,17 +2,28 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../common/prisma.service';
 import { CreateAssigneeDto } from './dto/request/create-assignee.dto';
 import { UpdateAssigneeDto } from './dto/request/update-assignee.dto';
+import { Assignee } from '../../types/prisma';
 
 @Injectable()
 export class AssigneeService {
   constructor(private readonly prisma: PrismaService) { }
 
-  create(dto: CreateAssigneeDto, userId: number) {
-    return this.prisma.assignee.create({
+  async create({ userIds, ...dto }: CreateAssigneeDto, userId: number): Promise<Assignee> {
+    return await this.prisma.assignee.create({
       data: {
         ...dto,
         createdBy: userId,
-        updatedBy: userId
+        updatedBy: userId,
+        users: {
+          create: userIds.map(id => ({
+            user: {
+              connect: { id }
+            }
+          }))
+        },
+      },
+      include: {
+        users: true
       }
     });
   }

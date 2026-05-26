@@ -1,3 +1,4 @@
+import { ApiProperty } from "@nestjs/swagger";
 import { IsIdPermitted } from "../../../../common/decorators/is-permitted-id.decorator";
 import { GetContextDto } from "../../../../common/dto/request/get-context.dto";
 import { PermissionType } from "../../../../types/prisma";
@@ -6,6 +7,7 @@ import { ITagContext } from "../../interfaces/tag-context.interface";
 
 export function GetPermittedTagIdDto(type: PermissionType) {
     class GetTagIdDto extends GetContextDto<IUserContext & ITagContext> {
+        @ApiProperty()
         @IsIdPermitted('tag', type, {
             workspaceFindArgs: ({ value }) => ({ tags: { some: { id: value } } })
         })

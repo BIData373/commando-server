@@ -5,8 +5,8 @@ import { entityExists, IEntityExistsValidationOptions } from "../../../common/de
 import { PrismaService } from "../../../common/prisma.service";
 import { ExtractValue } from "../../../common/types/extract-value.type";
 import { PredicateParams } from "../../../common/types/predicate-params.type";
-import { IUser, PermissionType } from "../../../types";
-import { Prisma } from "../../../types/prisma";
+import { PermissionType, Prisma } from "../../../types/prisma";
+import { UserDto } from "../../user/dto/response/user.dto";
 
 interface IPermissionExistsValidationOptions<
     TDtoField extends keyof TDto,
@@ -25,7 +25,7 @@ interface IHasWorkspacePermissionContraints<
     TDto extends Record<TDtoField, number>
 > extends IHasWorkspacePermissionOptions<TDtoField, TDto> {
     type: PermissionType,
-    extractUser: (obj: TDto) => IUser,
+    extractUser: (obj: TDto) => UserDto,
 }
 
 const managerTypes = [PermissionType.MANAGER]
@@ -87,7 +87,7 @@ export function HasWorkspacePermission<
     TDto extends Record<TDtoField, number>
 >(
     type: PermissionType,
-    extractUser: (obj: TDto) => IUser,
+    extractUser: (obj: TDto) => UserDto,
     {
         workspaceFindArgs,
         each,
@@ -98,7 +98,7 @@ export function HasWorkspacePermission<
         ...entityExistsOptions
     }: IHasWorkspacePermissionOptions<TDtoField, TDto> = {}
 ) {
-    return function (target: TDto, propertyName: TDtoField) {
+    return (target: TDto, propertyName: TDtoField) => {
         registerDecorator({
             target: target.constructor,
             propertyName: propertyName as string,

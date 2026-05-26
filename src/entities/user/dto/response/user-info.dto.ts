@@ -1,18 +1,18 @@
-import { Exclude, Expose } from "class-transformer";
-import { IdDto } from "../../../../common/dto/response/id.dto";
-import { IUserInfo } from "../../../../types";
+import { Exclude } from 'class-transformer';
+import { ExposeProperty } from '../../../../common/decorators/expose-property.decorator';
+import { IdDto } from '../../../../common/dto/response/id.dto';
 
 @Exclude()
-export class UserInfoDto extends IdDto implements IUserInfo {
-    @Expose()
-    upn: string;
+export class UserInfoDto extends IdDto {
+  @ExposeProperty()
+  upn: string;
 
-    @Expose()
-    name: string;
+  @ExposeProperty()
+  name: string;
 
-    @Expose()
-    displayName: string;
+  @ExposeProperty()
+  displayName: string;
 
-    @Expose()
-    isBI: boolean;
+  @ExposeProperty()
+  isBI: boolean;
 }

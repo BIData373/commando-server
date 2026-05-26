@@ -12,10 +12,11 @@ import { PrismaService } from '../prisma.service';
 import { ExtractValue } from '../types/extract-value.type';
 import { Models } from '../types/models.type';
 import { PredicateParams } from '../types/predicate-params.type';
+import { merge } from 'lodash';
 
-type ModelFindFirst<TModel extends Models> = Prisma.TypeMap['model'][Capitalize<TModel>]['operations']['findFirst']
-type ModelFindFirstArgs<TModel extends Models> = ModelFindFirst<TModel>['args']
-type ModelFindFirstSelectArgs<TModel extends Models> = Prisma.SelectSubset<ModelFindFirstArgs<TModel>, ModelFindFirstArgs<TModel>>
+export type ModelFindFirst<TModel extends Models> = Prisma.TypeMap['model'][Capitalize<TModel>]['operations']['findFirst']
+export type ModelFindFirstArgs<TModel extends Models> = ModelFindFirst<TModel>['args']
+export type ModelFindFirstSelectArgs<TModel extends Models> = Prisma.SelectSubset<ModelFindFirstArgs<TModel>, ModelFindFirstArgs<TModel>>
 
 type ModelDelegate<TModel extends Models> = {
   findFirst(args: ModelFindFirstSelectArgs<TModel>): Promise<ModelFindFirst<TModel>['result']>
@@ -78,10 +79,12 @@ export async function entityExists<
   const record = await (prisma[model] as ModelDelegate<TModel>).findFirst(findArgs)
 
   if (record && contextField) {
-    Object.assign(object, {
-      [contextField]: {
-        ...((object as IContext<object>).context ?? {}),
-        ...record
+    merge(object, {
+      context: {
+        [contextField]: {
+          ...((object as IContext<object>).context ?? {}),
+          ...record
+        }
       }
     })
   }

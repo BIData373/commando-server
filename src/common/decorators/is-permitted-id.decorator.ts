@@ -1,7 +1,7 @@
 import { applyDecorators } from "@nestjs/common";
 import { IUserContext } from "../../entities/user/interfaces/user-context.interface";
 import { HasWorkspacePermission, IHasWorkspacePermissionOptions } from "../../entities/workspace/decorators/has-workspace-permission.decorator";
-import { PermissionType } from "../../types";
+import { PermissionType } from "../../types/prisma";
 import { IContext } from "../interfaces/context.interface";
 import { Models } from "../types/models.type";
 import { IdExists } from "./id-exists.decorator";

@@ -22,6 +22,8 @@ import { UserModule } from './entities/user/user.module';
 import { WorkspaceStatusModule } from './entities/workspace-status/workspace-status.module';
 import { WorkspaceModule } from './entities/workspace/workspace.module';
 
+export const openApiRoute = 'open-api'
+
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -66,9 +68,9 @@ import { WorkspaceModule } from './entities/workspace/workspace.module';
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer): void {
-    consumer.apply(
-      WritableQueryMiddleware,
-      CookieMiddleware
-    ).forRoutes('*');
+    consumer
+      .apply(WritableQueryMiddleware, CookieMiddleware)
+      .exclude(openApiRoute, `${openApiRoute}/(.*)`)
+      .forRoutes('*');
   }
 }
