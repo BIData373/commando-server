@@ -3,12 +3,13 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { useContainer } from 'class-validator';
 import 'reflect-metadata';
 import { AppModule, openApiRoute } from './app.module';
+import { ssoEnabled } from './common/consts/env';
 import { staticTokenHeader } from './common/consts/headers';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     cors: {
-      credentials: JSON.parse(process.env.VITE_USE_SSO ?? 'false') && process.env.ENVIRONMENT === 'development',
+      credentials: ssoEnabled && process.env.ENVIRONMENT === 'development',
     }
   });
 
