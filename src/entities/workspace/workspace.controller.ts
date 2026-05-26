@@ -33,7 +33,7 @@ export class WorkspaceController {
   @ApiOkResponse({ type: [WorkspaceDto] })
   @TransformPlainToInstance(WorkspaceDto)
   async findAll(
-    @Query() { context: {workspace} }: GetWorkspaceUrlNameDto
+    @Query() { context: { workspace } }: GetWorkspaceUrlNameDto
   ) {
     return await this.workspaceService.findAll(workspace)
   }

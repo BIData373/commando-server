@@ -47,6 +47,7 @@ export class PermissionController {
   }
 
   @ApiOperation({ operationId: 'deletePermission' })
+  @ApiQuery({ type: DeletePermissionDto })
   @Delete()
   @ApiOkResponse({ type: PermissionDto })
   @TransformPlainToInstance(PermissionDto)
