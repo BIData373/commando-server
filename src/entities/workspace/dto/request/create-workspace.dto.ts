@@ -10,10 +10,10 @@ export class CreateWorkspaceDto {
   @IsString()
   urlName: string;
 
-  @ApiProperty({ required: false })
+  @ApiProperty({ type: String, nullable: true, required: false })
   @IsString()
   @IsOptional()
-  icon?: string;
+  icon?: string | null;
 
   @ApiProperty({ required: false })
   @IsBoolean()

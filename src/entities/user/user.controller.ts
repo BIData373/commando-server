@@ -1,8 +1,9 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
-import { ApiBody, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiParam } from '@nestjs/swagger';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
+import { ApiBody, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { TransformPlainToInstance } from 'class-transformer';
 import { BIGuard } from '../../common/guards/bi.guard';
 import { CreateUserDto } from './dto/request/create-user.dto';
+import { GetSearchDto } from './dto/request/get-search.dto';
 import { GetUserIdDto } from './dto/request/get-user-id.dto';
 import { UpdateUserDto } from './dto/request/update-user.dto';
 import { UserDto } from './dto/response/user.dto';
@@ -30,6 +31,17 @@ export class UserController {
   @TransformPlainToInstance(UserDto)
   async findAll() {
     return await this.userService.findAll();
+  }
+
+  @ApiOperation({ operationId: 'searchUsers' })
+  @ApiQuery({ type: GetSearchDto })
+  @Get('search')
+  @ApiOkResponse({ type: [UserDto] })
+  @TransformPlainToInstance(UserDto)
+  async search(
+    @Query() { search }: GetSearchDto
+  ) {
+    return await this.userService.search(search);
   }
 
   @ApiOperation({ operationId: 'getUser' })
