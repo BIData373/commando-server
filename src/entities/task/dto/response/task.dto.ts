@@ -1,13 +1,15 @@
-import { Exclude } from 'class-transformer';
+import { Exclude, Type } from 'class-transformer';
 import { ExposeProperty } from '../../../../common/decorators/expose-property.decorator';
 import { IdMetaFieldsDto } from '../../../../common/dto/response/id-meta-fields.dto';
+import { SourceDto } from '../../../source/dto/response/source.dto';
+import { TagDto } from '../../../tag/dto/response/tag.dto';
 
 @Exclude()
 export class TaskDto extends IdMetaFieldsDto {
   @ExposeProperty()
   title: string;
 
-  @ExposeProperty({ nullable: true })
+  @ExposeProperty({ type: String, nullable: true })
   description: string | null;
 
   @ExposeProperty()
@@ -29,5 +31,10 @@ export class TaskDto extends IdMetaFieldsDto {
   workspaceId: number;
 
   @ExposeProperty()
-  sourceId: number;
+  @Type(() => SourceDto)
+  source: SourceDto;
+
+  @ExposeProperty()
+  @Type(() => TagDto)
+  tags: TagDto[];
 }

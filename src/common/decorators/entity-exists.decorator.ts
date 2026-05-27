@@ -6,13 +6,13 @@ import {
   ValidatorConstraint,
   ValidatorConstraintInterface,
 } from 'class-validator';
+import { merge } from 'lodash';
 import { Prisma } from '../../types/prisma';
 import { IContext } from '../interfaces/context.interface';
 import { PrismaService } from '../prisma.service';
 import { ExtractValue } from '../types/extract-value.type';
 import { Models } from '../types/models.type';
 import { PredicateParams } from '../types/predicate-params.type';
-import { merge } from 'lodash';
 
 export type ModelFindFirst<TModel extends Models> = Prisma.TypeMap['model'][Capitalize<TModel>]['operations']['findFirst']
 export type ModelFindFirstArgs<TModel extends Models> = ModelFindFirst<TModel>['args']
@@ -39,6 +39,7 @@ interface IEntityExistsConstraints<
   TModel extends Models
 > extends IEntityExistsOptions<TDto, TDtoField, TModel> {
   model: TModel
+  each?: boolean
 }
 
 export interface IEntityExistsValidationOptions<
@@ -61,6 +62,7 @@ export async function entityExists<
 ) {
   const {
     model,
+    each,
     contextField,
     failIfExists,
     findArgs: customFindArgs,
@@ -74,11 +76,24 @@ export async function entityExists<
   }
 
   const defaultFindArgs = { where: { id: value } } as unknown as ModelFindFirstSelectArgs<TModel>
-  const findArgs = customFindArgs?.({ value, obj }) ?? defaultFindArgs
+  const repo = prisma[model] as ModelDelegate<TModel>
 
-  const record = await (prisma[model] as ModelDelegate<TModel>).findFirst(findArgs)
+  const findFirst = async (
+    value: ExtractValue<TDto, TDtoField>,
+    obj: TDto
+  ) => await repo.findFirst(customFindArgs?.({ value, obj }) ?? defaultFindArgs)
 
-  if (record && contextField) {
+  const record = !!each && Array.isArray(value)
+    ? await Promise.all(value.map(async item => await findFirst(item, obj)))
+    : await findFirst(value, obj)
+
+  const recordExists = !!record && (
+    !each ||
+    !Array.isArray(record) ||
+    record.length > 0
+  )
+
+  if (recordExists && contextField) {
     merge(object, {
       context: {
         [contextField]: {
@@ -89,10 +104,9 @@ export async function entityExists<
     })
   }
 
-  return failIfExists ? !record : !!record;
+  return failIfExists ? !recordExists : recordExists;
 }
 
-// FIX Implement each
 @ValidatorConstraint({ async: true })
 @Injectable()
 export class EntityExistsConstraint<
@@ -102,14 +116,16 @@ export class EntityExistsConstraint<
 > implements ValidatorConstraintInterface {
   constructor(private readonly prisma: PrismaService) { }
 
-  async validate(value: ExtractValue<TDto, TDtoField>, args: ValidationArguments) {
+  async validate(value: ExtractValue<TDto, TDtoField>, args: ValidationArguments): Promise<boolean> {
     return await entityExists(this.prisma, value, args)
   }
 
   defaultMessage(args: ValidationArguments): string {
-    const { model } = args.constraints[0] as IEntityExistsConstraints<TDto, TDtoField, TModel>
+    const { model, failIfExists } = args.constraints[0] as IEntityExistsConstraints<TDto, TDtoField, TModel>
 
-    return `${String(model)} with id ${args.value} does not exist`;
+    return failIfExists
+      ? `${String(model)} with id ${args.value} already exists`
+      : `${String(model)} with id ${args.value} does not exist`;
   }
 }
 
@@ -133,7 +149,7 @@ export function EntityExists<
       target: target.constructor,
       propertyName: propertyName as string,
       options: { each, message, groups, always, context },
-      constraints: [{ model, ...entityExistsOptions }],
+      constraints: [{ model, each, ...entityExistsOptions }],
       validator: EntityExistsConstraint<TDto, TDtoField, TModel>
     });
   };

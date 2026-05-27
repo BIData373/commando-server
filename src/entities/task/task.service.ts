@@ -1,10 +1,17 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../common/prisma.service';
+import { Prisma } from '../../types/prisma';
 import { CreateTaskDto } from './dto/request/create-task.dto';
 import { UpdateTaskDto } from './dto/request/update-task.dto';
 
 @Injectable()
 export class TaskService {
+  static readonly include: Prisma.TaskInclude = {
+    source: true,
+    tags: true,
+    assigneeStatuses: true
+  }
+
   constructor(private readonly prisma: PrismaService) { }
 
   create(dto: CreateTaskDto, userId: number) {
@@ -13,33 +20,38 @@ export class TaskService {
         ...dto,
         createdBy: userId,
         updatedBy: userId
-      }
+      },
+      include: TaskService.include
     });
-  }
-
-  findAll() {
-    return this.prisma.task.findMany({ where: { deletedAt: null } });
   }
 
   async findInWorkspace(workspaceId: number) {
-    return await this.prisma.task.findMany({ where: { workspaceId, deletedAt: null } });
-  }
-
-  findOne(id: number) {
-    return this.prisma.task.findUnique({ where: { id } });
-  }
-
-  update(id: number, dto: UpdateTaskDto, updatedBy: number) {
-    return this.prisma.task.update({
-      where: { id },
-      data: { ...dto, updatedBy }
+    return await this.prisma.task.findMany({
+      where: { workspaceId, deletedAt: null },
+      include: TaskService.include
     });
   }
 
-  remove(id: number, deletedBy: number) {
-    return this.prisma.task.update({
+  async findOne(id: number) {
+    return await this.prisma.task.findUnique({
+      where: { id },
+      include: TaskService.include
+    });
+  }
+
+  async update(id: number, dto: UpdateTaskDto, updatedBy: number) {
+    return await this.prisma.task.update({
+      where: { id },
+      data: { ...dto, updatedBy },
+      include: TaskService.include
+    });
+  }
+
+  async remove(id: number, deletedBy: number) {
+    return await this.prisma.task.update({
       where: { id },
       data: { deletedAt: new Date(), deletedBy },
+      include: TaskService.include
     });
   }
 }

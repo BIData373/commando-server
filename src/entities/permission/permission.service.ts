@@ -1,10 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../common/prisma.service';
-import { PermissionType } from '../../types/prisma';
+import { PermissionType, Prisma } from '../../types/prisma';
 
 // FIX Add createdAt, updatedAt, createdBy, updatedBy?
 @Injectable()
 export class PermissionService {
+  static readonly include: Prisma.PermissionInclude = {
+    user: true
+  }
+
   constructor(private readonly prisma: PrismaService) { }
 
   async hasPermission(userId: number, workspaceId: number, types: PermissionType[]) {
@@ -16,12 +20,16 @@ export class PermissionService {
   }
 
   async findInWorkspace(workspaceId: number) {
-    return await this.prisma.permission.findMany({ where: { workspaceId } });
+    return await this.prisma.permission.findMany({
+      where: { workspaceId },
+      include: PermissionService.include
+    });
   }
 
   async findOne(userId: number, workspaceId: number) {
     return await this.prisma.permission.findUnique({
       where: { userId_workspaceId: { userId, workspaceId } },
+      include: PermissionService.include
     });
   }
 
@@ -36,7 +44,8 @@ export class PermissionService {
       return await prisma.permission.upsert({
         where: { userId_workspaceId: { userId: user.id, workspaceId } },
         create: { userId: user.id, workspaceId, type },
-        update: { type }
+        update: { type },
+        include: PermissionService.include
       });
     })
   }
@@ -44,6 +53,7 @@ export class PermissionService {
   async remove(userId: number, workspaceId: number) {
     return await this.prisma.permission.delete({
       where: { userId_workspaceId: { userId, workspaceId } },
+      include: PermissionService.include
     });
   }
 }

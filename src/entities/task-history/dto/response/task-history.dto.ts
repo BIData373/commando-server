@@ -11,7 +11,7 @@ export class TaskHistoryDto extends IdDto {
   @ExposeProperty()
   field: string;
 
-  @ExposeProperty({ nullable: true })
+  @ExposeProperty({ type: String, nullable: true })
   value: string | null;
 
   @ExposeProperty()
