@@ -1,9 +1,9 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { admin } from '../../common/consts/admin';
-import { IUserInfo } from '../../common/interfaces/user-info.interface';
 import { PrismaService } from '../../common/prisma.service';
 import { Prisma } from '../../types/prisma';
 import { CreateUserDto } from './dto/request/create-user.dto';
+import { GetUserInfoDto } from './dto/request/get-user-info.dto';
 import { UpdateUserDto } from './dto/request/update-user.dto';
 import { UserDto } from './dto/response/user.dto';
 
@@ -33,7 +33,7 @@ export class UserService implements OnModuleInit {
     const term = search.toLowerCase();
 
     return MOCK_USERS.filter(({ upn, info }) => {
-      const { name = '', displayName = '' } = (info as IUserInfo) ?? {};
+      const { name = '', displayName = '' } = (info as GetUserInfoDto) ?? {};
       return (
         upn.toLowerCase().includes(term) ||
         name.toLowerCase().includes(term) ||
@@ -42,18 +42,22 @@ export class UserService implements OnModuleInit {
     });
   }
 
-  static formatInfoForSave(info?: IUserInfo | null) {
-    return (info as Readonly<IUserInfo>) ?? Prisma.JsonNull
+  static formatInfoForSave(info?: GetUserInfoDto | null) {
+    return (info as Readonly<GetUserInfoDto>) ?? Prisma.JsonNull
   }
 
-  async upsert({ upn, info }: CreateUserDto) {
+  static async upsertTx(tx: Prisma.TransactionClient, { upn, info }: CreateUserDto) {
     const infoToSave = UserService.formatInfoForSave(info)
 
-    return await this.prisma.user.upsert({
+    return await tx.user.upsert({
       where: { upn },
       create: { upn, info: infoToSave },
       update: { upn, info: infoToSave }
     })
+  }
+
+  async upsert(dto: CreateUserDto) {
+    return await this.prisma.$transaction(async tx => await UserService.upsertTx(tx, dto))
   }
 
   async create({ upn, info }: CreateUserDto) {

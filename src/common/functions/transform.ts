@@ -37,7 +37,6 @@ export async function addDtosToContext(
 }
 
 export function forbiddenExceptionFactory(errors: ValidationError[]) {
-    console.log(JSON.stringify(errors, undefined, 4))
     const isForbidden = errors.every(error =>
         Object.values(error.constraints ?? {}).every(
             constraint => constraint === FORBIDDEN_MESSAGE

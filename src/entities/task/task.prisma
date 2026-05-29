@@ -22,10 +22,10 @@ model Task {
   sourceId Int    @map("source_id")
   source   Source @relation(fields: [sourceId], references: [id])
 
-  tags  Tag[] @relation("tasks_tags")
+  tags             Tag[]                @relation("tasks_tags")
   assigneeStatuses AssigneeTaskStatus[]
-  messages  Message[]
-  history TaskHistory[]
+  messages         Message[]
+  history          TaskHistory[]
 
   @@map("tasks")
 }

@@ -7,8 +7,8 @@ import { UpdateMessageDto } from './dto/request/update-message.dto';
 export class MessageService {
   constructor(private readonly prisma: PrismaService) { }
 
-  create(dto: CreateMessageDto, userId: number) {
-    return this.prisma.message.create({
+  async create(dto: CreateMessageDto, userId: number) {
+    return await this.prisma.message.create({
       data: {
         ...dto,
         createdBy: userId,
@@ -17,27 +17,23 @@ export class MessageService {
     });
   }
 
-  findAll() {
-    return this.prisma.message.findMany({ where: { deletedAt: null } });
-  }
-
   async findInTask(taskId: number) {
     return await this.prisma.message.findMany({ where: { taskId, deletedAt: null } });
   }
 
-  findOne(id: number) {
-    return this.prisma.message.findUnique({ where: { id } });
+  async findOne(id: number) {
+    return await this.prisma.message.findUnique({ where: { id } });
   }
 
-  update(id: number, dto: UpdateMessageDto, updatedBy: number) {
-    return this.prisma.message.update({
+  async update(id: number, dto: UpdateMessageDto, updatedBy: number) {
+    return await this.prisma.message.update({
       where: { id },
       data: { ...dto, updatedBy }
     });
   }
 
-  remove(id: number, deletedBy: number) {
-    return this.prisma.message.update({
+  async remove(id: number, deletedBy: number) {
+    return await this.prisma.message.update({
       where: { id },
       data: { deletedAt: new Date(), deletedBy },
     });

@@ -1,10 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../common/prisma.service';
+import { Prisma } from '../../types/prisma';
 import { CreateWorkspaceDto } from './dto/request/create-workspace.dto';
 import { UpdateWorkspaceDto } from './dto/request/update-workspace.dto';
 import { WorkspaceDto } from './dto/response/workspace.dto';
-import { Prisma, Workspace } from '../../types/prisma';
-import { ModelFindFirstSelectArgs } from '../../common/decorators/entity-exists.decorator';
 
 @Injectable()
 export class WorkspaceService {
@@ -20,10 +19,10 @@ export class WorkspaceService {
     });
   }
 
-  findAll(workspace?: WorkspaceDto, extraWhere?: Prisma.WorkspaceWhereInput) {
+  async findAll(workspace?: WorkspaceDto, extraWhere?: Prisma.WorkspaceWhereInput) {
     return workspace
       ? [workspace]
-      : this.prisma.workspace.findMany({
+      : await this.prisma.workspace.findMany({
         where: {
           deletedAt: null,
           ...extraWhere

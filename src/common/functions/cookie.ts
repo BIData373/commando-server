@@ -1,6 +1,6 @@
 import { UnauthorizedException } from "@nestjs/common";
 import { JwtPayload, verify } from "jsonwebtoken";
-import { IUserInfo } from "../interfaces/user-info.interface";
+import { GetUserInfoDto } from "../../entities/user/dto/request/get-user-info.dto";
 
 export function verifySsoUser(ssoUser: string) {
     try {
@@ -10,7 +10,7 @@ export function verifySsoUser(ssoUser: string) {
             { algorithms: ['HS256'] }
         ) as JwtPayload
 
-        return result?.user as IUserInfo
+        return result?.user as GetUserInfoDto
     }
 
     catch (e: unknown) {

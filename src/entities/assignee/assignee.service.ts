@@ -1,56 +1,86 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../common/prisma.service';
+import { Prisma } from '../../types/prisma';
+import { CreateUserDto } from '../user/dto/request/create-user.dto';
+import { UserService } from '../user/user.service';
 import { CreateAssigneeDto } from './dto/request/create-assignee.dto';
 import { UpdateAssigneeDto } from './dto/request/update-assignee.dto';
-import { Assignee } from '../../types/prisma';
 
 @Injectable()
 export class AssigneeService {
+  static readonly include: Prisma.AssigneeInclude = {
+    users: true
+  }
+
   constructor(private readonly prisma: PrismaService) { }
 
-  async create({ userIds, ...dto }: CreateAssigneeDto, userId: number): Promise<Assignee> {
-    return await this.prisma.assignee.create({
-      data: {
-        ...dto,
-        createdBy: userId,
-        updatedBy: userId,
-        users: {
-          create: userIds.map(id => ({
-            user: {
-              connect: { id }
-            }
-          }))
+  static async upsertUsersTx(tx: Prisma.TransactionClient, users: CreateUserDto[]) {
+    const upsertedUsers = await Promise.all(
+      users.map(async user => await UserService.upsertTx(tx, user))
+    )
+
+    return {
+      set: [],
+      connect: upsertedUsers.map(({ id }) => ({ id }))
+    }
+  }
+
+  async create(
+    { context, users, ...dto }: CreateAssigneeDto,
+    userId: number
+  ) {
+    return await this.prisma.$transaction(async tx => {
+      return await tx.assignee.create({
+        data: {
+          ...dto,
+          createdBy: userId,
+          updatedBy: userId,
+          users: await AssigneeService.upsertUsersTx(tx, users)
         },
-      },
-      include: {
-        users: true
-      }
-    });
+        include: AssigneeService.include
+      });
+    })
   }
 
   async findInWorkspace(workspaceId: number) {
-    return await this.prisma.assignee.findMany({ where: { workspaceId } });
-  }
-
-  findAll() {
-    return this.prisma.assignee.findMany({ where: { deletedAt: null } });
-  }
-
-  findOne(id: number) {
-    return this.prisma.assignee.findUnique({ where: { id } });
-  }
-
-  update(id: number, dto: UpdateAssigneeDto, updatedBy: number) {
-    return this.prisma.assignee.update({
-      where: { id },
-      data: { ...dto, updatedBy }
+    return await this.prisma.assignee.findMany({
+      where: { workspaceId },
+      include: AssigneeService.include
     });
   }
 
-  remove(id: number, deletedBy: number) {
-    return this.prisma.assignee.update({
+  async findOne(id: number) {
+    return await this.prisma.assignee.findUnique({
+      where: { id },
+      include: AssigneeService.include
+    });
+  }
+
+  async update(
+    id: number,
+    { users, context, ...dto }: UpdateAssigneeDto,
+    updatedBy: number
+  ) {
+    return await this.prisma.$transaction(async tx => {
+      return await tx.assignee.update({
+        where: { id },
+        data: {
+          ...dto,
+          updatedBy,
+          ...(users && {
+            users: await AssigneeService.upsertUsersTx(tx, users)
+          })
+        },
+        include: AssigneeService.include
+      });
+    })
+  }
+
+  async remove(id: number, deletedBy: number) {
+    return await this.prisma.assignee.update({
       where: { id },
       data: { deletedAt: new Date(), deletedBy },
+      include: AssigneeService.include
     });
   }
 }

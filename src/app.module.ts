@@ -9,7 +9,6 @@ import { CookieMiddleware } from './common/middleware/cookie.middleware';
 import { WritableQueryMiddleware } from './common/middleware/writable-query.middleware';
 import { PrismaModule } from './common/prisma.module';
 import { AssigneeTaskStatusModule } from './entities/assignee-task-status/assignee-task-status.module';
-import { AssigneeUserModule } from './entities/assignee-user/assignee-user.module';
 import { AssigneeModule } from './entities/assignee/assignee.module';
 import { MessageModule } from './entities/message/message.module';
 import { PermissionModule } from './entities/permission/permission.module';
@@ -24,6 +23,7 @@ import { WorkspaceModule } from './entities/workspace/workspace.module';
 
 export const openApiRoute = 'open-api'
 
+// FIX Add POST recover endpoints for all entities with deletedAt
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -43,7 +43,6 @@ export const openApiRoute = 'open-api'
     AssigneeModule,
     UserModule,
     AssigneeTaskStatusModule,
-    AssigneeUserModule,
     PermissionModule,
     MessageModule,
     TaskHistoryModule,

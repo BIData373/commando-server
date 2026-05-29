@@ -1,6 +1,7 @@
 model Source {
-  id   Int    @id @default(autoincrement())
+  id   Int      @id @default(autoincrement())
   name String
+  date DateTime
 
   workspaceId Int       @map("workspace_id")
   workspace   Workspace @relation(fields: [workspaceId], references: [id])

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../common/prisma.service';
-import { Prisma } from '../../types/prisma';
+import { Prisma, User } from '../../types/prisma';
 import { CreateTaskDto } from './dto/request/create-task.dto';
 import { UpdateTaskDto } from './dto/request/update-task.dto';
 
@@ -12,6 +12,11 @@ export class TaskService {
     assigneeStatuses: true
   }
 
+  static readonly includeWithWorkspace: Prisma.TaskInclude = {
+    ...TaskService.include,
+    workspace: true
+  }
+
   constructor(private readonly prisma: PrismaService) { }
 
   create(dto: CreateTaskDto, userId: number) {
@@ -21,7 +26,7 @@ export class TaskService {
         createdBy: userId,
         updatedBy: userId
       },
-      include: TaskService.include
+      include: TaskService.includeWithWorkspace
     });
   }
 
@@ -32,10 +37,21 @@ export class TaskService {
     });
   }
 
+  // FIX Implement
+  async findPersonal(user: User) {
+    return await this.prisma.task.findMany({
+      where: {
+        assigneeStatuses: { some: { assignee: { users: { some: { id: user.id } } } } },
+        deletedAt: null
+      },
+      include: TaskService.includeWithWorkspace
+    });
+  }
+
   async findOne(id: number) {
     return await this.prisma.task.findUnique({
       where: { id },
-      include: TaskService.include
+      include: TaskService.includeWithWorkspace
     });
   }
 
@@ -43,7 +59,7 @@ export class TaskService {
     return await this.prisma.task.update({
       where: { id },
       data: { ...dto, updatedBy },
-      include: TaskService.include
+      include: TaskService.includeWithWorkspace
     });
   }
 
@@ -51,7 +67,7 @@ export class TaskService {
     return await this.prisma.task.update({
       where: { id },
       data: { deletedAt: new Date(), deletedBy },
-      include: TaskService.include
+      include: TaskService.includeWithWorkspace
     });
   }
 }

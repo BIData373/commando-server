@@ -23,7 +23,7 @@ export class CookieMiddleware implements NestMiddleware {
 
       user = {
         ...currentUser,
-        info: { upn: currentUser.upn, isBI }
+        info: { id: 1, upn: currentUser.upn, isBI }
       }
     }
 

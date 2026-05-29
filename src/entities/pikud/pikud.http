@@ -2,7 +2,7 @@
 
 ### Create Pikud — valid payload
 POST {{baseUrl}}/pikud
-Content-Type: application/json
+...headers
 ...headers
 
 {
@@ -20,7 +20,7 @@ Content-Type: application/json
 
 ### Create Pikud — missing required field (expect 400)
 POST {{baseUrl}}/pikud
-Content-Type: application/json
+...headers
 
 {
   "icon": "north-icon"
@@ -30,43 +30,34 @@ Content-Type: application/json
 
 ### Get all Pikuds
 GET {{baseUrl}}/pikud
+...headers
 
 ?? status == 200
 
 ### Get Pikud by id
 GET {{baseUrl}}/pikud/{{pikudId}}
+...headers
 
 ?? status == 200
 
 ### Update Pikud
-PATCH {{baseUrl}}/pikud/{{pikudId}}
-Content-Type: application/json
+PATCH {{baseUrl}}/pikud/{{3}}
+...headers
 
 {
-  "name": "Pikud HaZafon Updated",
-  "updatedBy": 1
+  "name": "Three"
 }
 
 ?? status == 200
 
 ### Delete Pikud — non-existent id (expect 400 from @EntityExists)
 DELETE {{baseUrl}}/pikud/99999
-Content-Type: application/json
-
-{
-  "id": 99999,
-  "deletedBy": 1
-}
+...headers
 
 ?? status == 400
 
 ### Delete Pikud
 DELETE {{baseUrl}}/pikud/{{pikudId}}
-Content-Type: application/json
-
-{
-  "id": {{pikudId}},
-  "deletedBy": 1
-}
+...headers
 
 ?? status == 200

@@ -6,6 +6,7 @@ import { GetViewerWorkspaceIdFieldDto } from '../workspace/dto/request/get-works
 import { CreateTaskDto } from './dto/request/create-task.dto';
 import { GetManagerTaskIdDto, GetViewerTaskIdDto } from './dto/request/get-task-id.dto';
 import { UpdateTaskDto } from './dto/request/update-task.dto';
+import { TaskWithWorkspaceDto } from './dto/response/task-with-workspace.dto';
 import { TaskDto } from './dto/response/task.dto';
 import { TaskService } from './task.service';
 
@@ -17,8 +18,8 @@ export class TaskController {
   @ApiOperation({ operationId: 'createTask' })
   @ApiBody({ type: CreateTaskDto })
   @Post()
-  @ApiCreatedResponse({ type: TaskDto })
-  @TransformPlainToInstance(TaskDto)
+  @ApiCreatedResponse({ type: TaskWithWorkspaceDto })
+  @TransformPlainToInstance(TaskWithWorkspaceDto)
   async create(
     @Req() { user }: Request,
     @Body() dto: CreateTaskDto
@@ -37,11 +38,21 @@ export class TaskController {
     return await this.taskService.findInWorkspace(workspaceId);
   }
 
+  @ApiOperation({ operationId: 'listPersonalTasks' })
+  @Get('personal')
+  @ApiOkResponse({ type: [TaskWithWorkspaceDto] })
+  @TransformPlainToInstance(TaskWithWorkspaceDto)
+  async findPersonal(
+    @Req() { user }: Request
+  ) {
+    return await this.taskService.findPersonal(user);
+  }
+
   @ApiOperation({ operationId: 'getTask' })
   @ApiParam({ name: 'id', type: Number })
   @Get(':id')
-  @ApiOkResponse({ type: TaskDto })
-  @TransformPlainToInstance(TaskDto)
+  @ApiOkResponse({ type: TaskWithWorkspaceDto })
+  @TransformPlainToInstance(TaskWithWorkspaceDto)
   async findOne(
     @Param() { id }: GetViewerTaskIdDto
   ) {
@@ -53,8 +64,8 @@ export class TaskController {
   @ApiParam({ name: 'id', type: Number })
   @ApiBody({ type: UpdateTaskDto })
   @Patch(':id')
-  @ApiOkResponse({ type: TaskDto })
-  @TransformPlainToInstance(TaskDto)
+  @ApiOkResponse({ type: TaskWithWorkspaceDto })
+  @TransformPlainToInstance(TaskWithWorkspaceDto)
   async update(
     @Req() { user }: Request,
     @Param() { id }: GetManagerTaskIdDto,
@@ -67,8 +78,8 @@ export class TaskController {
   @ApiOperation({ operationId: 'deleteTask' })
   @ApiParam({ name: 'id', type: Number })
   @Delete(':id')
-  @ApiOkResponse({ type: TaskDto })
-  @TransformPlainToInstance(TaskDto)
+  @ApiOkResponse({ type: TaskWithWorkspaceDto })
+  @TransformPlainToInstance(TaskWithWorkspaceDto)
   async remove(
     @Req() { user }: Request,
     @Param() { id }: GetManagerTaskIdDto

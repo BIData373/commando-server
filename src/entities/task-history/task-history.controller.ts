@@ -9,7 +9,7 @@ import { ApiOkResponse, ApiOperation, ApiQuery } from '@nestjs/swagger';
 export class TaskHistoryController {
   constructor(private readonly taskHistoryService: TaskHistoryService) { }
 
-  @ApiOperation({ operationId: 'getTaskHistory' })
+  @ApiOperation({ operationId: 'listTaskHistory' })
   @ApiQuery({ type: GetViewerTaskIdFieldDto })
   @Get()
   @ApiOkResponse({ type: [TaskHistoryDto] })

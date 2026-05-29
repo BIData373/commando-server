@@ -3,9 +3,10 @@ model User {
   upn  String @unique
   info Json?
 
-  assignees   AssigneeUser[]
+  assignees   Assignee[]    @relation("assignee_users")
   permissions Permission[]
   history     TaskHistory[]
+  messages    Message[]
 
   @@map("users")
 }

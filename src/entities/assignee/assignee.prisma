@@ -15,9 +15,8 @@ model Assignee {
   deletedAt DateTime? @map("deleted_at")
   deletedBy Int?      @map("deleted_by")
 
-  users        AssigneeUser[]
+  users        User[]               @relation("assignee_users")
   taskStatuses AssigneeTaskStatus[]
-  messages     Message[]
 
   @@map("assignees")
 }

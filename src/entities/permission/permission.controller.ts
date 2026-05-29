@@ -12,7 +12,7 @@ import { PermissionService } from './permission.service';
 export class PermissionController {
   constructor(private readonly permissionService: PermissionService) { }
 
-  @ApiOperation({ operationId: 'getPermissions' })
+  @ApiOperation({ operationId: 'listPermissions' })
   @ApiQuery({ type: GetViewerWorkspaceIdFieldDto })
   @Get()
   @ApiOkResponse({ type: [PermissionDto] })

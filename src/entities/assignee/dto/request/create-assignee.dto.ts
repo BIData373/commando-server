@@ -1,7 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsOptional } from 'class-validator';
-import { EntityExists } from '../../../../common/decorators/entity-exists.decorator';
+import { Type } from 'class-transformer';
+import { IsOptional, ValidateNested } from 'class-validator';
 import { IsNotEmptyString } from '../../../../common/decorators/is-not-empty-string.decorator';
+import { CreateUserDto } from '../../../user/dto/request/create-user.dto';
 import { GetManagerWorkspaceIdFieldDto } from '../../../workspace/dto/request/get-workspace-id-field.dto';
 
 export class CreateAssigneeDto extends GetManagerWorkspaceIdFieldDto {
@@ -18,9 +19,8 @@ export class CreateAssigneeDto extends GetManagerWorkspaceIdFieldDto {
   @IsNotEmptyString()
   icon?: string;
 
-  @ApiProperty({ type: [Number], required: true })
-  @EntityExists('user', {
-    each: true
-  })
-  userIds: number[]
+  @ApiProperty({ type: CreateUserDto, isArray: true })
+  @ValidateNested({ each: true })
+  @Type(() => CreateUserDto)
+  users: CreateUserDto[]
 }

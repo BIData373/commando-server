@@ -1,15 +1,17 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsObject, IsOptional, IsString } from 'class-validator';
-import { IUserInfo } from '../../../../common/interfaces/user-info.interface';
+import { Type } from 'class-transformer';
+import { IsOptional, ValidateNested } from 'class-validator';
+import { IsNotEmptyString } from '../../../../common/decorators/is-not-empty-string.decorator';
+import { GetUserInfoDto } from './get-user-info.dto';
 
 export class CreateUserDto {
   @ApiProperty()
-  @IsString()
+  @IsNotEmptyString()
   upn: string;
 
-  // FIX Validation? Dto?
-  @ApiProperty({ required: false })
-  @IsObject()
+  @ApiProperty({ nullable: true, required: false, type: GetUserInfoDto })
+  @ValidateNested()
   @IsOptional()
-  info?: IUserInfo;
+  @Type(() => GetUserInfoDto)
+  info?: GetUserInfoDto | null;
 }

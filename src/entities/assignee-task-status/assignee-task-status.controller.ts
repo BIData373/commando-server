@@ -1,5 +1,5 @@
-import { Body, Controller, Delete, Get, Param, Put } from '@nestjs/common';
-import { ApiBody, ApiOkResponse, ApiOperation, ApiParam } from '@nestjs/swagger';
+import { Body, Controller, Delete, Get, Param, Put, Query } from '@nestjs/common';
+import { ApiBody, ApiOkResponse, ApiOperation, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { TransformPlainToInstance } from 'class-transformer';
 import { GetManagerAssigneeIdFieldDto } from '../assignee/dto/request/get-assignee-id-field.dto';
 import { GetManagerTaskIdFieldDto, GetViewerTaskIdFieldDto } from '../task/dto/request/get-task-id-field.dto';
@@ -7,6 +7,7 @@ import { AssigneeTaskStatusService } from './assignee-task-status.service';
 import { UpdateAssigneeTaskStatusDto } from './dto/request/update-assignee-task-status.dto';
 import { AssigneeTaskStatusDto } from './dto/response/assignee-task-status.dto';
 
+// FIX Add bulk update
 @Controller('assignee-task-status')
 export class AssigneeTaskStatusController {
   constructor(private readonly assigneeTaskStatusService: AssigneeTaskStatusService) { }
@@ -34,14 +35,14 @@ export class AssigneeTaskStatusController {
   }
 
   @ApiOperation({ operationId: 'deleteAssigneeTaskStatus' })
-  @ApiParam({ name: 'taskId', type: Number })
-  @ApiParam({ name: 'assigneeId', type: Number })
-  @Delete(':taskId/:assigneeId')
+  @ApiQuery({ type: GetManagerTaskIdFieldDto })
+  @ApiQuery({ type: GetManagerAssigneeIdFieldDto })
+  @Delete()
   @ApiOkResponse({ type: AssigneeTaskStatusDto })
   @TransformPlainToInstance(AssigneeTaskStatusDto)
   async remove(
-    @Param() { assigneeId }: GetManagerAssigneeIdFieldDto,
-    @Param() { taskId }: GetManagerTaskIdFieldDto
+    @Query() { taskId }: GetManagerTaskIdFieldDto,
+    @Query() { assigneeId }: GetManagerAssigneeIdFieldDto
   ) {
     return await this.assigneeTaskStatusService.remove(taskId, assigneeId);
   }
