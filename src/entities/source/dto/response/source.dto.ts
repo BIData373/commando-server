@@ -7,17 +7,17 @@ import { TagDto } from '../../../tag/dto/response/tag.dto';
 export class SourceDto extends IdMetaFieldsDto {
   @ExposeProperty()
   name: string;
-  
+
   @ExposeProperty()
   date: Date;
 
   @ExposeProperty()
   workspaceId: number;
 
-  @ExposeProperty()
+  @ExposeProperty({ type: String, nullable: true })
   attachmentKey: string | null;
 
-  @ExposeProperty()
+  @ExposeProperty({ type: [TagDto] })
   @Type(() => TagDto)
   tags: TagDto[];
 }
