@@ -1,20 +1,33 @@
+import { PartialType } from "@nestjs/mapped-types";
 import { ApiProperty } from "@nestjs/swagger";
-import { IsOptional, IsString } from "class-validator";
-import { EntityExists } from "../../../../common/decorators/entity-exists.decorator";
+import { EntityExists, IEntityExistsValidationOptions } from "../../../../common/decorators/entity-exists.decorator";
+import { IsNotEmptyString } from "../../../../common/decorators/is-not-empty-string.decorator";
 import { GetContextDto } from "../../../../common/dto/request/get-context.dto";
 import { IWorkspaceContext } from "../../interfaces/workspace-context.interface";
 
-export class GetWorkspaceUrlNameDto extends GetContextDto<IWorkspaceContext> {
-  @ApiProperty({ type: String, required: false })
-  @IsOptional()
-  @IsString()
-  @EntityExists('workspace', {
-    contextField: 'workspace',
-    findArgs: ({ value }) => value
-      ? ({
-        where: { urlName: value }
-      })
-      : {}
-  })
-  urlName?: string;
+interface IUrlName {
+  urlName: string
 }
+
+export function GetWorkspaceUrlNameMixin(
+  options: IEntityExistsValidationOptions<IUrlName, "urlName", "workspace">
+) {
+  class GetWorkspaceUrlNameDto extends GetContextDto<IWorkspaceContext> {
+    @ApiProperty()
+    @IsNotEmptyString()
+    @EntityExists('workspace', {
+      findArgs: ({ value }) => ({
+        where: { urlName: value, deletedAt: null }
+      }),
+      ...options
+    })
+    urlName: string;
+  }
+
+  return GetWorkspaceUrlNameDto
+}
+
+export class GetWorkspaceUrlNameDto extends GetWorkspaceUrlNameMixin({ contextField: 'workspace' }) { }
+export class GetOptionalWorkspaceUrlNameDto extends PartialType(GetWorkspaceUrlNameDto) { }
+
+export class GetNewWorkspaceUrlNameDto extends GetWorkspaceUrlNameMixin({ failIfExists: true }) { }

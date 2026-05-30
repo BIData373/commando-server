@@ -13,12 +13,19 @@ interface IPermissionExistsValidationOptions<
     TDto extends Record<TDtoField, number>
 > extends IEntityExistsValidationOptions<TDto, TDtoField, "permission"> { }
 
+export interface IWorkspaceFindArgs<
+    TDtoField extends keyof TDto,
+    TDto extends Record<TDtoField, number>
+> {
+    workspaceFindArgs?(params: PredicateParams<TDto, TDtoField>): Prisma.PermissionWhereInput['workspace']
+}
+
 export interface IHasWorkspacePermissionOptions<
     TDtoField extends keyof TDto,
     TDto extends Record<TDtoField, number>
-> extends IPermissionExistsValidationOptions<TDtoField, TDto> {
-    workspaceFindArgs?: (params: PredicateParams<TDto, TDtoField>) => Prisma.PermissionWhereInput['workspace']
-}
+> extends
+    IPermissionExistsValidationOptions<TDtoField, TDto>,
+    IWorkspaceFindArgs<TDtoField, TDto> { }
 
 interface IHasWorkspacePermissionContraints<
     TDtoField extends keyof TDto,
@@ -71,6 +78,7 @@ export class HasWorkspacePermissionConstraint<
                             workspace: workspaceFindArgs?.({ value, obj }) ?? { id: value }
                         }
                     }),
+                    filterDeletedAt: false,
                     ...entityExistsArgs
                 } as IPermissionExistsValidationOptions<TDtoField, TDto>],
             }
@@ -98,7 +106,7 @@ export function HasWorkspacePermission<
         ...entityExistsOptions
     }: IHasWorkspacePermissionOptions<TDtoField, TDto> = {}
 ) {
-    return (target: TDto, propertyName: TDtoField) => {
+    return function (target: TDto, propertyName: TDtoField) {
         registerDecorator({
             target: target.constructor,
             propertyName: propertyName as string,

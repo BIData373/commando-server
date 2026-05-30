@@ -30,7 +30,8 @@ interface IEntityExistsOptions<
   contextField?: string
   failIfExists?: boolean
   validateIf?: (params: PredicateParams<TDto, TDtoField>) => boolean
-  findArgs?(params: PredicateParams<TDto, TDtoField>): ModelFindFirstSelectArgs<TModel>
+  findArgs?(params: PredicateParams<TDto, TDtoField>): ModelFindFirstSelectArgs<TModel>,
+  filterDeletedAt?: boolean
 }
 
 interface IEntityExistsConstraints<
@@ -65,6 +66,7 @@ export async function entityExists<
     each,
     contextField,
     failIfExists,
+    filterDeletedAt,
     findArgs: customFindArgs,
     validateIf
   } = constraints[0] as IEntityExistsConstraints<TDto, TDtoField, TModel>
@@ -75,7 +77,13 @@ export async function entityExists<
     return true
   }
 
-  const defaultFindArgs = { where: { id: value } } as unknown as ModelFindFirstSelectArgs<TModel>
+  const defaultFindArgs = {
+    where: {
+      id: value,
+      ...(filterDeletedAt && { deletedAt: null })
+    }
+  } as unknown as ModelFindFirstSelectArgs<TModel>
+
   const repo = prisma[model] as ModelDelegate<TModel>
 
   const findFirst = async (

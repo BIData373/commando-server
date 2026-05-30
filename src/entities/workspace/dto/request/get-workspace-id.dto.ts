@@ -6,7 +6,7 @@ import { IUserContext } from "../../../user/interfaces/user-context.interface";
 
 export function GetPermittedWorkspaceIdDto(type: PermissionType) {
   class GetWorkspaceIdDto extends GetContextDto<IUserContext> {
-    @IsIdPermitted('workspace', type)
+    @IsIdPermitted('workspace', type, { filterDeletedAt: true })
     id: number
   }
 

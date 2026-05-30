@@ -5,7 +5,7 @@ import { GetManagerAssigneeIdFieldDto } from '../../../assignee/dto/request/get-
 
 export class UpdateAssigneeTaskStatusDto extends GetManagerAssigneeIdFieldDto {
   @ApiProperty()
-  @IsIdPermitted('task', PermissionType.MANAGER)
+  @IsIdPermitted('task', PermissionType.MANAGER, { filterDeletedAt: true })
   taskId: number;
 
   @ApiProperty()

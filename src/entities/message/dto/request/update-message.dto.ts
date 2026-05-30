@@ -1,4 +1,9 @@
-import { PartialType } from '@nestjs/swagger';
-import { GetContentDto } from './get-content.dto';
+import { ApiProperty } from '@nestjs/swagger';
+import { IsOptional, IsString } from 'class-validator';
 
-export class UpdateMessageDto extends PartialType(GetContentDto) { }
+export class UpdateMessageDto {
+    @ApiProperty()
+    @IsOptional()
+    @IsString()
+    content?: string;
+}

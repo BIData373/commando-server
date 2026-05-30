@@ -5,6 +5,6 @@ import { GetWorkspaceStatusFieldsDto } from './get-workspace-status-fields.dto';
 
 export class CreateWorkspaceStatusDto extends GetWorkspaceStatusFieldsDto {
   @ApiProperty()
-  @IsIdPermitted('workspace', PermissionType.MANAGER)
+  @IsIdPermitted('workspace', PermissionType.MANAGER, { filterDeletedAt: true })
   workspaceId: number;
 }

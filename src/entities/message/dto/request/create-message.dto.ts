@@ -1,13 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { IsString } from 'class-validator';
 import { IdExists } from '../../../../common/decorators/id-exists.decorator';
-import { IsIdPermitted } from '../../../../common/decorators/is-permitted-id.decorator';
-import { PermissionType } from '../../../../types/prisma';
-import { GetContentDto } from './get-content.dto';
+import { GetManagerTaskIdFieldDto } from '../../../task/dto/request/get-task-id-field.dto';
 
-export class CreateMessageDto extends GetContentDto {
+export class CreateMessageDto extends GetManagerTaskIdFieldDto {
   @ApiProperty()
-  @IsIdPermitted('task', PermissionType.MANAGER)
-  taskId: number;
+  @IsString()
+  content: string;
 
   @ApiProperty()
   @IdExists('user')

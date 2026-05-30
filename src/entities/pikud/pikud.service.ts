@@ -7,8 +7,8 @@ import { UpdatePikudDto } from './dto/request/update-pikud.dto';
 export class PikudService {
   constructor(private readonly prisma: PrismaService) { }
 
-  create(dto: CreatePikudDto, userId: number) {
-    return this.prisma.pikud.create({
+  async create(dto: CreatePikudDto, userId: number) {
+    return await this.prisma.pikud.create({
       data: {
         ...dto,
         createdBy: userId,
@@ -18,22 +18,26 @@ export class PikudService {
   }
 
   async findAll() {
-    return await this.prisma.pikud.findMany({ where: { deletedAt: null } });
+    return await this.prisma.pikud.findMany({
+      where: { deletedAt: null }
+    });
   }
 
-  findOne(id: number) {
-    return this.prisma.pikud.findUnique({ where: { id } });
+  async findOne(id: number) {
+    return await this.prisma.pikud.findUnique({
+      where: { id, deletedAt: null }
+    });
   }
 
-  update(id: number, dto: UpdatePikudDto, updatedBy: number) {
-    return this.prisma.pikud.update({
+  async update(id: number, dto: UpdatePikudDto, updatedBy: number) {
+    return await this.prisma.pikud.update({
       where: { id },
       data: { ...dto, updatedBy }
     });
   }
 
-  remove(id: number, deletedBy: number) {
-    return this.prisma.pikud.update({
+  async remove(id: number, deletedBy: number) {
+    return await this.prisma.pikud.update({
       where: { id },
       data: { deletedAt: new Date(), deletedBy },
     });

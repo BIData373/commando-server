@@ -7,14 +7,14 @@ import { IUserContext } from "../../../user/interfaces/user-context.interface";
 
 export class GetWorkspaceIdFieldDto {
     @ApiProperty()
-    @IdExists('workspace')
+    @IdExists('workspace', { filterDeletedAt: true })
     workspaceId: number
 }
 
 export function GetPermittedWorkspaceIdFieldDto(type: PermissionType) {
     class GetWorkspaceIdDto extends GetContextDto<IUserContext> {
         @ApiProperty()
-        @IsIdPermitted('workspace', type)
+        @IsIdPermitted('workspace', type, { filterDeletedAt: true })
         workspaceId: number
     }
 

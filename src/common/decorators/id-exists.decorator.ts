@@ -16,5 +16,5 @@ export function IdExists<
         Type(() => Number),
         EntityExists(model, options) as PropertyDecorator,
         IsPositiveInt(options)
-    )
+    ) as (target: TDto, propertyKey?: TDtoField) => void
 }

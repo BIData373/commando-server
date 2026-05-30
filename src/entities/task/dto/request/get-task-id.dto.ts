@@ -5,7 +5,7 @@ import { IUserContext } from "../../../user/interfaces/user-context.interface";
 
 export function GetPermittedTaskIdDto(type: PermissionType) {
     class GetTaskIdDto extends GetContextDto<IUserContext> {
-        @IsIdPermitted('task', type)
+        @IsIdPermitted('task', type, { filterDeletedAt: true })
         id: number
     }
 

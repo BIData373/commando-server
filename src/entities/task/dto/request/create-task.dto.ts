@@ -6,9 +6,16 @@ import { GetManagerWorkspaceIdFieldDto } from '../../../workspace/dto/request/ge
 
 // FIX Remove workspaceId
 export class CreateTaskDto extends GetManagerWorkspaceIdFieldDto {
-  // FIX Permission
   @ApiProperty()
-  @IdExists('source')
+  @IdExists('source', {
+    findArgs: ({ value, obj }) => ({
+      where: {
+        id: value,
+        deletedAt: null,
+        workspace: { id: obj.workspaceId }
+      },
+    })
+  })
   sourceId: number;
 
   @ApiProperty()

@@ -19,10 +19,7 @@ export class AssigneeService {
       users.map(async user => await UserService.upsertTx(tx, user))
     )
 
-    return {
-      set: [],
-      connect: upsertedUsers.map(({ id }) => ({ id }))
-    }
+    return upsertedUsers.map(({ id }) => ({ id }))
   }
 
   async create(
@@ -35,7 +32,9 @@ export class AssigneeService {
           ...dto,
           createdBy: userId,
           updatedBy: userId,
-          users: await AssigneeService.upsertUsersTx(tx, users)
+          users: {
+            connect: await AssigneeService.upsertUsersTx(tx, users)
+          }
         },
         include: AssigneeService.include
       });
@@ -44,14 +43,14 @@ export class AssigneeService {
 
   async findInWorkspace(workspaceId: number) {
     return await this.prisma.assignee.findMany({
-      where: { workspaceId },
+      where: { workspaceId, deletedAt: null },
       include: AssigneeService.include
     });
   }
 
   async findOne(id: number) {
     return await this.prisma.assignee.findUnique({
-      where: { id },
+      where: { id, deletedAt: null },
       include: AssigneeService.include
     });
   }
@@ -68,7 +67,10 @@ export class AssigneeService {
           ...dto,
           updatedBy,
           ...(users && {
-            users: await AssigneeService.upsertUsersTx(tx, users)
+            users: {
+              set: [],
+              connect: await AssigneeService.upsertUsersTx(tx, users)
+            }
           })
         },
         include: AssigneeService.include

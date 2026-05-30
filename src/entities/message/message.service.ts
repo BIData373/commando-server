@@ -18,11 +18,15 @@ export class MessageService {
   }
 
   async findInTask(taskId: number) {
-    return await this.prisma.message.findMany({ where: { taskId, deletedAt: null } });
+    return await this.prisma.message.findMany({
+      where: { taskId, deletedAt: null }
+    });
   }
 
   async findOne(id: number) {
-    return await this.prisma.message.findUnique({ where: { id } });
+    return await this.prisma.message.findUnique({
+      where: { id, deletedAt: null }
+    });
   }
 
   async update(id: number, dto: UpdateMessageDto, updatedBy: number) {

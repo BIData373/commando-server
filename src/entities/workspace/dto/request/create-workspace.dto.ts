@@ -1,26 +1,25 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsBoolean, IsInt, IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsOptional, IsString } from 'class-validator';
+import { IdExists } from '../../../../common/decorators/id-exists.decorator';
+import { GetNewWorkspaceUrlNameDto } from './get-workspace-url-name.dto';
+import { IsNotEmptyString } from '../../../../common/decorators/is-not-empty-string.decorator';
 
-export class CreateWorkspaceDto {
+export class CreateWorkspaceDto extends GetNewWorkspaceUrlNameDto {
   @ApiProperty()
-  @IsString()
+  @IsNotEmptyString()
   title: string;
 
-  @ApiProperty()
-  @IsString()
-  urlName: string;
-
   @ApiProperty({ type: String, nullable: true, required: false })
-  @IsString()
   @IsOptional()
+  @IsString()
   icon?: string | null;
 
   @ApiProperty({ required: false })
-  @IsBoolean()
   @IsOptional()
+  @IsBoolean()
   assigneeStatusEditable?: boolean;
 
   @ApiProperty()
-  @IsInt()
+  @IdExists('pikud', { filterDeletedAt: true })
   pikudId: number;
 }

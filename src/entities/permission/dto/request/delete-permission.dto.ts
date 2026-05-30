@@ -24,6 +24,6 @@ export class DeletePermissionDto extends GetContextDto<IUserContext> {
     userId: number;
 
     @ApiProperty()
-    @IsIdPermitted('workspace', PermissionType.MANAGER)
+    @IsIdPermitted('workspace', PermissionType.MANAGER, { filterDeletedAt: true })
     workspaceId: number;
 }

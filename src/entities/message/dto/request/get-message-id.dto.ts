@@ -5,7 +5,7 @@ import { IUserContext } from "../../../user/interfaces/user-context.interface";
 
 export function GetPermittedMessageIdDto(type: PermissionType) {
     class GetMessageIdDto extends GetContextDto<IUserContext> {
-        @IsIdPermitted('message', type)
+        @IsIdPermitted('message', type, { filterDeletedAt: true })
         id: number
     }
 

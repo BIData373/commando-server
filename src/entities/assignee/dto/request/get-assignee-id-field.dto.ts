@@ -7,7 +7,7 @@ import { IUserContext } from "../../../user/interfaces/user-context.interface";
 export function GetPermittedAssigneeIdFieldDto(type: PermissionType) {
     class GetAssigneeIdDto extends GetContextDto<IUserContext> {
         @ApiProperty()
-        @IsIdPermitted('assignee', type)
+        @IsIdPermitted('assignee', type, { filterDeletedAt: true })
         assigneeId: number
     }
 

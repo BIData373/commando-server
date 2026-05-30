@@ -19,8 +19,8 @@ export class TaskService {
 
   constructor(private readonly prisma: PrismaService) { }
 
-  create(dto: CreateTaskDto, userId: number) {
-    return this.prisma.task.create({
+  async create(dto: CreateTaskDto, userId: number) {
+    return await this.prisma.task.create({
       data: {
         ...dto,
         createdBy: userId,
@@ -50,7 +50,7 @@ export class TaskService {
 
   async findOne(id: number) {
     return await this.prisma.task.findUnique({
-      where: { id },
+      where: { id, deletedAt: null },
       include: TaskService.includeWithWorkspace
     });
   }

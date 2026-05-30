@@ -38,14 +38,14 @@ export class SourceService {
 
   async findInWorkspace(workspaceId: number) {
     return await this.prisma.source.findMany({
-      where: { workspaceId },
+      where: { workspaceId, deletedAt: null },
       include: SourceService.include
     });
   }
 
   async findOne(id: number) {
     return await this.prisma.source.findUnique({
-      where: { id },
+      where: { id, deletedAt: null },
       include: SourceService.include
     });
   }
