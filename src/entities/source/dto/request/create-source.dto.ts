@@ -1,9 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsDate } from 'class-validator';
+import { IsDate, IsOptional } from 'class-validator';
 import { IsNotEmptyString } from '../../../../common/decorators/is-not-empty-string.decorator';
 import { GetManagerWorkspaceIdFieldDto } from '../../../workspace/dto/request/get-workspace-id-field.dto';
 
-// FIX Add file upload
 export class CreateSourceDto extends GetManagerWorkspaceIdFieldDto {
   @ApiProperty()
   @IsNotEmptyString()
@@ -15,5 +14,10 @@ export class CreateSourceDto extends GetManagerWorkspaceIdFieldDto {
 
   @ApiProperty()
   @IsNotEmptyString({ each: true })
-  tags: string[]
+  tags: string[];
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsNotEmptyString()
+  attachmentKey?: string;
 }

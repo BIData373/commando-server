@@ -3,6 +3,7 @@ import { ExposeProperty } from '../../../../common/decorators/expose-property.de
 import { IdMetaFieldsDto } from '../../../../common/dto/response/id-meta-fields.dto';
 import { SourceDto } from '../../../source/dto/response/source.dto';
 import { TagDto } from '../../../tag/dto/response/tag.dto';
+import { AssigneeStatusDto } from './assignee-status.dto';
 
 @Exclude()
 export class TaskDto extends IdMetaFieldsDto {
@@ -34,7 +35,11 @@ export class TaskDto extends IdMetaFieldsDto {
   @Type(() => SourceDto)
   source: SourceDto;
 
-  @ExposeProperty()
+  @ExposeProperty({ type: [TagDto] })
   @Type(() => TagDto)
   tags: TagDto[];
+
+  @ExposeProperty({ type: [AssigneeStatusDto] })
+  @Type(() => AssigneeStatusDto)
+  assigneeStatuses: AssigneeStatusDto[];
 }

@@ -1,6 +1,8 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req } from '@nestjs/common';
-import { ApiBody, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery } from '@nestjs/swagger';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { ApiBody, ApiConsumes, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { TransformPlainToInstance } from 'class-transformer';
+import { memoryStorage } from 'multer';
 import { Request } from 'express';
 import { GetViewerWorkspaceIdFieldDto } from '../workspace/dto/request/get-workspace-id-field.dto';
 import { CreateSourceDto } from './dto/request/create-source.dto';
@@ -14,15 +16,18 @@ export class SourceController {
   constructor(private readonly sourceService: SourceService) { }
 
   @ApiOperation({ operationId: 'createSource' })
+  @ApiConsumes('multipart/form-data')
   @ApiBody({ type: CreateSourceDto })
   @Post()
   @ApiCreatedResponse({ type: SourceDto })
   @TransformPlainToInstance(SourceDto)
+  @UseInterceptors(FileInterceptor('attachment', { storage: memoryStorage() }))
   async create(
     @Req() { user }: Request,
-    @Body() dto: CreateSourceDto
+    @Body() dto: CreateSourceDto,
+    @UploadedFile() file?: Express.Multer.File
   ) {
-    return await this.sourceService.create(dto, user.id);
+    return await this.sourceService.create(dto, user.id, file);
   }
 
   @ApiOperation({ operationId: 'listSources' })
@@ -48,17 +53,20 @@ export class SourceController {
   }
 
   @ApiOperation({ operationId: 'updateSource' })
+  @ApiConsumes('multipart/form-data')
   @ApiParam({ name: 'id', type: Number })
   @ApiBody({ type: UpdateSourceDto })
   @Patch(':id')
   @ApiOkResponse({ type: SourceDto })
   @TransformPlainToInstance(SourceDto)
+  @UseInterceptors(FileInterceptor('attachment', { storage: memoryStorage() }))
   async update(
     @Req() { user }: Request,
-    @Param() { id }: GetManagerSourceIdDto,
-    @Body() dto: UpdateSourceDto
+    @Param() { context: { source } }: GetManagerSourceIdDto,
+    @Body() dto: UpdateSourceDto,
+    @UploadedFile() file?: Express.Multer.File
   ) {
-    return await this.sourceService.update(id, dto, user.id);
+    return await this.sourceService.update(source, dto, user.id, file);
   }
 
   @ApiOperation({ operationId: 'deleteSource' })

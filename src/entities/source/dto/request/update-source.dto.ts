@@ -1,4 +1,4 @@
 import { PartialType } from '@nestjs/swagger';
-import { GetNameDto } from '../../../../common/dto/request/get-name.dto';
+import { CreateSourceDto } from './create-source.dto';
 
-export class UpdateSourceDto extends PartialType(GetNameDto) { }
+export class UpdateSourceDto extends PartialType(CreateSourceDto) { }

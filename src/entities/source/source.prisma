@@ -1,7 +1,8 @@
 model Source {
-  id   Int      @id @default(autoincrement())
-  name String
-  date DateTime
+  id            Int      @id @default(autoincrement())
+  name          String
+  date          DateTime
+  attachmentKey String?  @map("attachment_key")
 
   workspaceId Int       @map("workspace_id")
   workspace   Workspace @relation(fields: [workspaceId], references: [id])

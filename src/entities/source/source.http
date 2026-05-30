@@ -3,11 +3,13 @@
 ### Create Source — valid payload
 POST {{baseUrl}}/source
 ...headers
+Content-Type: multipart/form-data
 
-{
-  "name": "Radio",
-  "workspaceId": {{workspaceId}}
-}
+name=Radio
+workspaceId={{workspaceId}}
+date=2024-01-01T00:00:00.000Z
+tags[0]=tag1
+attachment< ./sample.pdf
 
 {{@response
   exports.sourceId = response.parsedBody.id;
@@ -18,10 +20,9 @@ POST {{baseUrl}}/source
 ### Create Source — missing required field (expect 400)
 POST {{baseUrl}}/source
 ...headers
+Content-Type: multipart/form-data
 
-{
-  "workspaceId": {{workspaceId}}
-}
+workspaceId={{workspaceId}}
 
 ?? status == 400
 
@@ -37,7 +38,17 @@ GET {{baseUrl}}/source/{{sourceId}}
 
 ?? status == 200
 
-### Update Source
+### Update Source — with new attachment
+PATCH {{baseUrl}}/source/{{sourceId}}
+...headers
+Content-Type: multipart/form-data
+
+name=Radio Updated
+attachment< ./sample-updated.pdf
+
+?? status == 200
+
+### Update Source — name only
 PATCH {{baseUrl}}/source/{{sourceId}}
 ...headers
 

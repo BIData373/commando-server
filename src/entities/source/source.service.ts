@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../common/prisma.service';
-import { Prisma } from '../../types/prisma';
+import { Prisma, Source } from '../../types/prisma';
+import { S3Service } from '../s3/s3.service';
 import { CreateSourceDto } from './dto/request/create-source.dto';
 import { UpdateSourceDto } from './dto/request/update-source.dto';
 
@@ -10,13 +11,25 @@ export class SourceService {
     tags: true
   }
 
-  constructor(private readonly prisma: PrismaService) { }
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly s3: S3Service
+  ) { }
 
-  create({ tags, workspaceId, ...dto }: CreateSourceDto, userId: number) {
-    return this.prisma.source.create({
+  async create(
+    { tags, attachmentKey: dtoKey, workspaceId, ...dto }: CreateSourceDto,
+    userId: number,
+    file?: Express.Multer.File
+  ) {
+    const attachmentKey = file
+      ? await this.s3.upload(file, 'sources')
+      : dtoKey;
+
+    return await this.prisma.source.create({
       data: {
         ...dto,
         workspaceId,
+        attachmentKey,
         tags: {
           connectOrCreate: tags.map(name => ({
             create: {
@@ -25,8 +38,7 @@ export class SourceService {
               createdBy: userId,
               updatedBy: userId
             },
-            // FIX Check if name is unique, and use it here if so
-            where: { id: 1 }
+            where: { name_workspaceId: { name, workspaceId } }
           }))
         },
         createdBy: userId,
@@ -36,7 +48,7 @@ export class SourceService {
     });
   }
 
-  async findInWorkspace(workspaceId: number) {
+  async findInWorkspace(workspaceId: number): Promise<any[]> {
     return await this.prisma.source.findMany({
       where: { workspaceId, deletedAt: null },
       include: SourceService.include
@@ -50,10 +62,38 @@ export class SourceService {
     });
   }
 
-  async update(id: number, dto: UpdateSourceDto, updatedBy: number) {
+  async update(
+    source: Source,
+    { tags, ...dto }: UpdateSourceDto,
+    updatedBy: number,
+    file?: Express.Multer.File
+  ) {
+    let attachmentKey: string | undefined;
+
+    if (file) {
+      if (source?.attachmentKey) {
+        await this.s3.delete(source.attachmentKey);
+      }
+
+      attachmentKey = await this.s3.upload(file, 'sources');
+    }
+
     return await this.prisma.source.update({
-      where: { id },
-      data: { ...dto, updatedBy },
+      where: { id: source.id },
+      data: {
+        ...dto,
+        attachmentKey,
+        ...(tags !== undefined && {
+          tags: {
+            set: [],
+            connectOrCreate: tags.map(name => ({
+              create: { name, workspaceId: source.workspaceId, createdBy: updatedBy, updatedBy },
+              where: { name_workspaceId: { name, workspaceId: source.workspaceId } }
+            }))
+          }
+        }),
+        updatedBy
+      },
       include: SourceService.include
     });
   }

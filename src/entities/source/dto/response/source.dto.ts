@@ -15,6 +15,9 @@ export class SourceDto extends IdMetaFieldsDto {
   workspaceId: number;
 
   @ExposeProperty()
+  attachmentKey: string | null;
+
+  @ExposeProperty()
   @Type(() => TagDto)
   tags: TagDto[];
 }
