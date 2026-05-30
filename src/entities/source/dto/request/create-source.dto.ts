@@ -16,8 +16,6 @@ export class CreateSourceDto extends GetManagerWorkspaceIdFieldDto {
   @IsNotEmptyString({ each: true })
   tags: string[];
 
-  @ApiProperty({ required: false })
-  @IsOptional()
-  @IsNotEmptyString()
-  attachmentKey?: string;
+  @ApiProperty({ type: 'string', format: 'binary', required: false })
+  attachment?: Express.Multer.File;
 }

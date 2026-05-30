@@ -17,13 +17,11 @@ export class SourceService {
   ) { }
 
   async create(
-    { tags, attachmentKey: dtoKey, workspaceId, ...dto }: CreateSourceDto,
+    { tags, workspaceId, ...dto }: CreateSourceDto,
     userId: number,
     file?: Express.Multer.File
   ) {
-    const attachmentKey = file
-      ? await this.s3.upload(file, 'sources')
-      : dtoKey;
+    const attachmentKey = file && await this.s3.upload(file, 'sources')
 
     return await this.prisma.source.create({
       data: {
