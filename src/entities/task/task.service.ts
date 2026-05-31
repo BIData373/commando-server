@@ -9,7 +9,9 @@ export class TaskService {
   static readonly include: Prisma.TaskInclude = {
     source: true,
     tags: true,
-    assigneeStatuses: true
+    assigneeStatuses: {
+      include: { assignee: { include: { users: true } } }
+    }
   }
 
   static readonly includeWithWorkspace: Prisma.TaskInclude = {
