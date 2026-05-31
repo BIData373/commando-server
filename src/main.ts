@@ -1,18 +1,18 @@
 import { NestFactory } from '@nestjs/core';
-import { ExpressAdapter } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { useContainer } from 'class-validator';
-import express, { Request, Response } from 'express';
 import 'reflect-metadata';
 import { AppModule, openApiRoute } from './app.module';
 import { isDev, ssoEnabled } from './common/consts/env';
 import { staticTokenHeader } from './common/consts/headers';
+import express from 'express';
+import { ExpressAdapter } from '@nestjs/platform-express';
+console.log('isDev', isDev)
 
-const expressApp = express();
-let isReady = false;
+const server = express()
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, new ExpressAdapter(expressApp), {
+  const app = await NestFactory.create(AppModule, new ExpressAdapter(server), {
     cors: {
       credentials: ssoEnabled && isDev,
     },
@@ -41,28 +41,15 @@ async function bootstrap() {
 
   useContainer(app.select(AppModule), { fallbackOnErrors: true });
 
-  if (isDev) {
-    const port = process.env.PORT;
-    await app.listen(Number(port));
-    
-    console.log(`Application is running on: http://localhost:${port}`);
-  }
+  const port = process.env.PORT;
+  await app.listen(Number(port));
 
-  else {
-    await app.init();
-  }
-
-  isReady = true;
+  console.log(`Application is running on: http://localhost:${port}`);
 }
 
-if (isDev) {
-  bootstrap().catch((err) => {
-    console.error(err);
-    throw err;
-  });
-}
+bootstrap().catch((err) => {
+  console.error(err);
+  throw err;
+});
 
-export default async function handler(req: Request, res: Response): Promise<void> {
-  if (!isReady) await bootstrap();
-  expressApp(req, res);
-}
+export default server;
