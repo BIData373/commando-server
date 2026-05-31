@@ -7,9 +7,8 @@ import { PrismaClient } from '../types/prisma/client';
 export class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
   constructor(private readonly config: ConfigService) {
 
-    const databaseUrl = config.getOrThrow<string>('DATABASE_URL')
+    const connectionString = config.getOrThrow<string>('DATABASE_URL')
 
-    const connectionString = `postgres://${username}:${password}@${host}:${port}/${database}`
     const adapter = new PrismaPg({ connectionString })
 
     super({ adapter })
