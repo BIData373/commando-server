@@ -3,6 +3,7 @@ model Task {
   title        String
   description  String?  @db.Text
   flagged      Boolean  @default(false)
+  // FIX  Enum?
   deadlineType String   @map("deadline_type")
   issuedAt     DateTime @default(now()) @map("issued_at")
   dueDate      DateTime @map("due_date")
