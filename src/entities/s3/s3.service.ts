@@ -25,14 +25,14 @@ export class S3Service {
       return;
     }
 
-    this.bucket = awsS3Bucket;
+    this.bucket = awsS3Bucket!;
 
     try {
       this.client = new S3Client({
-        region: awsRegion,
+        region: awsRegion!,
         credentials: {
-          accessKeyId: awsAccessKeyId,
-          secretAccessKey: awsSecretAccessKey,
+          accessKeyId: awsAccessKeyId!,
+          secretAccessKey: awsSecretAccessKey!,
         },
       });
     } catch (err) {
