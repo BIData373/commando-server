@@ -39,3 +39,4 @@ Thumbs.db
 
 /src/types/prisma/**
 *.tgz
+.vercel

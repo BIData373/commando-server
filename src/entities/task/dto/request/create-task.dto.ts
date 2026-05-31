@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsBoolean, IsDate, IsObject, IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsDate, IsOptional, IsString } from 'class-validator';
 import { IdExists } from '../../../../common/decorators/id-exists.decorator';
 import { GetManagerWorkspaceIdFieldDto } from '../../../workspace/dto/request/get-workspace-id-field.dto';
 
@@ -48,7 +48,7 @@ export class CreateTaskDto extends GetManagerWorkspaceIdFieldDto {
   dueDate: Date;
 
   @ApiProperty({ required: false })
-  @IsObject()
+  @IsString()
   @IsOptional()
-  notes?: object;
+  notes?: string;
 }

@@ -25,8 +25,8 @@ export class TaskDto extends IdMetaFieldsDto {
   @ExposeProperty()
   dueDate: Date;
 
-  @ExposeProperty({ nullable: true })
-  notes: object | null;
+  @ExposeProperty({ type: String, nullable: true })
+  notes: string | null;
 
   @ExposeProperty()
   workspaceId: number;

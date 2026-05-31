@@ -32,6 +32,7 @@ export class TaskService {
     });
   }
 
+  // FIX Dont include assignee users?
   async findInWorkspace(workspaceId: number) {
     return await this.prisma.task.findMany({
       where: { workspaceId, deletedAt: null },

@@ -7,7 +7,7 @@ model Task {
   deadlineType String   @map("deadline_type")
   issuedAt     DateTime @default(now()) @map("issued_at")
   dueDate      DateTime @map("due_date")
-  notes        Json?
+  notes        String?
 
   // Meta Fields
   createdAt DateTime  @default(now()) @map("created_at")
