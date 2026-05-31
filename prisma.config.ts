@@ -11,6 +11,7 @@ export default defineConfig({
   schema: "src/entities/",
   migrations: {
     path: "migrations/",
+    seed: "tsx prisma/seed.ts"
   },
   datasource: {
     url: process.env.DATABASE_URL

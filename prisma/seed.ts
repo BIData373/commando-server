@@ -1,3 +1,4 @@
+import { PrismaPg } from '@prisma/adapter-pg';
 import { config } from 'dotenv';
 import path from 'node:path';
 import { HistoryAction, PermissionType, PrismaClient } from '../src/types/prisma';
@@ -6,7 +7,9 @@ if (process.env.ENV) {
   config({ path: path.join('./config', process.env.ENV, '.env') });
 }
 
-const prisma = new PrismaClient();
+const connectionString = process.env.DATABASE_URL
+const adapter = new PrismaPg({ connectionString })
+const prisma = new PrismaClient({ adapter });
 
 async function main() {
   console.log('🌱 Seeding database...');
@@ -19,7 +22,6 @@ async function main() {
   await prisma.source.deleteMany();
   await prisma.tag.deleteMany();
   await prisma.permission.deleteMany();
-  await prisma.assigneeUser.deleteMany();
   await prisma.assignee.deleteMany();
   await prisma.workspaceStatus.deleteMany();
   await prisma.workspace.deleteMany();
@@ -98,28 +100,6 @@ async function main() {
     prisma.assignee.create({ data: { name: 'צוות לוגיסטי', color: '#F97316', workspaceId: ws3.id, createdBy: u3.id, updatedBy: u3.id } }),
   ]);
 
-  // ── AssigneeUsers ─────────────────────────────────────────────────────────
-  await prisma.assigneeUser.createMany({
-    data: [
-      // מחלקת מבצעים: users 1–9
-      ...[u1, u2, u3, u4, u5, u6, u7, u8, u9].map((u) => ({ assigneeId: a1.id, userId: u.id })),
-      // צוות לוגיסטיקה: 3,5,7,10,11
-      ...[u3, u5, u7, u10, u11].map((u) => ({ assigneeId: a2.id, userId: u.id })),
-      // קצינת מודיעין: 4
-      { assigneeId: a3.id, userId: u4.id },
-      // פלוגה א': 1,2,6,8,9,10,11,12
-      ...[u1, u2, u6, u8, u9, u10, u11, u12].map((u) => ({ assigneeId: a4.id, userId: u.id })),
-      // קצין קשר: 7,9
-      ...[u7, u9].map((u) => ({ assigneeId: a5.id, userId: u.id })),
-      // מפקדת הגדוד: 2,4,6,12
-      ...[u2, u4, u6, u12].map((u) => ({ assigneeId: a6.id, userId: u.id })),
-      // צוות פיתוח: 2,4,5
-      ...[u2, u4, u5].map((u) => ({ assigneeId: a7.id, userId: u.id })),
-      // צוות לוגיסטי: 3,6
-      ...[u3, u6].map((u) => ({ assigneeId: a8.id, userId: u.id })),
-    ],
-  });
-
   // ── Permissions ───────────────────────────────────────────────────────────
   await prisma.permission.createMany({
     data: [
@@ -157,23 +137,28 @@ async function main() {
     src01, src02, src03, src04, src05, src06, src07, src08, src09,
     src10, src11, src12, src13, src14, src15, src16, src17,
   ] = await Promise.all([
-    prisma.source.create({ data: { name: 'ישיבת הנהלה 02/01/2026', workspaceId: ws1.id, createdBy: u1.id, updatedBy: u1.id } }),
-    prisma.source.create({ data: { name: 'דיון עם סמנכ"ל טכנולוגיה', workspaceId: ws1.id, createdBy: u1.id, updatedBy: u1.id } }),
-    prisma.source.create({ data: { name: 'ישיבת הנהלה 15/01/2026', workspaceId: ws1.id, createdBy: u2.id, updatedBy: u2.id } }),
-    prisma.source.create({ data: { name: 'ישיבת שיווק 20/01/2026', workspaceId: ws1.id, createdBy: u3.id, updatedBy: u3.id } }),
-    prisma.source.create({ data: { name: 'ישיבת דירקטוריון 28/12/2025', workspaceId: ws1.id, createdBy: u1.id, updatedBy: u1.id } }),
-    prisma.source.create({ data: { name: 'החלטת הנהלה 05/01/2026', workspaceId: ws1.id, createdBy: u1.id, updatedBy: u1.id } }),
-    prisma.source.create({ data: { name: 'ועדת ביקורת 10/12/2025', workspaceId: ws1.id, createdBy: u2.id, updatedBy: u2.id } }),
-    prisma.source.create({ data: { name: 'דוח תקלות ינואר 2026', workspaceId: ws1.id, createdBy: u2.id, updatedBy: u2.id } }),
-    prisma.source.create({ data: { name: 'ישיבת הנהלה 01/02/2026', workspaceId: ws1.id, createdBy: u1.id, updatedBy: u1.id } }),
-    prisma.source.create({ data: { name: 'מחלקת רכש', workspaceId: ws1.id, createdBy: u4.id, updatedBy: u4.id } }),
-    prisma.source.create({ data: { name: 'מחלקת משאבי אנוש', workspaceId: ws1.id, createdBy: u3.id, updatedBy: u3.id } }),
-    prisma.source.create({ data: { name: 'ישיבת דירקטוריון 15/02/2026', workspaceId: ws1.id, createdBy: u1.id, updatedBy: u1.id } }),
-    prisma.source.create({ data: { name: 'Sprint Planning 01/02/2026', workspaceId: ws2.id, createdBy: u2.id, updatedBy: u2.id } }),
-    prisma.source.create({ data: { name: 'Retro 15/02/2026', workspaceId: ws2.id, createdBy: u2.id, updatedBy: u2.id } }),
-    prisma.source.create({ data: { name: 'Sprint Planning 15/02/2026', workspaceId: ws2.id, createdBy: u2.id, updatedBy: u2.id } }),
-    prisma.source.create({ data: { name: 'ישיבת שיווק 10/02/2026', workspaceId: ws3.id, createdBy: u3.id, updatedBy: u3.id } }),
-    prisma.source.create({ data: { name: 'ישיבת הנהלה 01/01/2026', workspaceId: ws3.id, createdBy: u3.id, updatedBy: u3.id } }),
+    prisma.source.create({
+      data: {
+        date: new Date(),
+        name: 'ישיבת הנהלה 02/01/2026', workspaceId: ws1.id, createdBy: u1.id, updatedBy: u1.id
+      }
+    }),
+    prisma.source.create({ data: { date: new Date(), name: 'דיון עם סמנכ"ל טכנולוגיה', workspaceId: ws1.id, createdBy: u1.id, updatedBy: u1.id } }),
+    prisma.source.create({ data: { date: new Date(), name: 'ישיבת הנהלה 15/01/2026', workspaceId: ws1.id, createdBy: u2.id, updatedBy: u2.id } }),
+    prisma.source.create({ data: { date: new Date(), name: 'ישיבת שיווק 20/01/2026', workspaceId: ws1.id, createdBy: u3.id, updatedBy: u3.id } }),
+    prisma.source.create({ data: { date: new Date(), name: 'ישיבת דירקטוריון 28/12/2025', workspaceId: ws1.id, createdBy: u1.id, updatedBy: u1.id } }),
+    prisma.source.create({ data: { date: new Date(), name: 'החלטת הנהלה 05/01/2026', workspaceId: ws1.id, createdBy: u1.id, updatedBy: u1.id } }),
+    prisma.source.create({ data: { date: new Date(), name: 'ועדת ביקורת 10/12/2025', workspaceId: ws1.id, createdBy: u2.id, updatedBy: u2.id } }),
+    prisma.source.create({ data: { date: new Date(), name: 'דוח תקלות ינואר 2026', workspaceId: ws1.id, createdBy: u2.id, updatedBy: u2.id } }),
+    prisma.source.create({ data: { date: new Date(), name: 'ישיבת הנהלה 01/02/2026', workspaceId: ws1.id, createdBy: u1.id, updatedBy: u1.id } }),
+    prisma.source.create({ data: { date: new Date(), name: 'מחלקת רכש', workspaceId: ws1.id, createdBy: u4.id, updatedBy: u4.id } }),
+    prisma.source.create({ data: { date: new Date(), name: 'מחלקת משאבי אנוש', workspaceId: ws1.id, createdBy: u3.id, updatedBy: u3.id } }),
+    prisma.source.create({ data: { date: new Date(), name: 'ישיבת דירקטוריון 15/02/2026', workspaceId: ws1.id, createdBy: u1.id, updatedBy: u1.id } }),
+    prisma.source.create({ data: { date: new Date(), name: 'Sprint Planning 01/02/2026', workspaceId: ws2.id, createdBy: u2.id, updatedBy: u2.id } }),
+    prisma.source.create({ data: { date: new Date(), name: 'Retro 15/02/2026', workspaceId: ws2.id, createdBy: u2.id, updatedBy: u2.id } }),
+    prisma.source.create({ data: { date: new Date(), name: 'Sprint Planning 15/02/2026', workspaceId: ws2.id, createdBy: u2.id, updatedBy: u2.id } }),
+    prisma.source.create({ data: { date: new Date(), name: 'ישיבת שיווק 10/02/2026', workspaceId: ws3.id, createdBy: u3.id, updatedBy: u3.id } }),
+    prisma.source.create({ data: { date: new Date(), name: 'ישיבת הנהלה 01/01/2026', workspaceId: ws3.id, createdBy: u3.id, updatedBy: u3.id } }),
   ]);
 
   // ── Tasks + AssigneeTaskStatus + TaskHistory ───────────────────────────────
