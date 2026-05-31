@@ -16,7 +16,7 @@ export class WorkspaceStatusService {
   }
 
   async findInWorkspace(workspaceId: number) {
-    return await this.prisma.permission.findMany({ where: { workspaceId } });
+    return await this.prisma.workspaceStatus.findMany({ where: { workspaceId } });
   }
 
   findOne(id: number) {
