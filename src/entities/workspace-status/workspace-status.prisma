@@ -1,8 +1,8 @@
 model WorkspaceStatus {
-  id         Int    @id @default(autoincrement())
-  name       String
-  color      String
-  statusType String @map("status_type")
+  id    Int                 @id @default(autoincrement())
+  name  String
+  color String
+  type  WorkspaceStatusType @map("status_type")
 
   workspaceId Int       @map("workspace_id")
   workspace   Workspace @relation(fields: [workspaceId], references: [id])
@@ -10,4 +10,10 @@ model WorkspaceStatus {
   assigneeTaskStatuses AssigneeTaskStatus[]
 
   @@map("workspace_statuses")
+}
+
+enum WorkspaceStatusType {
+  NOT_STARTED
+  IN_PROGRESS
+  COMPLETED
 }
