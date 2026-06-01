@@ -88,16 +88,16 @@ async function main() {
   // ── Assignees ─────────────────────────────────────────────────────────────
   const [a1, a2, a3, a4, a5, a6, a7, a8] = await Promise.all([
     // workspace 1
-    prisma.assignee.create({ data: { name: 'מחלקת מבצעים', color: '#3B82F6', workspaceId: ws1.id, createdBy: u1.id, updatedBy: u1.id } }),
-    prisma.assignee.create({ data: { name: 'צוות לוגיסטיקה', color: '#10B981', workspaceId: ws1.id, createdBy: u1.id, updatedBy: u1.id } }),
-    prisma.assignee.create({ data: { name: 'קצינת מודיעין', color: '#F59E0B', workspaceId: ws1.id, createdBy: u1.id, updatedBy: u1.id } }),
-    prisma.assignee.create({ data: { name: "פלוגה א'", color: '#EF4444', workspaceId: ws1.id, createdBy: u1.id, updatedBy: u1.id } }),
-    prisma.assignee.create({ data: { name: 'קצין קשר', color: '#8B5CF6', workspaceId: ws1.id, createdBy: u1.id, updatedBy: u1.id } }),
-    prisma.assignee.create({ data: { name: 'מפקדת הגדוד', color: '#EC4899', workspaceId: ws1.id, createdBy: u1.id, updatedBy: u1.id } }),
+    prisma.assignee.create({ data: { name: 'מחלקת מבצעים', color: '#3B82F6', workspaceId: ws1.id, createdBy: u1.id, updatedBy: u1.id, users: { connect: [{ id: u1.id }, { id: u2.id }] } } }),
+    prisma.assignee.create({ data: { name: 'צוות לוגיסטיקה', color: '#10B981', workspaceId: ws1.id, createdBy: u1.id, updatedBy: u1.id, users: { connect: [{ id: u3.id }, { id: u4.id }] } } }),
+    prisma.assignee.create({ data: { name: 'קצינת מודיעין', color: '#F59E0B', workspaceId: ws1.id, createdBy: u1.id, updatedBy: u1.id, users: { connect: [{ id: u5.id }] } } }),
+    prisma.assignee.create({ data: { name: "פלוגה א'", color: '#EF4444', workspaceId: ws1.id, createdBy: u1.id, updatedBy: u1.id, users: { connect: [{ id: u4.id }, { id: u6.id }] } } }),
+    prisma.assignee.create({ data: { name: 'קצין קשר', color: '#8B5CF6', workspaceId: ws1.id, createdBy: u1.id, updatedBy: u1.id, users: { connect: [{ id: u5.id }, { id: u6.id }] } } }),
+    prisma.assignee.create({ data: { name: 'מפקדת הגדוד', color: '#EC4899', workspaceId: ws1.id, createdBy: u1.id, updatedBy: u1.id, users: { connect: [{ id: u1.id }, { id: u2.id }, { id: u3.id }] } } }),
     // workspace 2
-    prisma.assignee.create({ data: { name: 'צוות פיתוח', color: '#06B6D4', workspaceId: ws2.id, createdBy: u2.id, updatedBy: u2.id } }),
+    prisma.assignee.create({ data: { name: 'צוות פיתוח', color: '#06B6D4', workspaceId: ws2.id, createdBy: u2.id, updatedBy: u2.id, users: { connect: [{ id: u2.id }, { id: u4.id }, { id: u5.id }] } } }),
     // workspace 3
-    prisma.assignee.create({ data: { name: 'צוות לוגיסטי', color: '#F97316', workspaceId: ws3.id, createdBy: u3.id, updatedBy: u3.id } }),
+    prisma.assignee.create({ data: { name: 'צוות לוגיסטי', color: '#F97316', workspaceId: ws3.id, createdBy: u3.id, updatedBy: u3.id, users: { connect: [{ id: u3.id }, { id: u6.id }] } } }),
   ]);
 
   // ── Permissions ───────────────────────────────────────────────────────────
