@@ -10,7 +10,10 @@ export class TaskService {
     source: true,
     tags: true,
     assigneeStatuses: {
-      include: { assignee: { include: { users: true } } }
+      include: {
+        assignee: { include: { users: true } },
+        status: true
+      }
     }
   }
 
