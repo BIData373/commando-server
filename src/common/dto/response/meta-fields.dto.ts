@@ -4,9 +4,9 @@ import { PartialMetaFieldsDto } from './partial-meta-fields.dto';
 
 @Exclude()
 export class MetaFieldsDto extends PartialMetaFieldsDto {
-  @ExposeProperty({ nullable: true })
+  @ExposeProperty({ type: Date, nullable: true })
   deletedAt: Date | null;
 
-  @ExposeProperty({ nullable: true })
+  @ExposeProperty({ type: Number, nullable: true })
   deletedBy: number | null;
 }
