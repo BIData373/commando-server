@@ -1,7 +1,7 @@
 import { PrismaPg } from '@prisma/adapter-pg';
 import { config } from 'dotenv';
 import path from 'node:path';
-import { HistoryAction, PermissionType, PrismaClient } from '../src/types/prisma';
+import { HistoryAction, PermissionType, PrismaClient, WorkspaceStatusType } from '../src/types/prisma';
 
 if (process.env.ENV) {
   config({ path: path.join('./config', process.env.ENV, '.env') });
@@ -64,25 +64,24 @@ async function main() {
 
   // ── WorkspaceStatuses (4 per workspace) ───────────────────────────────────
   const statusDefs = [
-    { name: 'פתוח', color: '#6B7280', statusType: 'open' },
-    { name: 'בתהליך', color: '#3B82F6', statusType: 'inProgress' },
-    { name: 'הושלם', color: '#10B981', statusType: 'completed' },
-    { name: 'בארכיון', color: '#9CA3AF', statusType: 'archived' },
+    { name: 'פתוח', color: '#6B7280', type: WorkspaceStatusType.NOT_STARTED },
+    { name: 'בתהליך', color: '#3B82F6', type: WorkspaceStatusType.IN_PROGRESS },
+    { name: 'הושלם', color: '#10B981', type: WorkspaceStatusType.COMPLETED },
   ] as const;
 
   const createStatuses = (workspaceId: number) =>
     Promise.all(statusDefs.map((s) => prisma.workspaceStatus.create({ data: { ...s, workspaceId } })));
 
   const [
-    [ws1Open, ws1InProgress, ws1Completed],
-    [ws2Open, ws2InProgress, ws2Completed],
-    [ws3Open, ws3InProgress, ws3Completed],
+    [ws1NotStarted, ws1InProgress, ws1Completed],
+    [ws2NotStarted, ws2InProgress, ws2Completed],
+    [ws3NotStarted, ws3InProgress, ws3Completed],
   ] = await Promise.all([createStatuses(ws1.id), createStatuses(ws2.id), createStatuses(ws3.id)]);
 
   const statusIdByType = {
-    [ws1.id]: { open: ws1Open.id, inProgress: ws1InProgress.id, completed: ws1Completed.id },
-    [ws2.id]: { open: ws2Open.id, inProgress: ws2InProgress.id, completed: ws2Completed.id },
-    [ws3.id]: { open: ws3Open.id, inProgress: ws3InProgress.id, completed: ws3Completed.id },
+    [ws1.id]: { [WorkspaceStatusType.NOT_STARTED]: ws1NotStarted.id, [WorkspaceStatusType.IN_PROGRESS]: ws1InProgress.id, [WorkspaceStatusType.COMPLETED]: ws1Completed.id },
+    [ws2.id]: { [WorkspaceStatusType.NOT_STARTED]: ws2NotStarted.id, [WorkspaceStatusType.IN_PROGRESS]: ws2InProgress.id, [WorkspaceStatusType.COMPLETED]: ws2Completed.id },
+    [ws3.id]: { [WorkspaceStatusType.NOT_STARTED]: ws3NotStarted.id, [WorkspaceStatusType.IN_PROGRESS]: ws3InProgress.id, [WorkspaceStatusType.COMPLETED]: ws3Completed.id },
   } as Record<number, Record<string, number>>;
 
   // ── Assignees ─────────────────────────────────────────────────────────────
@@ -174,7 +173,7 @@ async function main() {
     createdBy: number;
     tagIds: number[];
     assigneeId: number;
-    statusType: 'open' | 'inProgress' | 'completed';
+    statusType: WorkspaceStatusType;
   };
 
   const taskDefs: TaskDef[] = [
@@ -184,7 +183,7 @@ async function main() {
       flagged: true, deadlineType: 'routine',
       issuedAt: new Date('2026-01-05T08:00:00Z'), dueDate: new Date('2026-03-01T00:00:00Z'),
       workspaceId: ws1.id, sourceId: src01.id, createdBy: u1.id,
-      tagIds: [tBudget.id, tHR.id], assigneeId: a1.id, statusType: 'inProgress',
+      tagIds: [tBudget.id, tHR.id], assigneeId: a1.id, statusType: WorkspaceStatusType.IN_PROGRESS,
     },
     {
       title: 'גיוס מנהל פיתוח בכיר',
@@ -192,7 +191,7 @@ async function main() {
       flagged: true, deadlineType: 'immediate',
       issuedAt: new Date('2026-01-15T08:00:00Z'), dueDate: new Date('2026-02-20T00:00:00Z'),
       workspaceId: ws1.id, sourceId: src02.id, createdBy: u1.id,
-      tagIds: [tHR.id], assigneeId: a3.id, statusType: 'open',
+      tagIds: [tHR.id], assigneeId: a3.id, statusType: WorkspaceStatusType.NOT_STARTED,
     },
     {
       title: 'עדכון מדיניות אבטחת מידע',
@@ -200,7 +199,7 @@ async function main() {
       flagged: false, deadlineType: 'date',
       issuedAt: new Date('2026-01-20T08:00:00Z'), dueDate: new Date('2026-02-28T00:00:00Z'),
       workspaceId: ws1.id, sourceId: src03.id, createdBy: u2.id,
-      tagIds: [tIT.id, tField.id], assigneeId: a5.id, statusType: 'inProgress',
+      tagIds: [tIT.id, tField.id], assigneeId: a5.id, statusType: WorkspaceStatusType.IN_PROGRESS,
     },
     {
       title: 'השקת קמפיין שיווקי לרבעון 2',
@@ -208,7 +207,7 @@ async function main() {
       flagged: false, deadlineType: 'routine',
       issuedAt: new Date('2026-01-25T08:00:00Z'), dueDate: new Date('2026-04-01T00:00:00Z'),
       workspaceId: ws1.id, sourceId: src04.id, createdBy: u3.id,
-      tagIds: [tOps.id], assigneeId: a2.id, statusType: 'open',
+      tagIds: [tOps.id], assigneeId: a2.id, statusType: WorkspaceStatusType.NOT_STARTED,
     },
     {
       title: 'סיכום ישיבת דירקטוריון Q4 2025',
@@ -216,7 +215,7 @@ async function main() {
       flagged: false, deadlineType: 'date',
       issuedAt: new Date('2025-12-29T08:00:00Z'), dueDate: new Date('2026-01-15T00:00:00Z'),
       workspaceId: ws1.id, sourceId: src05.id, createdBy: u1.id,
-      tagIds: [], assigneeId: a1.id, statusType: 'completed',
+      tagIds: [], assigneeId: a1.id, statusType: WorkspaceStatusType.COMPLETED,
     },
     {
       title: 'הטמעת מערכת ERP חדשה',
@@ -224,7 +223,7 @@ async function main() {
       flagged: true, deadlineType: 'routine',
       issuedAt: new Date('2026-01-10T08:00:00Z'), dueDate: new Date('2026-06-30T00:00:00Z'),
       workspaceId: ws1.id, sourceId: src06.id, createdBy: u1.id,
-      tagIds: [tBudget.id, tIT.id], assigneeId: a1.id, statusType: 'open',
+      tagIds: [tBudget.id, tIT.id], assigneeId: a1.id, statusType: WorkspaceStatusType.NOT_STARTED,
     },
     {
       title: 'ביקורת פנימית - תהליכי רכש',
@@ -232,7 +231,7 @@ async function main() {
       flagged: false, deadlineType: 'routine',
       issuedAt: new Date('2025-12-15T08:00:00Z'), dueDate: new Date('2026-01-31T00:00:00Z'),
       workspaceId: ws1.id, sourceId: src07.id, createdBy: u2.id,
-      tagIds: [tBudget.id, tField.id], assigneeId: a5.id, statusType: 'completed',
+      tagIds: [tBudget.id, tField.id], assigneeId: a5.id, statusType: WorkspaceStatusType.COMPLETED,
     },
     {
       title: 'שדרוג תשתיות שרתים',
@@ -240,7 +239,7 @@ async function main() {
       flagged: true, deadlineType: 'immediate',
       issuedAt: new Date('2026-02-01T08:00:00Z'), dueDate: new Date('2026-02-15T00:00:00Z'),
       workspaceId: ws1.id, sourceId: src08.id, createdBy: u2.id,
-      tagIds: [tIT.id], assigneeId: a4.id, statusType: 'inProgress',
+      tagIds: [tIT.id], assigneeId: a4.id, statusType: WorkspaceStatusType.IN_PROGRESS,
     },
     {
       title: 'הכנת מצגת למשקיעים',
@@ -248,7 +247,7 @@ async function main() {
       flagged: false, deadlineType: 'date',
       issuedAt: new Date('2026-02-05T08:00:00Z'), dueDate: new Date('2026-03-15T00:00:00Z'),
       workspaceId: ws1.id, sourceId: src09.id, createdBy: u1.id,
-      tagIds: [tBudget.id, tOps.id], assigneeId: a6.id, statusType: 'open',
+      tagIds: [tBudget.id, tOps.id], assigneeId: a6.id, statusType: WorkspaceStatusType.NOT_STARTED,
     },
     {
       title: 'חידוש חוזה ספק תקשורת',
@@ -256,7 +255,7 @@ async function main() {
       flagged: false, deadlineType: 'routine',
       issuedAt: new Date('2026-01-20T08:00:00Z'), dueDate: new Date('2026-02-10T00:00:00Z'),
       workspaceId: ws1.id, sourceId: src10.id, createdBy: u4.id,
-      tagIds: [tBudget.id], assigneeId: a2.id, statusType: 'completed',
+      tagIds: [tBudget.id], assigneeId: a2.id, statusType: WorkspaceStatusType.COMPLETED,
     },
     {
       title: 'תכנית הדרכות עובדים Q1 2026',
@@ -264,7 +263,7 @@ async function main() {
       flagged: false, deadlineType: 'routine',
       issuedAt: new Date('2026-01-05T08:00:00Z'), dueDate: new Date('2026-03-31T00:00:00Z'),
       workspaceId: ws1.id, sourceId: src11.id, createdBy: u3.id,
-      tagIds: [tHR.id], assigneeId: a2.id, statusType: 'inProgress',
+      tagIds: [tHR.id], assigneeId: a2.id, statusType: WorkspaceStatusType.IN_PROGRESS,
     },
     {
       title: 'בחינת מיזוג עם חברת אלפא',
@@ -273,7 +272,7 @@ async function main() {
       // no dueDate in mock — use sentinel far-future date
       issuedAt: new Date('2026-02-16T08:00:00Z'), dueDate: new Date('2099-12-31T00:00:00Z'),
       workspaceId: ws1.id, sourceId: src12.id, createdBy: u1.id,
-      tagIds: [tBudget.id], assigneeId: a6.id, statusType: 'open',
+      tagIds: [tBudget.id], assigneeId: a6.id, statusType: WorkspaceStatusType.NOT_STARTED,
     },
     {
       title: 'שדרוג React לגרסה 19',
@@ -281,7 +280,7 @@ async function main() {
       flagged: true, deadlineType: 'date',
       issuedAt: new Date('2026-02-01T08:00:00Z'), dueDate: new Date('2026-03-01T00:00:00Z'),
       workspaceId: ws2.id, sourceId: src13.id, createdBy: u2.id,
-      tagIds: [tDev.id, tQA.id], assigneeId: a7.id, statusType: 'inProgress',
+      tagIds: [tDev.id, tQA.id], assigneeId: a7.id, statusType: WorkspaceStatusType.IN_PROGRESS,
     },
     {
       title: 'כתיבת תיעוד API חדש',
@@ -289,7 +288,7 @@ async function main() {
       flagged: false, deadlineType: 'routine',
       issuedAt: new Date('2026-02-16T08:00:00Z'), dueDate: new Date('2026-03-10T00:00:00Z'),
       workspaceId: ws2.id, sourceId: src14.id, createdBy: u2.id,
-      tagIds: [tDev.id], assigneeId: a7.id, statusType: 'open',
+      tagIds: [tDev.id], assigneeId: a7.id, statusType: WorkspaceStatusType.NOT_STARTED,
     },
     {
       title: 'סקירת קוד - מודול תשלומים',
@@ -297,7 +296,7 @@ async function main() {
       flagged: true, deadlineType: 'immediate',
       issuedAt: new Date('2026-02-20T08:00:00Z'), dueDate: new Date('2026-02-24T00:00:00Z'),
       workspaceId: ws2.id, sourceId: src15.id, createdBy: u2.id,
-      tagIds: [tDev.id, tQA.id], assigneeId: a7.id, statusType: 'inProgress',
+      tagIds: [tDev.id, tQA.id], assigneeId: a7.id, statusType: WorkspaceStatusType.IN_PROGRESS,
     },
     {
       title: 'הכנת חומרי שיווק לכנס',
@@ -305,7 +304,7 @@ async function main() {
       flagged: false, deadlineType: 'routine',
       issuedAt: new Date('2026-02-12T08:00:00Z'), dueDate: new Date('2026-03-20T00:00:00Z'),
       workspaceId: ws3.id, sourceId: src16.id, createdBy: u3.id,
-      tagIds: [], assigneeId: a8.id, statusType: 'open',
+      tagIds: [], assigneeId: a8.id, statusType: WorkspaceStatusType.NOT_STARTED,
     },
     {
       title: 'סקר שביעות רצון לקוחות Q1',
@@ -313,7 +312,7 @@ async function main() {
       flagged: false, deadlineType: 'date',
       issuedAt: new Date('2026-01-05T08:00:00Z'), dueDate: new Date('2026-02-15T00:00:00Z'),
       workspaceId: ws3.id, sourceId: src17.id, createdBy: u3.id,
-      tagIds: [], assigneeId: a8.id, statusType: 'completed',
+      tagIds: [], assigneeId: a8.id, statusType: WorkspaceStatusType.COMPLETED,
     },
   ];
 
@@ -356,7 +355,7 @@ async function main() {
 
   console.log(`✅ Done — seeded:
   • 12 users
-  • 1 pikud, 3 workspaces, 12 workspace statuses
+  • 1 pikud, 3 workspaces, 9 workspace statuses
   • 8 assignees, ${taskDefs.reduce((s, d) => s + (d.tagIds?.length ?? 0), 0)} assignee-user links
   • 7 tags, 17 sources
   • 17 tasks with assignee statuses and history entries`);
