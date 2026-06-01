@@ -2,7 +2,7 @@ model WorkspaceStatus {
   id    Int                 @id @default(autoincrement())
   name  String
   color String
-  type  WorkspaceStatusType @map("status_type")
+  type  WorkspaceStatusType @map("status_type") @default(NOT_STARTED)
 
   workspaceId Int       @map("workspace_id")
   workspace   Workspace @relation(fields: [workspaceId], references: [id])
