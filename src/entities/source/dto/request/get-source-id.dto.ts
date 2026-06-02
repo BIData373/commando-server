@@ -7,6 +7,7 @@ import { ISourceContext } from "../../interfaces/source-context.interface";
 export function GetPermittedSourceIdDto(type: PermissionType) {
     class GetSourceIdDto extends GetContextDto<IUserContext & ISourceContext> {
         @IsIdPermitted('source', type, {
+            contextField: 'source',
             filterDeletedAt: true,
             workspaceFindArgs: ({ value }) => ({ sources: { some: { id: value } } })
         })
