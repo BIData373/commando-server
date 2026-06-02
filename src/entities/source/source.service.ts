@@ -17,7 +17,7 @@ export class SourceService {
   ) { }
 
   async create(
-    { tags, workspaceId, ...dto }: CreateSourceDto,
+    { tags, workspaceId, context, ...dto }: CreateSourceDto,
     userId: number,
     file?: Express.Multer.File
   ) {
@@ -64,7 +64,7 @@ export class SourceService {
 
   async update(
     source: Source,
-    { tags, ...dto }: UpdateSourceDto,
+    { tags, context, ...dto }: UpdateSourceDto,
     updatedBy: number,
     file?: Express.Multer.File
   ) {
