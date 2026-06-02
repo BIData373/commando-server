@@ -3,13 +3,13 @@ import { Type } from "class-transformer";
 import { IsBoolean, IsDate, IsEnum, IsOptional, IsString } from "class-validator";
 import { IsNotEmptyString } from "../../../../common/decorators/is-not-empty-string.decorator";
 import { IsIdPermitted } from "../../../../common/decorators/is-permitted-id.decorator";
-import { DeadlineType, PermissionType } from "../../../../types/prisma";
 import { GetContextDto } from "../../../../common/dto/request/get-context.dto";
+import { DeadlineType, PermissionType } from "../../../../types/prisma";
 import { IUserContext } from "../../../user/interfaces/user-context.interface";
 
 export class GetTaskFieldsDto extends GetContextDto<IUserContext> {
   @ApiProperty()
-  @IsString()
+  @IsNotEmptyString()
   title: string;
 
   @ApiProperty({ required: false })
@@ -42,6 +42,7 @@ export class GetTaskFieldsDto extends GetContextDto<IUserContext> {
     each: true,
     filterDeletedAt: true
   })
+  @IsOptional()
   assigneeIds?: number[]
 
   @ApiProperty({ type: [String], required: false })

@@ -99,17 +99,41 @@ export class TaskService {
 
   async update(
     { id, workspaceId }: Task,
-    { assigneeIds, tags, context, ...dto }: UpdateTaskDto,
+    { assigneeIds, tags, context, sourceId, ...dto }: UpdateTaskDto,
     updatedBy: number
   ) {
+    const notStartedStatus = assigneeIds !== undefined && assigneeIds.length > 0
+      ? await this.prisma.workspaceStatus.findFirstOrThrow({
+          where: { type: 'NOT_STARTED' },
+          orderBy: { id: 'asc' }
+        })
+      : null;
+
     return await this.prisma.task.update({
       where: { id },
       data: {
         ...dto,
-        assigneeStatuses: {},
+        ...(sourceId !== undefined && {
+          source: sourceId === null
+            ? { disconnect: true }
+            : { connect: { id: sourceId } }
+        }),
+        ...(assigneeIds !== undefined && {
+          assigneeStatuses: {
+            deleteMany: { assigneeId: { notIn: assigneeIds } },
+            ...(notStartedStatus && {
+              createMany: {
+                data: assigneeIds.map((assigneeId) => ({
+                  assigneeId,
+                  statusId: notStartedStatus.id
+                })),
+                skipDuplicates: true
+              }
+            })
+          }
+        }),
         ...(tags !== undefined && {
           tags: {
-            set: [],
             connectOrCreate: tags.map(name => ({
               create: {
                 name,
@@ -118,7 +142,8 @@ export class TaskService {
                 updatedBy: updatedBy
               },
               where: { name_workspaceId: { name, workspaceId } }
-            }))
+            })),
+            set: tags.map(name => ({ name_workspaceId: { name, workspaceId } }))
           }
         }),
         updatedBy
