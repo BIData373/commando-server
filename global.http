@@ -2,7 +2,7 @@
     const local = 'http://localhost:3000'
     const dev = ''
 
-    exports.baseUrl = dev
+    exports.baseUrl = local
     exports.headers = {
         'Content-Type': 'application/json',
         'static-token': 'd7d47dc2-f442-4e01-8c8b-59f30014050d',
@@ -10,5 +10,5 @@
         'is-bi': true
     }
 
-    exports.workspaceId = 1
+    exports.workspaceId = 8
 }}
