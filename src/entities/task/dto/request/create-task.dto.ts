@@ -10,7 +10,7 @@ export class CreateTaskDto extends GetTaskFieldsDto {
   @IsIdPermitted('workspace', PermissionType.MANAGER, { filterDeletedAt: true })
   workspaceId: number
 
-  @ApiProperty({ type: Number, required: false })
+  @ApiProperty({ type: Number, required: false, nullable: true })
   @IdExists('source', {
     findArgs: ({ value, obj }) => ({
       where: {

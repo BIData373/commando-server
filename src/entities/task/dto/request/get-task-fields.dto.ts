@@ -26,7 +26,7 @@ export class GetTaskFieldsDto extends GetContextDto<IUserContext> {
   @IsEnum(DeadlineType)
   deadlineType: DeadlineType;
 
-  @ApiProperty({ required: false })
+  @ApiProperty({ type: Date, required: false, nullable: true })
   @IsOptional()
   @IsDate()
   @Type(() => Date)
