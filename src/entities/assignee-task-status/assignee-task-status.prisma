@@ -7,6 +7,8 @@ model AssigneeTaskStatus {
   assignee Assignee        @relation(fields: [assigneeId], references: [id])
   status   WorkspaceStatus @relation(fields: [statusId], references: [id])
 
+  description String?
+
   @@id([taskId, assigneeId])
   @@map("assignee_task_statuses")
 }

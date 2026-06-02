@@ -4,8 +4,12 @@ import { IdExists } from '../../../../common/decorators/id-exists.decorator';
 import { GetContextDto } from '../../../../common/dto/request/get-context.dto';
 import { ITaskContext } from '../../interfaces/task.interface';
 import { GetTaskFieldsDto } from './get-task-fields.dto';
+import { IUserContext } from '../../../user/interfaces/user-context.interface';
 
-export class UpdateTaskDto extends IntersectionType(PartialType(GetTaskFieldsDto), GetContextDto<ITaskContext>) {
+export class UpdateTaskDto extends IntersectionType(
+  PartialType(GetTaskFieldsDto),
+  GetContextDto<ITaskContext & IUserContext>
+) {
   @ApiProperty({ type: Number, nullable: true, required: false })
   @IsOptional()
   @IdExists('source', {

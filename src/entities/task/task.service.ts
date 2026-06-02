@@ -24,7 +24,7 @@ export class TaskService {
 
   constructor(private readonly prisma: PrismaService) { }
 
-  async create({ tags, workspaceId, sourceId, assigneeIds, context, ...dto }: CreateTaskDto, userId: number) {
+  async create({ tags, workspaceId, sourceId, assignees, context, ...dto }: CreateTaskDto, userId: number) {
     const notStartedStatus = await this.prisma.workspaceStatus.findFirstOrThrow({
       where: { type: 'NOT_STARTED' },
       orderBy: { id: 'asc' }
@@ -45,9 +45,10 @@ export class TaskService {
             }
           }
         }),
-        ...(assigneeIds && {
+        ...(assignees && {
           assigneeStatuses: {
-            create: assigneeIds.map((id) => ({
+            create: assignees.map(({ id, description }) => ({
+              description,
               assignee: { connect: { id } },
               status: { connect: { id: notStartedStatus.id } }
             }))
@@ -99,14 +100,14 @@ export class TaskService {
 
   async update(
     { id, workspaceId }: Task,
-    { assigneeIds, tags, context, sourceId, ...dto }: UpdateTaskDto,
+    { assignees, tags, context, sourceId, ...dto }: UpdateTaskDto,
     updatedBy: number
   ) {
-    const notStartedStatus = assigneeIds !== undefined && assigneeIds.length > 0
+    const notStartedStatus = assignees !== undefined && assignees.length > 0
       ? await this.prisma.workspaceStatus.findFirstOrThrow({
-          where: { type: 'NOT_STARTED' },
-          orderBy: { id: 'asc' }
-        })
+        where: { type: 'NOT_STARTED' },
+        orderBy: { id: 'asc' }
+      })
       : null;
 
     return await this.prisma.task.update({
@@ -118,13 +119,16 @@ export class TaskService {
             ? { disconnect: true }
             : { connect: { id: sourceId } }
         }),
-        ...(assigneeIds !== undefined && {
+        ...(assignees !== undefined && {
           assigneeStatuses: {
-            deleteMany: { assigneeId: { notIn: assigneeIds } },
+            ...(assignees.length > 0 && {
+              deleteMany: { assigneeId: { notIn: assignees.map(({ id }) => id) } }
+            }),
             ...(notStartedStatus && {
               createMany: {
-                data: assigneeIds.map((assigneeId) => ({
-                  assigneeId,
+                data: assignees.map(({ id, description }) => ({
+                  assigneeId: id,
+                  description,
                   statusId: notStartedStatus.id
                 })),
                 skipDuplicates: true
