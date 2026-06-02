@@ -15,13 +15,13 @@
     "prisma:repl": "cross-env-shell ENV=$npm_config_env prisma-repl",
     "prisma:format": "cross-env-shell ENV=$npm_config_env prisma format",
     "prisma:client:generate": "cross-env-shell ENV=$npm_config_env prisma generate",
-    "prisma:db:push": "cross-env-shell ENV=$npm_config_env prisma db push",
-    "prisma:db:seed": "cross-env-shell ENV=$npm_config_env npx prisma db seed",
-    "prisma:migration:generate": "cross-env-shell ENV=$npm_config_env prisma migrate dev --create-only",
-    "prisma:migration:deploy": "cross-env-shell ENV=$npm_config_env prisma migrate deploy",
-    "prisma:migration:reset": "cross-env-shell ENV=$npm_config_env prisma migrate reset",
-    "prisma:migration:status": "cross-env-shell ENV=$npm_config_env prisma migrate status",
-    "prisma:studio": "cross-env-shell ENV=$npm_config_env prisma studio"
+    "prisma:studio": "cross-env-shell ENV=$npm_config_env prisma studio",
+    "db:push": "cross-env-shell ENV=$npm_config_env prisma db push",
+    "db:seed": "cross-env-shell ENV=$npm_config_env npx prisma db seed",
+    "migration:generate": "cross-env-shell ENV=$npm_config_env prisma migrate dev --create-only",
+    "migration:deploy": "cross-env-shell ENV=$npm_config_env prisma migrate deploy",
+    "migration:reset": "cross-env-shell ENV=$npm_config_env prisma migrate reset",
+    "migration:status": "cross-env-shell ENV=$npm_config_env prisma migrate status"
   },
   "repository": {
     "type": "git",
