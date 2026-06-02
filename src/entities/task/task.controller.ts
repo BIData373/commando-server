@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req, UseInterceptors } from '@nestjs/common';
 import { ApiBody, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { TransformPlainToInstance } from 'class-transformer';
 import { Request } from 'express';
@@ -64,7 +64,9 @@ export class TaskController {
   @ApiOperation({ operationId: 'updateTask' })
   @ApiParam({ name: 'id', type: Number })
   @ApiBody({ type: UpdateTaskDto })
-  @AddDtosToContext({ from: 'params', to: 'body', dto: GetManagerTaskIdDto, field: 'task' })
+  @UseInterceptors(
+    AddDtosToContext({ from: 'params', to: 'body', dto: GetManagerTaskIdDto, field: 'task' })
+  )
   @Patch(':id')
   @ApiOkResponse({ type: TaskWithWorkspaceDto })
   @TransformPlainToInstance(TaskWithWorkspaceDto)

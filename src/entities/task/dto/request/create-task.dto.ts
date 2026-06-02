@@ -11,7 +11,6 @@ export class CreateTaskDto extends GetTaskFieldsDto {
   workspaceId: number
 
   @ApiProperty({ required: false })
-  @IsOptional()
   @IdExists('source', {
     findArgs: ({ value, obj }) => ({
       where: {
@@ -21,5 +20,6 @@ export class CreateTaskDto extends GetTaskFieldsDto {
       },
     })
   })
+  @IsOptional()
   sourceId?: number;
 }

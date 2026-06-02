@@ -4,15 +4,15 @@ import type { Request } from "express";
 import { addDtosToContext, DtoToAdd } from "../functions/transform";
 
 export function AddDtosToContext(...dtosToAdd: DtoToAdd<ClassConstructor<Object>>[]) {
-    class AddDtosToContextInterceptor implements NestInterceptor {
-        intercept(context: ExecutionContext, next: CallHandler) {
-            let request = context.switchToHttp().getRequest<Request>()
+  class AddDtosToContextInterceptor implements NestInterceptor {
+    intercept(context: ExecutionContext, next: CallHandler) {
+      let request = context.switchToHttp().getRequest<Request>()
 
-            addDtosToContext(request, dtosToAdd)
+      addDtosToContext(request, dtosToAdd)
 
-            return next.handle()
-        }
+      return next.handle()
     }
+  }
 
-    return UseInterceptors(AddDtosToContextInterceptor)
+  return AddDtosToContextInterceptor
 }

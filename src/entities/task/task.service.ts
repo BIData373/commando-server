@@ -24,12 +24,48 @@ export class TaskService {
 
   constructor(private readonly prisma: PrismaService) { }
 
-  async create(dto: CreateTaskDto, userId: number) {
+  async create({ tags, workspaceId, sourceId, assigneeIds, context, ...dto }: CreateTaskDto, userId: number) {
+    const notStartedStatus = await this.prisma.workspaceStatus.findFirstOrThrow({
+      where: { type: 'NOT_STARTED' },
+      orderBy: { id: 'asc' }
+    })
+
     return await this.prisma.task.create({
       data: {
         ...dto,
         createdBy: userId,
-        updatedBy: userId
+        updatedBy: userId,
+        workspace: {
+          connect: { id: workspaceId }
+        },
+        ...(typeof sourceId === 'number' && {
+          source: {
+            connect: {
+              id: sourceId
+            }
+          }
+        }),
+        ...(assigneeIds && {
+          assigneeStatuses: {
+            create: assigneeIds.map((id) => ({
+              assignee: { connect: { id } },
+              status: { connect: { id: notStartedStatus.id } }
+            }))
+          }
+        }),
+        ...(tags && {
+          tags: {
+            connectOrCreate: tags.map(name => ({
+              create: {
+                name,
+                workspace: { connect: { id: workspaceId } },
+                createdBy: userId,
+                updatedBy: userId
+              },
+              where: { name_workspaceId: { name, workspaceId } }
+            }))
+          }
+        })
       },
       include: TaskService.includeWithWorkspace
     });
@@ -63,7 +99,7 @@ export class TaskService {
 
   async update(
     { id, workspaceId }: Task,
-    { assigneeIds, tags, ...dto }: UpdateTaskDto,
+    { assigneeIds, tags, context, ...dto }: UpdateTaskDto,
     updatedBy: number
   ) {
     return await this.prisma.task.update({
