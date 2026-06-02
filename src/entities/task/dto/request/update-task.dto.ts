@@ -6,7 +6,7 @@ import { ITaskContext } from '../../interfaces/task.interface';
 import { GetTaskFieldsDto } from './get-task-fields.dto';
 
 export class UpdateTaskDto extends IntersectionType(PartialType(GetTaskFieldsDto), GetContextDto<ITaskContext>) {
-  @ApiProperty({ type: Number, required: false })
+  @ApiProperty({ type: Number, nullable: true, required: false })
   @IsOptional()
   @IdExists('source', {
     validateIf: ({ value, obj }) => !!value && !!obj.context.task.id,
