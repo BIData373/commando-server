@@ -1,7 +1,7 @@
 model Source {
   id            Int      @id @default(autoincrement())
   name          String
-  date          DateTime
+  date          DateTime?
   attachmentKey String?  @map("attachment_key")
 
   workspaceId Int       @map("workspace_id")

@@ -3,7 +3,7 @@ import { IsEnum, IsInt, IsOptional, IsString } from 'class-validator';
 import { HistoryAction } from '../../../../types/prisma';
 
 export class CreateTaskHistoryDto {
-  @ApiProperty({ enum: HistoryAction })
+  @ApiProperty({ enumName: 'TaskHistoryAction', enum: HistoryAction })
   @IsEnum(HistoryAction)
   action: HistoryAction;
 

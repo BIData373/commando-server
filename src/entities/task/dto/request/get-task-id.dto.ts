@@ -2,10 +2,14 @@ import { IsIdPermitted } from "../../../../common/decorators/is-permitted-id.dec
 import { GetContextDto } from "../../../../common/dto/request/get-context.dto";
 import { PermissionType } from "../../../../types/prisma";
 import { IUserContext } from "../../../user/interfaces/user-context.interface";
+import { ITaskContext } from "../../interfaces/task.interface";
 
 export function GetPermittedTaskIdDto(type: PermissionType) {
-    class GetTaskIdDto extends GetContextDto<IUserContext> {
-        @IsIdPermitted('task', type, { filterDeletedAt: true })
+    class GetTaskIdDto extends GetContextDto<IUserContext & ITaskContext> {
+        @IsIdPermitted('task', type, {
+            filterDeletedAt: true,
+            contextField: 'task'
+        })
         id: number
     }
 

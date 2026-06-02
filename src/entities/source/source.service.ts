@@ -17,7 +17,7 @@ export class SourceService {
   ) { }
 
   async create(
-    { tags, workspaceId, ...dto }: CreateSourceDto,
+    { tags, workspaceId, context, ...dto }: CreateSourceDto,
     userId: number,
     file?: Express.Multer.File
   ) {
@@ -28,17 +28,19 @@ export class SourceService {
         ...dto,
         workspaceId,
         attachmentKey,
-        tags: {
-          connectOrCreate: tags.map(name => ({
-            create: {
-              name,
-              workspaceId,
-              createdBy: userId,
-              updatedBy: userId
-            },
-            where: { name_workspaceId: { name, workspaceId } }
-          }))
-        },
+        ...(tags !== undefined && ({
+          tags: {
+            connectOrCreate: tags.map(name => ({
+              create: {
+                name,
+                workspaceId,
+                createdBy: userId,
+                updatedBy: userId
+              },
+              where: { name_workspaceId: { name, workspaceId } }
+            }))
+          }
+        })),
         createdBy: userId,
         updatedBy: userId
       },
@@ -62,7 +64,7 @@ export class SourceService {
 
   async update(
     source: Source,
-    { tags, ...dto }: UpdateSourceDto,
+    { tags, context, ...dto }: UpdateSourceDto,
     updatedBy: number,
     file?: Express.Multer.File
   ) {

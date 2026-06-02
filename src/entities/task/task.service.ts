@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../common/prisma.service';
-import { Prisma, User } from '../../types/prisma';
+import { Prisma, Task, User } from '../../types/prisma';
 import { CreateTaskDto } from './dto/request/create-task.dto';
 import { UpdateTaskDto } from './dto/request/update-task.dto';
 
@@ -24,12 +24,48 @@ export class TaskService {
 
   constructor(private readonly prisma: PrismaService) { }
 
-  async create(dto: CreateTaskDto, userId: number) {
+  async create({ tags, workspaceId, sourceId, assigneeIds, context, ...dto }: CreateTaskDto, userId: number) {
+    const notStartedStatus = await this.prisma.workspaceStatus.findFirstOrThrow({
+      where: { type: 'NOT_STARTED' },
+      orderBy: { id: 'asc' }
+    })
+
     return await this.prisma.task.create({
       data: {
         ...dto,
         createdBy: userId,
-        updatedBy: userId
+        updatedBy: userId,
+        workspace: {
+          connect: { id: workspaceId }
+        },
+        ...(typeof sourceId === 'number' && {
+          source: {
+            connect: {
+              id: sourceId
+            }
+          }
+        }),
+        ...(assigneeIds && {
+          assigneeStatuses: {
+            create: assigneeIds.map((id) => ({
+              assignee: { connect: { id } },
+              status: { connect: { id: notStartedStatus.id } }
+            }))
+          }
+        }),
+        ...(tags && {
+          tags: {
+            connectOrCreate: tags.map(name => ({
+              create: {
+                name,
+                workspace: { connect: { id: workspaceId } },
+                createdBy: userId,
+                updatedBy: userId
+              },
+              where: { name_workspaceId: { name, workspaceId } }
+            }))
+          }
+        })
       },
       include: TaskService.includeWithWorkspace
     });
@@ -61,10 +97,57 @@ export class TaskService {
     });
   }
 
-  async update(id: number, dto: UpdateTaskDto, updatedBy: number) {
+  async update(
+    { id, workspaceId }: Task,
+    { assigneeIds, tags, context, sourceId, ...dto }: UpdateTaskDto,
+    updatedBy: number
+  ) {
+    const notStartedStatus = assigneeIds !== undefined && assigneeIds.length > 0
+      ? await this.prisma.workspaceStatus.findFirstOrThrow({
+          where: { type: 'NOT_STARTED' },
+          orderBy: { id: 'asc' }
+        })
+      : null;
+
     return await this.prisma.task.update({
       where: { id },
-      data: { ...dto, updatedBy },
+      data: {
+        ...dto,
+        ...(sourceId !== undefined && {
+          source: sourceId === null
+            ? { disconnect: true }
+            : { connect: { id: sourceId } }
+        }),
+        ...(assigneeIds !== undefined && {
+          assigneeStatuses: {
+            deleteMany: { assigneeId: { notIn: assigneeIds } },
+            ...(notStartedStatus && {
+              createMany: {
+                data: assigneeIds.map((assigneeId) => ({
+                  assigneeId,
+                  statusId: notStartedStatus.id
+                })),
+                skipDuplicates: true
+              }
+            })
+          }
+        }),
+        ...(tags !== undefined && {
+          tags: {
+            connectOrCreate: tags.map(name => ({
+              create: {
+                name,
+                workspaceId,
+                createdBy: updatedBy,
+                updatedBy: updatedBy
+              },
+              where: { name_workspaceId: { name, workspaceId } }
+            })),
+            set: tags.map(name => ({ name_workspaceId: { name, workspaceId } }))
+          }
+        }),
+        updatedBy
+      },
       include: TaskService.includeWithWorkspace
     });
   }

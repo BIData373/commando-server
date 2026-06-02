@@ -4,6 +4,7 @@ import { IdMetaFieldsDto } from '../../../../common/dto/response/id-meta-fields.
 import { SourceDto } from '../../../source/dto/response/source.dto';
 import { TagDto } from '../../../tag/dto/response/tag.dto';
 import { AssigneeStatusDto } from './assignee-status.dto';
+import { DeadlineType } from '../../../../types/prisma';
 
 @Exclude()
 export class TaskDto extends IdMetaFieldsDto {
@@ -16,8 +17,8 @@ export class TaskDto extends IdMetaFieldsDto {
   @ExposeProperty()
   flagged: boolean;
 
-  @ExposeProperty()
-  deadlineType: string;
+  @ExposeProperty({ enumName: 'DeadlineType', enum: DeadlineType })
+  deadlineType: DeadlineType;
 
   @ExposeProperty()
   issuedAt: Date;

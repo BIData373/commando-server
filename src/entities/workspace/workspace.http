@@ -45,7 +45,11 @@ PATCH {{baseUrl}}/workspace/{{workspaceId}}
 ...headers
 
 {
-  "title": "Operations Center Updated"
+  "title": "Operations Center Updated",
+  "urlName": "hativa432",
+  "icon": "icon.png",
+  "assigneeStatusEditable": true,
+  "pikudId": 4
 }
 
 ?? status == 200
@@ -54,20 +58,10 @@ PATCH {{baseUrl}}/workspace/{{workspaceId}}
 DELETE {{baseUrl}}/workspace/99999
 ...headers
 
-{
-  "id": 99999,
-  "deletedBy": 1
-}
-
 ?? status == 400
 
 ### Delete Workspace
 DELETE {{baseUrl}}/workspace/{{workspaceId}}
 ...headers
-
-{
-  "id": {{workspaceId}},
-  "deletedBy": 1
-}
 
 ?? status == 200

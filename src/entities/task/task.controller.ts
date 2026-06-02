@@ -1,7 +1,8 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req, UseInterceptors } from '@nestjs/common';
 import { ApiBody, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { TransformPlainToInstance } from 'class-transformer';
 import { Request } from 'express';
+import { AddDtosToContext } from '../../common/interceptors/add-dtos-to-context.interceptor';
 import { GetViewerWorkspaceIdFieldDto } from '../workspace/dto/request/get-workspace-id-field.dto';
 import { CreateTaskDto } from './dto/request/create-task.dto';
 import { GetManagerTaskIdDto, GetViewerTaskIdDto } from './dto/request/get-task-id.dto';
@@ -63,15 +64,18 @@ export class TaskController {
   @ApiOperation({ operationId: 'updateTask' })
   @ApiParam({ name: 'id', type: Number })
   @ApiBody({ type: UpdateTaskDto })
+  @UseInterceptors(
+    AddDtosToContext({ from: 'params', to: 'body', dto: GetManagerTaskIdDto, field: 'task' })
+  )
   @Patch(':id')
   @ApiOkResponse({ type: TaskWithWorkspaceDto })
   @TransformPlainToInstance(TaskWithWorkspaceDto)
   async update(
     @Req() { user }: Request,
-    @Param() { id }: GetManagerTaskIdDto,
+    @Param() { context: { task } }: GetManagerTaskIdDto,
     @Body() dto: UpdateTaskDto
   ) {
-    return await this.taskService.update(id, dto, user.id);
+    return await this.taskService.update(task, dto, user.id);
   }
 
   // FIX Add to history
