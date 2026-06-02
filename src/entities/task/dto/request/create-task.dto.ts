@@ -1,12 +1,17 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
-import { IsBoolean, IsDate, IsOptional, IsString } from 'class-validator';
+import { IsOptional } from 'class-validator';
 import { IdExists } from '../../../../common/decorators/id-exists.decorator';
-import { GetManagerWorkspaceIdFieldDto } from '../../../workspace/dto/request/get-workspace-id-field.dto';
+import { IsIdPermitted } from '../../../../common/decorators/is-permitted-id.decorator';
+import { PermissionType } from '../../../../types/prisma';
+import { GetTaskFieldsDto } from './get-task-fields.dto';
 
-// FIX Remove workspaceId
-export class CreateTaskDto extends GetManagerWorkspaceIdFieldDto {
+export class CreateTaskDto extends GetTaskFieldsDto {
   @ApiProperty()
+  @IsIdPermitted('workspace', PermissionType.MANAGER, { filterDeletedAt: true })
+  workspaceId: number
+
+  @ApiProperty({ required: false })
+  @IsOptional()
   @IdExists('source', {
     findArgs: ({ value, obj }) => ({
       where: {
@@ -16,39 +21,5 @@ export class CreateTaskDto extends GetManagerWorkspaceIdFieldDto {
       },
     })
   })
-  sourceId: number;
-
-  @ApiProperty()
-  @IsString()
-  title: string;
-
-  @ApiProperty({ required: false })
-  @IsString()
-  @IsOptional()
-  description?: string;
-
-  @ApiProperty({ required: false })
-  @IsBoolean()
-  @IsOptional()
-  flagged?: boolean;
-
-  @ApiProperty()
-  @IsString()
-  deadlineType: string;
-
-  @ApiProperty({ required: false })
-  @IsDate()
-  @IsOptional()
-  @Type(() => Date)
-  issuedAt?: Date;
-
-  @ApiProperty()
-  @IsDate()
-  @Type(() => Date)
-  dueDate: Date;
-
-  @ApiProperty({ required: false })
-  @IsString()
-  @IsOptional()
-  notes?: string;
+  sourceId?: number;
 }

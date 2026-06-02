@@ -28,17 +28,19 @@ export class SourceService {
         ...dto,
         workspaceId,
         attachmentKey,
-        tags: {
-          connectOrCreate: tags.map(name => ({
-            create: {
-              name,
-              workspaceId,
-              createdBy: userId,
-              updatedBy: userId
-            },
-            where: { name_workspaceId: { name, workspaceId } }
-          }))
-        },
+        ...(tags !== undefined && ({
+          tags: {
+            connectOrCreate: tags.map(name => ({
+              create: {
+                name,
+                workspaceId,
+                createdBy: userId,
+                updatedBy: userId
+              },
+              where: { name_workspaceId: { name, workspaceId } }
+            }))
+          }
+        })),
         createdBy: userId,
         updatedBy: userId
       },

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../common/prisma.service';
-import { Prisma, User } from '../../types/prisma';
+import { Prisma, Task, User } from '../../types/prisma';
 import { CreateTaskDto } from './dto/request/create-task.dto';
 import { UpdateTaskDto } from './dto/request/update-task.dto';
 
@@ -61,10 +61,32 @@ export class TaskService {
     });
   }
 
-  async update(id: number, dto: UpdateTaskDto, updatedBy: number) {
+  async update(
+    { id, workspaceId }: Task,
+    { assigneeIds, tags, ...dto }: UpdateTaskDto,
+    updatedBy: number
+  ) {
     return await this.prisma.task.update({
       where: { id },
-      data: { ...dto, updatedBy },
+      data: {
+        ...dto,
+        assigneeStatuses: {},
+        ...(tags !== undefined && {
+          tags: {
+            set: [],
+            connectOrCreate: tags.map(name => ({
+              create: {
+                name,
+                workspaceId,
+                createdBy: updatedBy,
+                updatedBy: updatedBy
+              },
+              where: { name_workspaceId: { name, workspaceId } }
+            }))
+          }
+        }),
+        updatedBy
+      },
       include: TaskService.includeWithWorkspace
     });
   }

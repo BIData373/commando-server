@@ -14,5 +14,5 @@ export function AddDtosToContext(...dtosToAdd: DtoToAdd<ClassConstructor<Object>
         }
     }
 
-    return AddDtosToContextInterceptor
+    return UseInterceptors(AddDtosToContextInterceptor)
 }

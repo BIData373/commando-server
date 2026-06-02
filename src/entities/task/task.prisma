@@ -1,12 +1,10 @@
 model Task {
-  id           Int      @id @default(autoincrement())
+  id           Int          @id @default(autoincrement())
   title        String
-  description  String?  @db.Text
-  flagged      Boolean  @default(false)
-  // FIX  Enum?
-  deadlineType String   @map("deadline_type")
-  issuedAt     DateTime @default(now()) @map("issued_at")
-  dueDate      DateTime @map("due_date")
+  description  String?      @db.Text
+  flagged      Boolean      @default(false)
+  deadlineType DeadlineType @map("deadline_type")
+  dueDate      DateTime?    @map("due_date")
   notes        String?
 
   // Meta Fields
@@ -20,8 +18,8 @@ model Task {
   workspaceId Int       @map("workspace_id")
   workspace   Workspace @relation(fields: [workspaceId], references: [id])
 
-  sourceId Int    @map("source_id")
-  source   Source @relation(fields: [sourceId], references: [id])
+  sourceId Int?   @map("source_id")
+  source   Source? @relation(fields: [sourceId], references: [id])
 
   tags             Tag[]                @relation("tasks_tags")
   assigneeStatuses AssigneeTaskStatus[]
@@ -29,4 +27,10 @@ model Task {
   history          TaskHistory[]
 
   @@map("tasks")
+}
+
+enum DeadlineType {
+  IMMEDIATE
+  DATE
+  ROLLING
 }
