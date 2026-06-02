@@ -22,7 +22,7 @@ export class GetTaskFieldsDto extends GetContextDto<IUserContext> {
   @IsOptional()
   flagged?: boolean;
 
-  @ApiProperty({ enum: DeadlineType })
+  @ApiProperty({ enumName: 'DeadlineType', enum: DeadlineType })
   @IsEnum(DeadlineType)
   deadlineType: DeadlineType;
 

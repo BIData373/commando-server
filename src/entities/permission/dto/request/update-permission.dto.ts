@@ -9,7 +9,7 @@ export class UpdatePermissionDto extends GetManagerWorkspaceIdFieldDto {
   @IsNotEmptyString()
   upn: string;
 
-  @ApiProperty({ enum: PermissionType })
+  @ApiProperty({ enumName: 'PermissionType', enum: PermissionType })
   @IsEnum(PermissionType)
   type: PermissionType;
 }

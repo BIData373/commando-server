@@ -12,7 +12,7 @@ export class GetWorkspaceStatusFieldsDto {
   @IsNotEmptyString()
   color: string;
 
-  @ApiProperty({ enum: WorkspaceStatusType })
+  @ApiProperty({ enumName: 'WorkspaceStatusType', enum: WorkspaceStatusType })
   @IsEnum(WorkspaceStatusType)
   type: WorkspaceStatusType;
 }

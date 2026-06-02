@@ -11,9 +11,7 @@ export class WorkspaceStatusDto extends IdDto {
   @ExposeProperty()
   color: string;
 
-  @ExposeProperty({
-    enum: WorkspaceStatusType
-  })
+  @ExposeProperty({ enumName: 'WorkspaceStatusType', enum: WorkspaceStatusType })
   type: WorkspaceStatusType;
 
   @ExposeProperty()

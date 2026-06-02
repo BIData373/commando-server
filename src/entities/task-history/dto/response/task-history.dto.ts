@@ -5,7 +5,7 @@ import { HistoryAction } from '../../../../types/prisma';
 
 @Exclude()
 export class TaskHistoryDto extends IdDto {
-  @ExposeProperty({ enum: HistoryAction })
+  @ExposeProperty({ enumName: 'TaskHistoryAction', enum: HistoryAction })
   action: HistoryAction;
 
   @ExposeProperty()

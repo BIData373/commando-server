@@ -12,6 +12,6 @@ export class PermissionDto {
   @ExposeProperty()
   workspaceId: number;
 
-  @ExposeProperty({ enum: PermissionType })
+  @ExposeProperty({ enumName: 'PermissionType', enum: PermissionType })
   type: PermissionType;
 }
