@@ -1,12 +1,12 @@
 import { NestFactory } from '@nestjs/core';
+import { ExpressAdapter } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { useContainer } from 'class-validator';
+import express from 'express';
 import 'reflect-metadata';
 import { AppModule, openApiRoute } from './app.module';
 import { isDev, ssoEnabled } from './common/consts/env';
 import { staticTokenHeader } from './common/consts/headers';
-import express from 'express';
-import { ExpressAdapter } from '@nestjs/platform-express';
 console.log('isDev', isDev)
 
 const server = express()
@@ -15,7 +15,7 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule, new ExpressAdapter(server), {
     cors: {
       credentials: ssoEnabled && isDev,
-    },
+    }
   });
 
   const config = new DocumentBuilder()

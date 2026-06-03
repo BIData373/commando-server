@@ -1,6 +1,6 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsDate, IsOptional } from 'class-validator';
+import { IsArray, IsDate, IsOptional } from 'class-validator';
 import { IsNotEmptyString } from '../../../../common/decorators/is-not-empty-string.decorator';
 import { GetManagerWorkspaceIdFieldDto } from '../../../workspace/dto/request/get-workspace-id-field.dto';
 
@@ -9,7 +9,7 @@ export class CreateSourceDto extends GetManagerWorkspaceIdFieldDto {
   @IsNotEmptyString()
   name: string;
 
-  @ApiProperty({ required: false })
+  @ApiPropertyOptional({ nullable: true })
   @IsOptional()
   @IsDate()
   @Type(() => Date)
@@ -17,9 +17,11 @@ export class CreateSourceDto extends GetManagerWorkspaceIdFieldDto {
 
   @ApiProperty({ type: [String], required: false })
   @IsOptional()
+  @IsArray()
   @IsNotEmptyString({ each: true })
   tags?: string[];
 
-  @ApiProperty({ type: 'string', format: 'binary', required: false })
+  @ApiProperty({ type: 'string', format: 'binary', required: false, nullable: true })
+  @IsOptional()
   attachment?: Express.Multer.File;
 }
