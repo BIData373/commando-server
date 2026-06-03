@@ -3,6 +3,7 @@ import { IUserContext } from "../../entities/user/interfaces/user-context.interf
 import { HasWorkspacePermission, IWorkspaceFindArgs } from "../../entities/workspace/decorators/has-workspace-permission.decorator";
 import { PermissionType } from "../../types/prisma";
 import { IContext } from "../interfaces/context.interface";
+import { ExtractValue } from "../types/extract-value.type";
 import { Models } from "../types/models.type";
 import { IEntityExistsValidationOptions } from "./entity-exists.decorator";
 import { IdExists } from "./id-exists.decorator";
@@ -11,7 +12,12 @@ interface IIsIdPermittedOptions<
     TDtoField extends keyof Object,
     TModel extends Models
 > extends
-    IEntityExistsValidationOptions<Record<TDtoField, number>, TDtoField, TModel>,
+    IEntityExistsValidationOptions<
+        Record<TDtoField, number>,
+        TDtoField,
+        ExtractValue<Record<TDtoField, number>, TDtoField>,
+        TModel
+    >,
     IWorkspaceFindArgs<TDtoField, Record<TDtoField, number>> { }
 
 export function IsIdPermitted<
@@ -28,6 +34,6 @@ export function IsIdPermitted<
 ) {
     return applyDecorators(
         HasWorkspacePermission<TDtoField, TDto>(type, obj => obj.context.user, { workspaceFindArgs }) as PropertyDecorator,
-        IdExists<TModel, TDto, TDtoField>(model, options) as PropertyDecorator
+        IdExists<TModel, TDto, TDtoField, ExtractValue<TDto, TDtoField>>(model, options) as PropertyDecorator
     )
 }

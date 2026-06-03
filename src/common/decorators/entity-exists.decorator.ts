@@ -8,6 +8,7 @@ import {
 } from 'class-validator';
 import { merge } from 'lodash';
 import { Prisma } from '../../types/prisma';
+import { stringifyObject } from '../functions/string';
 import { IContext } from '../interfaces/context.interface';
 import { PrismaService } from '../prisma.service';
 import { ExtractValue } from '../types/extract-value.type';
@@ -25,12 +26,13 @@ type ModelDelegate<TModel extends Models> = {
 interface IEntityExistsOptions<
   TDto,
   TDtoField extends keyof TDto,
+  TDtoValue extends ExtractValue<TDto, TDtoField>,
   TModel extends Models
 > {
   contextField?: string
   failIfExists?: boolean
-  validateIf?: (params: PredicateParams<TDto, TDtoField>) => boolean
-  findArgs?(params: PredicateParams<TDto, TDtoField>): ModelFindFirstSelectArgs<TModel>,
+  validateIf?: (params: PredicateParams<TDto, TDtoField, TDtoValue>) => boolean
+  findArgs?(params: PredicateParams<TDto, TDtoField, TDtoValue>): ModelFindFirstSelectArgs<TModel>,
   filterDeletedAt?: boolean
 }
 
@@ -38,7 +40,7 @@ interface IEntityExistsConstraints<
   TDto,
   TDtoField extends keyof TDto,
   TModel extends Models
-> extends IEntityExistsOptions<TDto, TDtoField, TModel> {
+> extends IEntityExistsOptions<TDto, TDtoField, ExtractValue<TDto, TDtoField>, TModel> {
   model: TModel
   each?: boolean
 }
@@ -46,11 +48,11 @@ interface IEntityExistsConstraints<
 export interface IEntityExistsValidationOptions<
   TDto,
   TDtoField extends keyof TDto,
+  TDtoValue extends ExtractValue<TDto, TDtoField>,
   TModel extends Models
 > extends
   ValidationOptions,
-  IEntityExistsOptions<TDto, TDtoField, TModel> { }
-
+  IEntityExistsOptions<TDto, TDtoField, TDtoValue, TModel> { }
 
 export async function entityExists<
   TDto extends Object,
@@ -91,9 +93,7 @@ export async function entityExists<
     obj: TDto
   ) => await repo.findFirst(customFindArgs?.({ value, obj }) ?? defaultFindArgs)
 
-  const record = !!each && Array.isArray(value)
-    ? await Promise.all(value.map(async item => await findFirst(item, obj)))
-    : await findFirst(value, obj)
+  const record = await findFirst(value, obj)
 
   const recordExists = !!record && (
     !each ||
@@ -128,18 +128,25 @@ export class EntityExistsConstraint<
     return await entityExists(this.prisma, value, args)
   }
 
-  defaultMessage(args: ValidationArguments): string {
-    const { model, failIfExists } = args.constraints[0] as IEntityExistsConstraints<TDto, TDtoField, TModel>
+  defaultMessage({ constraints, value, object }: ValidationArguments): string {
+    const { model, failIfExists, each, findArgs } = constraints[0] as IEntityExistsConstraints<TDto, TDtoField, TModel>
 
-    return failIfExists
-      ? `${String(model)} with id ${args.value} already exists`
-      : `${String(model)} with id ${args.value} does not exist`;
+    const suffix = failIfExists ? 'already exists' : 'does not exist'
+
+    const formatError = (value: any) => (
+      `${String(model)} where ${stringifyObject(findArgs?.({ value, obj: object as TDto }).where) ?? `id is ${value}`} ${suffix}`
+    )
+
+    return Array.isArray(value) && each
+      ? value.map(formatError).join(', ')
+      : formatError(value)
   }
 }
 
 export function EntityExists<
   TDto extends Object,
   TDtoField extends keyof TDto,
+  TDtoValue extends ExtractValue<TDto, TDtoField>,
   TModel extends Models
 >(
   model: TModel,
@@ -150,7 +157,7 @@ export function EntityExists<
     always,
     context,
     ...entityExistsOptions
-  }: IEntityExistsValidationOptions<TDto, TDtoField, TModel> = {}
+  }: IEntityExistsValidationOptions<TDto, TDtoField, TDtoValue, TModel> = {}
 ) {
   return function (target: TDto, propertyName: TDtoField) {
     registerDecorator({

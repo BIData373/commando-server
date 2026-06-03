@@ -32,9 +32,11 @@ export class AssigneeService {
           ...dto,
           createdBy: userId,
           updatedBy: userId,
-          users: {
-            connect: await AssigneeService.upsertUsersTx(tx, users)
-          }
+          ...(users.length > 0 && {
+            users: {
+              connect: await AssigneeService.upsertUsersTx(tx, users)
+            }
+          })
         },
         include: AssigneeService.include
       });

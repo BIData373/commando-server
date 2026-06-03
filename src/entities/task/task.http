@@ -10,8 +10,11 @@ POST {{baseUrl}}/task
   "flagged": false,
   "deadlineType": "hard",
   "dueDate": "2026-04-01T12:00:00.000Z",
+  "notes": "Initial notes",
   "workspaceId": {{workspaceId}},
-  "sourceId": {{sourceId}}
+  "sourceId": {{sourceId}},
+  "assignees": [{ "id": {{assigneeId}} }],
+  "tags": ["priority"]
 }
 
 {{@response
@@ -36,19 +39,31 @@ GET {{baseUrl}}/task?workspaceId={{workspaceId}}
 
 ?? status == 200
 
+### Get personal Tasks
+GET {{baseUrl}}/task/personal
+...headers
+
+?? status == 200
+
 ### Get Task by id
-GET {{baseUrl}}/task/{{taskId}}
+GET {{baseUrl}}/task/{{13}}
 ...headers
 
 ?? status == 200
 
 ### Update Task
-PATCH {{baseUrl}}/task/{{taskId}}
+PATCH {{baseUrl}}/task/{{13}}
 ...headers
 
 {
   "title": "Secure the perimeter — updated",
-  "flagged": true
+  "flagged": true,
+  "notes": "Updated notes",
+  "assignees": [
+    { "id": {{25}}, "description": "1" },
+    { "id": {{23}}, "description": "2" }
+    ],
+  "tags": ["priority", "urgent"]
 }
 
 ?? status == 200

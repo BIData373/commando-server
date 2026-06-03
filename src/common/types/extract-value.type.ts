@@ -1,3 +1,2 @@
-export type ExtractValue<TObject, TField extends keyof TObject> = TObject[TField] extends any[]
-    ? TObject[TField][0]
-    : TObject[TField]
+type UnwrapIfArray<T> = T extends any[] ? T[0] : T;
+export type ExtractValue<TObject, TField extends keyof TObject> = UnwrapIfArray<TObject[TField]>

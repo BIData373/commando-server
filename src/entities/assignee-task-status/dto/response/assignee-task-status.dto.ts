@@ -10,21 +10,14 @@ export class AssigneeTaskStatusDto {
   @Type(() => TaskDto)
   task: TaskDto;
 
-  @ExposeProperty()
-  taskId: number;
-
   @ExposeProperty({ type: AssigneeDto })
   @Type(() => AssigneeDto)
   assignee: AssigneeDto;
-
-  @ExposeProperty()
-  assigneeId: number;
 
   @ExposeProperty({ type: WorkspaceStatusDto })
   @Type(() => WorkspaceStatusDto)
   status: WorkspaceStatusDto;
 
   @ExposeProperty()
-  statusId: number;
-
+  description: string
 }
