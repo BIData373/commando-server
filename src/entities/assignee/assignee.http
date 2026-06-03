@@ -8,7 +8,8 @@ POST {{baseUrl}}/assignee
   "name": "Alpha Team",
   "color": "#E53935",
   "icon": "shield",
-  "workspaceId": {{workspaceId}}
+  "workspaceId": {{workspaceId}},
+  "users": []
 }
 
 {{@response

@@ -10,7 +10,7 @@ interface IUrlName {
 }
 
 export function GetWorkspaceUrlNameMixin(
-  options: IEntityExistsValidationOptions<IUrlName, "urlName", "workspace">
+  options: IEntityExistsValidationOptions<IUrlName, "urlName", string, "workspace">
 ) {
   class GetWorkspaceUrlNameDto extends GetContextDto<IWorkspaceContext> {
     @ApiProperty()

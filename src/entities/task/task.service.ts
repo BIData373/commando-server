@@ -121,9 +121,7 @@ export class TaskService {
         }),
         ...(assignees !== undefined && {
           assigneeStatuses: {
-            ...(assignees.length > 0 && {
-              deleteMany: { assigneeId: { notIn: assignees.map(({ id }) => id) } }
-            }),
+            deleteMany: {},
             ...(notStartedStatus && {
               createMany: {
                 data: assignees.map(({ id, description }) => ({

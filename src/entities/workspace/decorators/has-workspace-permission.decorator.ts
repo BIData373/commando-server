@@ -11,13 +11,13 @@ import { UserDto } from "../../user/dto/response/user.dto";
 interface IPermissionExistsValidationOptions<
     TDtoField extends keyof TDto,
     TDto extends Record<TDtoField, number>
-> extends IEntityExistsValidationOptions<TDto, TDtoField, "permission"> { }
+> extends IEntityExistsValidationOptions<TDto, TDtoField, ExtractValue<TDto, TDtoField>, "permission"> { }
 
 export interface IWorkspaceFindArgs<
     TDtoField extends keyof TDto,
     TDto extends Record<TDtoField, number>
 > {
-    workspaceFindArgs?(params: PredicateParams<TDto, TDtoField>): Prisma.PermissionWhereInput['workspace']
+    workspaceFindArgs?(params: PredicateParams<TDto, TDtoField, ExtractValue<TDto, TDtoField>>): Prisma.PermissionWhereInput['workspace']
 }
 
 export interface IHasWorkspacePermissionOptions<
@@ -78,7 +78,6 @@ export class HasWorkspacePermissionConstraint<
                             workspace: workspaceFindArgs?.({ value, obj }) ?? { id: value }
                         }
                     }),
-                    filterDeletedAt: false,
                     ...entityExistsArgs
                 } as IPermissionExistsValidationOptions<TDtoField, TDto>],
             }

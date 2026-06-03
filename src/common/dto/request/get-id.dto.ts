@@ -8,7 +8,7 @@ import { GetContextDto } from "./get-context.dto"
 
 export function GetIdDto<TModel extends Models>(
     model: TModel,
-    options: IEntityExistsValidationOptions<IId, 'id', TModel> = {}
+    options: IEntityExistsValidationOptions<IId, 'id', number, TModel> = {}
 ) {
     class GetIdDtoClass {
         @ApiProperty()
@@ -25,6 +25,7 @@ export function GetIdContextDto<TModel extends Models>(
     options: IEntityExistsValidationOptions<
         IId & IContext<Record<typeof contextField, TModel>>,
         'id',
+        number,
         TModel
     > = {}
 ) {

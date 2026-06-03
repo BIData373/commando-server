@@ -9,7 +9,10 @@ export class AssigneeStatusDto {
     @Type(() => AssigneeDto)
     assignee: AssigneeDto
 
-    @ExposeProperty({type:WorkspaceStatusDto})
+    @ExposeProperty({ type: WorkspaceStatusDto })
     @Type(() => WorkspaceStatusDto)
     status: WorkspaceStatusDto;
+
+    @ExposeProperty()
+    description: string
 }

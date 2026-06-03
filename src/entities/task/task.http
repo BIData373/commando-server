@@ -46,7 +46,7 @@ GET {{baseUrl}}/task/personal
 ?? status == 200
 
 ### Get Task by id
-GET {{baseUrl}}/task/{{taskId}}
+GET {{baseUrl}}/task/{{13}}
 ...headers
 
 ?? status == 200
@@ -59,7 +59,10 @@ PATCH {{baseUrl}}/task/{{13}}
   "title": "Secure the perimeter — updated",
   "flagged": true,
   "notes": "Updated notes",
-  "assignees": [{ "id": {{8}}, "description": "Lead operative" }],
+  "assignees": [
+    { "id": {{25}}, "description": "1" },
+    { "id": {{23}}, "description": "2" }
+    ],
   "tags": ["priority", "urgent"]
 }
 

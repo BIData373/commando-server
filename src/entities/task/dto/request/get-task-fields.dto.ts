@@ -1,11 +1,10 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { Type } from "class-transformer";
-import { IsArray, IsBoolean, IsDate, IsEnum, IsOptional, IsString, ValidateNested } from "class-validator";
+import { IsArray, IsBoolean, IsDate, IsEnum, IsOptional, IsString } from "class-validator";
 import { IsNotEmptyString } from "../../../../common/decorators/is-not-empty-string.decorator";
 import { GetContextDto } from "../../../../common/dto/request/get-context.dto";
 import { DeadlineType } from "../../../../types/prisma";
 import { IUserContext } from "../../../user/interfaces/user-context.interface";
-import { GetTaskAssigneeDto } from "./get-task-assignee.dto";
 
 export class GetTaskFieldsDto extends GetContextDto<IUserContext> {
   @ApiProperty()
@@ -36,13 +35,6 @@ export class GetTaskFieldsDto extends GetContextDto<IUserContext> {
   @IsOptional()
   @IsString()
   notes?: string;
-
-  @ApiProperty({ type: [GetTaskAssigneeDto], required: false })
-  @IsOptional()
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => GetTaskAssigneeDto)
-  assignees?: GetTaskAssigneeDto[]
 
   @ApiProperty({ type: [String], required: false })
   @IsOptional()
