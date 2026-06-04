@@ -63,7 +63,7 @@ export class SourceService {
   }
 
   async update(
-    source: Source,
+    { id, workspaceId, ...source }: Source,
     { tags, context, ...dto }: UpdateSourceDto,
     updatedBy: number,
     file?: Express.Multer.File
@@ -79,20 +79,25 @@ export class SourceService {
     }
 
     return await this.prisma.source.update({
-      where: { id: source.id },
+      where: { id },
       data: {
         ...dto,
         attachmentKey,
+        updatedBy,
         ...(tags !== undefined && {
           tags: {
-            set: [],
             connectOrCreate: tags.map(name => ({
-              create: { name, workspaceId: source.workspaceId, createdBy: updatedBy, updatedBy },
-              where: { name_workspaceId: { name, workspaceId: source.workspaceId } }
-            }))
+              create: {
+                name,
+                workspace: { connect: { id: workspaceId } },
+                createdBy: updatedBy,
+                updatedBy: updatedBy
+              },
+              where: { name_workspaceId: { name, workspaceId } }
+            })),
+            set: tags.map(name => ({ name_workspaceId: { name, workspaceId } }))
           }
-        }),
-        updatedBy
+        })
       },
       include: SourceService.include
     });

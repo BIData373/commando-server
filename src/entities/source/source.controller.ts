@@ -2,14 +2,15 @@ import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req, Uploaded
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiBody, ApiConsumes, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { TransformPlainToInstance } from 'class-transformer';
-import { memoryStorage } from 'multer';
 import { Request } from 'express';
+import { memoryStorage } from 'multer';
 import { GetViewerWorkspaceIdFieldDto } from '../workspace/dto/request/get-workspace-id-field.dto';
 import { CreateSourceDto } from './dto/request/create-source.dto';
 import { GetManagerSourceIdDto, GetViewerSourceIdDto } from './dto/request/get-source-id.dto';
 import { UpdateSourceDto } from './dto/request/update-source.dto';
 import { SourceDto } from './dto/response/source.dto';
 import { SourceService } from './source.service';
+import { AddUserToContextInterceptor } from '../../common/interceptors/add-user-to-context.interceptor';
 
 @Controller('source')
 export class SourceController {
@@ -18,10 +19,13 @@ export class SourceController {
   @ApiOperation({ operationId: 'createSource' })
   @ApiConsumes('multipart/form-data')
   @ApiBody({ type: CreateSourceDto })
+  @UseInterceptors(
+    FileInterceptor('attachment', { storage: memoryStorage() }),
+    AddUserToContextInterceptor
+  )
   @Post()
   @ApiCreatedResponse({ type: SourceDto })
   @TransformPlainToInstance(SourceDto)
-  @UseInterceptors(FileInterceptor('attachment', { storage: memoryStorage() }))
   async create(
     @Req() { user }: Request,
     @Body() dto: CreateSourceDto,
@@ -56,10 +60,13 @@ export class SourceController {
   @ApiConsumes('multipart/form-data')
   @ApiParam({ name: 'id', type: Number })
   @ApiBody({ type: UpdateSourceDto })
+  @UseInterceptors(
+    FileInterceptor('attachment', { storage: memoryStorage() }),
+    AddUserToContextInterceptor
+  )
   @Patch(':id')
   @ApiOkResponse({ type: SourceDto })
   @TransformPlainToInstance(SourceDto)
-  @UseInterceptors(FileInterceptor('attachment', { storage: memoryStorage() }))
   async update(
     @Req() { user }: Request,
     @Param() { context: { source } }: GetManagerSourceIdDto,

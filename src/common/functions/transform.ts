@@ -5,47 +5,47 @@ import { ValidationError } from "class-validator";
 import type { Request } from "express";
 
 export type DtoToAdd<TDto> = {
-    from: keyof Request
-    to: keyof Request
-    dto: TDto | TDto[],
-    field?: string
+  from: keyof Request
+  to: keyof Request
+  dto: TDto | TDto[],
+  field?: string
 }
 
 export async function addDtosToContext(
-    request: Request,
-    dtosToAdd: DtoToAdd<ClassConstructor<Object>>[]
+  request: Request,
+  dtosToAdd: DtoToAdd<ClassConstructor<Object>>[]
 ) {
-    dtosToAdd.forEach(({ from, to, dto, field }) => {
-        if (request[to]) {
-            const instances = (Array.isArray(dto) ? dto : [dto])
-                .map(currentDto => plainToInstance(currentDto, request[from]))
+  dtosToAdd.forEach(({ from, to, dto, field }) => {
+    if (request[to]) {
+      const instances = (Array.isArray(dto) ? dto : [dto])
+        .map(currentDto => plainToInstance(currentDto, request[from]))
 
-            const context = request?.[to]?.context
+      const context = request?.[to]?.context
 
-            Object.assign(request[to], {
-                ...request[to],
-                context: {
-                    ...(context ?? {}),
-                    [field ?? to]: {
-                        ...(context?.[field ?? to] ?? {}),
-                        ...Object.assign({}, ...instances)
-                    }
-                }
-            })
+      Object.assign(request[to], {
+        ...request[to],
+        context: {
+          ...(context ?? {}),
+          [field ?? to]: {
+            ...(context?.[field ?? to] ?? {}),
+            ...Object.assign({}, ...instances)
+          }
         }
-    })
+      })
+    }
+  })
 }
 
 export function forbiddenExceptionFactory(errors: ValidationError[]) {
-    const isForbidden = errors.every(error =>
-        Object.values(error.constraints ?? {}).every(
-            constraint => constraint === FORBIDDEN_MESSAGE
-        )
-    );
+  const isForbidden = errors.every(error =>
+    Object.values(error.constraints ?? {}).every(
+      constraint => constraint === FORBIDDEN_MESSAGE
+    )
+  );
 
-    const messages = errors.flatMap(e => Object.values(e.constraints ?? {}));
+  const messages = errors.flatMap(e => Object.values(e.constraints ?? {}));
 
-    return isForbidden
-        ? new ForbiddenException()
-        : new BadRequestException(messages);
+  return isForbidden
+    ? new ForbiddenException()
+    : new BadRequestException(messages);
 }
