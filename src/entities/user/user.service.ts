@@ -18,6 +18,7 @@ const MOCK_USERS: UserDto[] = [
   { id: 8, upn: 's1111118@idf.il', info: { id: 8, upn: 's1111118@idf.il', name: 'Henry Taylor', displayName: 'Henry Taylor', isBI: false } },
   { id: 9, upn: 's1111119@idf.il', info: { id: 9, upn: 's1111119@idf.il', name: 'Iris Chen', displayName: 'Iris Chen', isBI: false } },
   { id: 10, upn: 's1111110@idf.il', info: { id: 10, upn: 's1111110@idf.il', name: 'Jack Wilson', displayName: 'Jack Wilson', isBI: false } },
+  { id: 11, upn: 's0000000@idf.il', info: { id: 10, upn: 's0000000@idf.il', name: 'Admin', displayName: 'Admin', isBI: false } }
 ];
 
 @Injectable()
