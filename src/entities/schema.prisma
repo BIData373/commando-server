@@ -3,6 +3,11 @@ generator client {
   output   = "../../src/types/prisma/"
 }
 
+generator erd {
+  provider = "prisma-erd-generator"
+  output   = "../../ERD.md"
+}
+
 datasource db {
   provider = "postgresql"
 }
