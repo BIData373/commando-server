@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsArray, IsOptional, ValidateNested } from 'class-validator';
+import { EntityExists } from '../../../../common/decorators/entity-exists.decorator';
 import { IdExists } from '../../../../common/decorators/id-exists.decorator';
 import { IsIdPermitted } from '../../../../common/decorators/is-permitted-id.decorator';
 import { PermissionType } from '../../../../types/prisma';
@@ -28,7 +29,7 @@ export class CreateTaskDto extends GetTaskFieldsDto {
   @ApiProperty({ type: [GetTaskAssigneeDto], required: false })
   @IsOptional()
   @IsArray()
-  @IdExists('assignee', {
+  @EntityExists('assignee', {
     each: true,
     validateIf: ({ value, obj }) => !!value && !!obj.workspaceId,
     findArgs: ({ value, obj }) => ({
