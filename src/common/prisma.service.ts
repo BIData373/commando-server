@@ -11,7 +11,7 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
 
     const adapter = new PrismaPg({ connectionString })
 
-    super({ adapter })
+    super({ adapter, errorFormat: 'minimal' })
   }
 
   async onModuleInit(): Promise<void> {

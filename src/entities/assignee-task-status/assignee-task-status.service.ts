@@ -17,7 +17,7 @@ export class AssigneeTaskStatusService {
     return await this.prisma.assigneeTaskStatus.findMany({ where: { taskId } });
   }
 
-  async upsert({ taskId, assigneeId, ...dto }: UpdateAssigneeTaskStatusDto) {
+  async upsert({ taskId, assigneeId, context, ...dto }: UpdateAssigneeTaskStatusDto) {
     return await this.prisma.assigneeTaskStatus.upsert({
       where: { taskId_assigneeId: { taskId, assigneeId } },
       create: { taskId, assigneeId, ...dto },
