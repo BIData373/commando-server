@@ -1,29 +1,55 @@
 # @import ../../../global.http
 
+### Setup — Create Pikud dependency
+POST {{baseUrl}}/pikud
+...headers
+
+{
+  "name": "HTTP WS Test Pikud"
+}
+
+{{@response
+  exports.wsPikudId = response.parsedBody.id;
+}}
+
+?? status == 201
+
 ### Create Workspace — valid payload
 POST {{baseUrl}}/workspace
 ...headers
 
 {
-  "title": "Test",
-  "urlName": "test-center",
-  "icon": "ops-icon",
+  "title": "HTTP Test Workspace",
+  "urlName": "http-test-ws",
   "assigneeStatusEditable": true,
-  "pikudId": 1
+  "pikudId": {{wsPikudId}}
 }
 
 {{@response
-  exports.workspaceId = response.parsedBody.id;
+  exports.wsId = response.parsedBody.id;
 }}
 
 ?? status == 201
 
-### Create Workspace — missing required field (expect 400)
+### Create Workspace — duplicate urlName (expect 400)
 POST {{baseUrl}}/workspace
 ...headers
 
 {
-  "icon": "ops-icon"
+  "title": "Duplicate URL Workspace",
+  "urlName": "http-test-ws",
+  "pikudId": {{wsPikudId}}
+}
+
+?? status == 400
+
+### Create Workspace — missing title (expect 400)
+POST {{baseUrl}}/workspace
+...headers
+
+{
+  "urlName": "http-test-ws-2",
+  "pikudId": {{wsPikudId}}
 }
 
 ?? status == 400
@@ -35,33 +61,38 @@ GET {{baseUrl}}/workspace
 ?? status == 200
 
 ### Get Workspace by id
-GET {{baseUrl}}/workspace/{{workspaceId}}
+GET {{baseUrl}}/workspace/{{wsId}}
 ...headers
 
 ?? status == 200
 
 ### Update Workspace
-PATCH {{baseUrl}}/workspace/{{workspaceId}}
+PATCH {{baseUrl}}/workspace/{{wsId}}
 ...headers
 
 {
-  "title": "Operations Center Updated",
-  "urlName": "hativa432",
-  "icon": "icon.png",
-  "assigneeStatusEditable": true,
-  "pikudId": 4
+  "title": "HTTP Test Workspace Updated",
+  "urlName": "http-test-ws",
+  "assigneeStatusEditable": false,
+  "pikudId": {{wsPikudId}}
 }
 
 ?? status == 200
 
-### Delete Workspace — non-existent id (expect 400 from @EntityExists)
+### Delete Workspace — non-existent id (expect 400)
 DELETE {{baseUrl}}/workspace/99999
 ...headers
 
 ?? status == 400
 
-### Delete Workspace
-DELETE {{baseUrl}}/workspace/{{workspaceId}}
+### Cleanup — Delete Workspace
+DELETE {{baseUrl}}/workspace/{{wsId}}
+...headers
+
+?? status == 200
+
+### Cleanup — Delete Pikud
+DELETE {{baseUrl}}/pikud/{{wsPikudId}}
 ...headers
 
 ?? status == 200

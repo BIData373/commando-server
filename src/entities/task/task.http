@@ -1,20 +1,46 @@
 # @import ../../../global.http
 
+### Setup — Create Source dependency
+POST {{baseUrl}}/source
+...headers
+Content-Type: multipart/form-data
+
+name=Task Test Source
+workspaceId={{workspaceId}}
+
+{{@response
+  exports.taskSrcId = response.parsedBody.id;
+}}
+
+?? status == 201
+
+### Setup — Create Assignee dependency
+POST {{baseUrl}}/assignee
+...headers
+
+{
+  "name": "Task Test Assignee",
+  "color": "#1E88E5",
+  "workspaceId": {{workspaceId}},
+  "users": []
+}
+
+{{@response
+  exports.taskAssId = response.parsedBody.id;
+}}
+
+?? status == 201
+
 ### Create Task — valid payload
 POST {{baseUrl}}/task
 ...headers
 
 {
-  "title": "Secure the perimeter",
-  "description": "Full perimeter check required",
-  "flagged": false,
-  "deadlineType": "hard",
-  "dueDate": "2026-04-01T12:00:00.000Z",
-  "notes": "Initial notes",
+  "title": "HTTP Test Task",
+  "deadlineType": "IMMEDIATE",
   "workspaceId": {{workspaceId}},
-  "sourceId": {{sourceId}},
-  "assignees": [{ "id": {{assigneeId}} }],
-  "tags": ["priority"]
+  "sourceId": {{taskSrcId}},
+  "assignees": [{ "id": {{taskAssId}} }]
 }
 
 {{@response
@@ -23,17 +49,30 @@ POST {{baseUrl}}/task
 
 ?? status == 201
 
-### Create Task — missing required fields (expect 400)
+### Create Task — missing title (expect 400)
 POST {{baseUrl}}/task
 ...headers
 
 {
-  "description": "Missing title and other fields"
+  "deadlineType": "IMMEDIATE",
+  "workspaceId": {{workspaceId}}
 }
 
 ?? status == 400
 
-### Get all Tasks in workspace
+### Create Task — invalid deadlineType (expect 400)
+POST {{baseUrl}}/task
+...headers
+
+{
+  "title": "Bad Deadline Task",
+  "deadlineType": "INVALID",
+  "workspaceId": {{workspaceId}}
+}
+
+?? status == 400
+
+### Get Tasks in workspace
 GET {{baseUrl}}/task?workspaceId={{workspaceId}}
 ...headers
 
@@ -46,24 +85,20 @@ GET {{baseUrl}}/task/personal
 ?? status == 200
 
 ### Get Task by id
-GET {{baseUrl}}/task/{{13}}
+GET {{baseUrl}}/task/{{taskId}}
 ...headers
 
 ?? status == 200
 
 ### Update Task
-PATCH {{baseUrl}}/task/{{13}}
+PATCH {{baseUrl}}/task/{{taskId}}
 ...headers
 
 {
-  "title": "Secure the perimeter — updated",
+  "title": "HTTP Test Task Updated",
   "flagged": true,
   "notes": "Updated notes",
-  "assignees": [
-    { "id": {{25}}, "description": "1" },
-    { "id": {{23}}, "description": "2" }
-    ],
-  "tags": ["priority", "urgent"]
+  "assignees": [{ "id": {{taskAssId}}, "description": "Lead" }]
 }
 
 ?? status == 200
@@ -74,8 +109,20 @@ DELETE {{baseUrl}}/task/99999
 
 ?? status == 400
 
-### Delete Task
+### Cleanup — Delete Task
 DELETE {{baseUrl}}/task/{{taskId}}
+...headers
+
+?? status == 200
+
+### Cleanup — Delete Assignee
+DELETE {{baseUrl}}/assignee/{{taskAssId}}
+...headers
+
+?? status == 200
+
+### Cleanup — Delete Source
+DELETE {{baseUrl}}/source/{{taskSrcId}}
 ...headers
 
 ?? status == 200

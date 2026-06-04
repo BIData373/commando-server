@@ -5,10 +5,8 @@ POST {{baseUrl}}/pikud
 ...headers
 
 {
-  "name": "Pikud HaZafon",
-  "icon": "north-icon",
-  "createdBy": 1,
-  "updatedBy": 1
+  "name": "HTTP Test Pikud",
+  "icon": "test-icon"
 }
 
 {{@response
@@ -17,12 +15,12 @@ POST {{baseUrl}}/pikud
 
 ?? status == 201
 
-### Create Pikud — missing required field (expect 400)
+### Create Pikud — missing name (expect 400)
 POST {{baseUrl}}/pikud
 ...headers
 
 {
-  "icon": "north-icon"
+  "icon": "test-icon"
 }
 
 ?? status == 400
@@ -39,23 +37,23 @@ GET {{baseUrl}}/pikud/{{pikudId}}
 
 ?? status == 200
 
-### Update Pikud
-PATCH {{baseUrl}}/pikud/{{3}}
+### Update Pikud name
+PATCH {{baseUrl}}/pikud/{{pikudId}}
 ...headers
 
 {
-  "name": "Three"
+  "name": "HTTP Test Pikud Updated"
 }
 
 ?? status == 200
 
-### Delete Pikud — non-existent id (expect 400 from @EntityExists)
+### Delete Pikud — non-existent id (expect 400)
 DELETE {{baseUrl}}/pikud/99999
 ...headers
 
 ?? status == 400
 
-### Delete Pikud
+### Cleanup — Delete Pikud
 DELETE {{baseUrl}}/pikud/{{pikudId}}
 ...headers
 

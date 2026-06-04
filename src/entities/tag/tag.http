@@ -5,8 +5,8 @@ POST {{baseUrl}}/tag
 ...headers
 
 {
-  "name": "11",
-  "workspaceId": 1
+  "name": "http-test-tag",
+  "workspaceId": {{workspaceId}}
 }
 
 {{@response
@@ -15,18 +15,28 @@ POST {{baseUrl}}/tag
 
 ?? status == 201
 
-### Create Tag — missing required field (expect 400)
+### Create Tag — duplicate name in workspace (expect 400)
 POST {{baseUrl}}/tag
 ...headers
 
 {
-  "name": "a",
-  "workspaceId": 42
+  "name": "http-test-tag",
+  "workspaceId": {{workspaceId}}
 }
 
 ?? status == 400
 
-### Get all Tags
+### Create Tag — missing name (expect 400)
+POST {{baseUrl}}/tag
+...headers
+
+{
+  "workspaceId": {{workspaceId}}
+}
+
+?? status == 400
+
+### Get Tags in workspace
 GET {{baseUrl}}/tag?workspaceId={{workspaceId}}
 ...headers
 
@@ -38,23 +48,23 @@ GET {{baseUrl}}/tag/{{tagId}}
 
 ?? status == 200
 
-### Update Tag
+### Update Tag name
 PATCH {{baseUrl}}/tag/{{tagId}}
 ...headers
 
 {
-  "name": "Critical"
+  "name": "http-test-tag-updated"
 }
 
 ?? status == 200
 
-### Delete Tag — non-existent id (expect 400 from @EntityExists)
-DELETE {{baseUrl}}/tag/9999
+### Delete Tag — non-existent id (expect 400)
+DELETE {{baseUrl}}/tag/99999
 ...headers
 
 ?? status == 400
 
-### Delete Tag
+### Cleanup — Delete Tag
 DELETE {{baseUrl}}/tag/{{tagId}}
 ...headers
 

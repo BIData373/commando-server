@@ -1,15 +1,61 @@
 # @import ../../../global.http
 
-### Create Message — valid payload
-POST {{baseUrl}}/message
-Content-Type: application/json
+### Setup — Create Source
+POST {{baseUrl}}/source
+...headers
+Content-Type: multipart/form-data
+
+name=Message Test Source
+workspaceId={{workspaceId}}
+
+{{@response
+  exports.msgSrcId = response.parsedBody.id;
+}}
+
+?? status == 201
+
+### Setup — Create Assignee
+POST {{baseUrl}}/assignee
+...headers
 
 {
-  "content": "Task has been acknowledged and is under review.",
-  "assigneeId": 1,
-  "taskId": 1,
-  "createdBy": 1,
-  "updatedBy": 1
+  "name": "Message Test Assignee",
+  "color": "#AB47BC",
+  "workspaceId": {{workspaceId}},
+  "users": []
+}
+
+{{@response
+  exports.msgAssId = response.parsedBody.id;
+}}
+
+?? status == 201
+
+### Setup — Create Task
+POST {{baseUrl}}/task
+...headers
+
+{
+  "title": "Message Test Task",
+  "deadlineType": "IMMEDIATE",
+  "workspaceId": {{workspaceId}},
+  "sourceId": {{msgSrcId}},
+  "assignees": [{ "id": {{msgAssId}} }]
+}
+
+{{@response
+  exports.msgTaskId = response.parsedBody.id;
+}}
+
+?? status == 201
+
+### Create Message — valid payload
+POST {{baseUrl}}/message
+...headers
+
+{
+  "taskId": {{msgTaskId}},
+  "content": "HTTP test message content."
 }
 
 {{@response
@@ -18,55 +64,64 @@ Content-Type: application/json
 
 ?? status == 201
 
-### Create Message — missing required field (expect 400)
+### Create Message — missing content (expect 400)
 POST {{baseUrl}}/message
-Content-Type: application/json
+...headers
 
 {
-  "assigneeId": 1
+  "taskId": {{msgTaskId}}
 }
 
 ?? status == 400
 
-### Get all Messages
-GET {{baseUrl}}/message
+### Get Messages in task
+GET {{baseUrl}}/message?taskId={{msgTaskId}}
+...headers
 
 ?? status == 200
 
 ### Get Message by id
 GET {{baseUrl}}/message/{{messageId}}
+...headers
 
 ?? status == 200
 
 ### Update Message
 PATCH {{baseUrl}}/message/{{messageId}}
-Content-Type: application/json
+...headers
 
 {
-  "content": "Task has been completed.",
-  "updatedBy": 1
+  "content": "HTTP test message updated."
 }
 
 ?? status == 200
 
-### Delete Message — non-existent id (expect 400 from @EntityExists)
+### Delete Message — non-existent id (expect 400)
 DELETE {{baseUrl}}/message/99999
-Content-Type: application/json
-
-{
-  "id": 99999,
-  "deletedBy": 1
-}
+...headers
 
 ?? status == 400
 
-### Delete Message
+### Cleanup — Delete Message
 DELETE {{baseUrl}}/message/{{messageId}}
-Content-Type: application/json
+...headers
 
-{
-  "id": {{messageId}},
-  "deletedBy": 1
-}
+?? status == 200
+
+### Cleanup — Delete Task
+DELETE {{baseUrl}}/task/{{msgTaskId}}
+...headers
+
+?? status == 200
+
+### Cleanup — Delete Assignee
+DELETE {{baseUrl}}/assignee/{{msgAssId}}
+...headers
+
+?? status == 200
+
+### Cleanup — Delete Source
+DELETE {{baseUrl}}/source/{{msgSrcId}}
+...headers
 
 ?? status == 200

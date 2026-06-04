@@ -5,7 +5,7 @@ POST {{baseUrl}}/assignee
 ...headers
 
 {
-  "name": "Alpha Team",
+  "name": "HTTP Test Assignee",
   "color": "#E53935",
   "icon": "shield",
   "workspaceId": {{workspaceId}},
@@ -18,17 +18,19 @@ POST {{baseUrl}}/assignee
 
 ?? status == 201
 
-### Create Assignee — missing required fields (expect 400)
+### Create Assignee — missing name (expect 400)
 POST {{baseUrl}}/assignee
 ...headers
 
 {
-  "color": "#E53935"
+  "color": "#E53935",
+  "workspaceId": {{workspaceId}},
+  "users": []
 }
 
 ?? status == 400
 
-### Get all Assignees in workspace
+### Get Assignees in workspace
 GET {{baseUrl}}/assignee?workspaceId={{workspaceId}}
 ...headers
 
@@ -45,7 +47,7 @@ PATCH {{baseUrl}}/assignee/{{assigneeId}}
 ...headers
 
 {
-  "name": "Alpha Team Updated",
+  "name": "HTTP Test Assignee Updated",
   "icon": "shield-check"
 }
 
@@ -57,7 +59,7 @@ DELETE {{baseUrl}}/assignee/99999
 
 ?? status == 400
 
-### Delete Assignee
+### Cleanup — Delete Assignee
 DELETE {{baseUrl}}/assignee/{{assigneeId}}
 ...headers
 

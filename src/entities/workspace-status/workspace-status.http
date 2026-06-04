@@ -2,13 +2,13 @@
 
 ### Create WorkspaceStatus — valid payload
 POST {{baseUrl}}/workspace-status
-Content-Type: application/json
+...headers
 
 {
-  "name": "In Progress",
-  "color": "#FFD700",
-  "statusType": "active",
-  "workspaceId": 1
+  "name": "HTTP Test Status",
+  "color": "#FF5733",
+  "type": "IN_PROGRESS",
+  "workspaceId": {{workspaceId}}
 }
 
 {{@response
@@ -17,53 +17,62 @@ Content-Type: application/json
 
 ?? status == 201
 
-### Create WorkspaceStatus — missing required field (expect 400)
+### Create WorkspaceStatus — missing type (expect 400)
 POST {{baseUrl}}/workspace-status
-Content-Type: application/json
+...headers
 
 {
-  "color": "#FFD700"
+  "name": "Missing Type",
+  "color": "#FF5733",
+  "workspaceId": {{workspaceId}}
 }
 
 ?? status == 400
 
-### Get all WorkspaceStatuses
-GET {{baseUrl}}/workspace-status
+### Create WorkspaceStatus — invalid type enum (expect 400)
+POST {{baseUrl}}/workspace-status
+...headers
+
+{
+  "name": "Bad Type",
+  "color": "#FF5733",
+  "type": "INVALID_TYPE",
+  "workspaceId": {{workspaceId}}
+}
+
+?? status == 400
+
+### Get WorkspaceStatuses in workspace
+GET {{baseUrl}}/workspace-status?workspaceId={{workspaceId}}
+...headers
 
 ?? status == 200
 
 ### Get WorkspaceStatus by id
 GET {{baseUrl}}/workspace-status/{{workspaceStatusId}}
+...headers
 
 ?? status == 200
 
 ### Update WorkspaceStatus
 PATCH {{baseUrl}}/workspace-status/{{workspaceStatusId}}
-Content-Type: application/json
+...headers
 
 {
-  "name": "Done",
-  "color": "#00C853"
+  "name": "HTTP Test Status Updated",
+  "type": "COMPLETED"
 }
 
 ?? status == 200
 
-### Delete WorkspaceStatus — non-existent id (expect 400 from @EntityExists)
+### Delete WorkspaceStatus — non-existent id (expect 400)
 DELETE {{baseUrl}}/workspace-status/99999
-Content-Type: application/json
-
-{
-  "id": 99999
-}
+...headers
 
 ?? status == 400
 
-### Delete WorkspaceStatus
+### Cleanup — Delete WorkspaceStatus
 DELETE {{baseUrl}}/workspace-status/{{workspaceStatusId}}
-Content-Type: application/json
-
-{
-  "id": {{workspaceStatusId}}
-}
+...headers
 
 ?? status == 200

@@ -2,11 +2,10 @@
 
 ### Create User — valid payload
 POST {{baseUrl}}/user
-Content-Type: application/json
+...headers
 
 {
-  "upn": "john.doe@army.mil",
-  "info": { "rank": "Colonel", "unit": "HQ" }
+  "upn": "http-test@army.mil"
 }
 
 {{@response
@@ -15,29 +14,35 @@ Content-Type: application/json
 
 ?? status == 201
 
-### Create User — missing required field (expect 400)
+### Create User — missing upn (expect 400)
 POST {{baseUrl}}/user
-Content-Type: application/json
+...headers
 
-{
-  "info": { "rank": "Colonel" }
-}
+{}
 
 ?? status == 400
 
 ### Get all Users
 GET {{baseUrl}}/user
+...headers
+
+?? status == 200
+
+### Search Users
+GET {{baseUrl}}/user/search?search=http-test
+...headers
 
 ?? status == 200
 
 ### Get User by id
 GET {{baseUrl}}/user/{{userId}}
+...headers
 
 ?? status == 200
 
-### Update User
+### Update User info
 PATCH {{baseUrl}}/user/{{userId}}
-Content-Type: application/json
+...headers
 
 {
   "info": { "rank": "General", "unit": "HQ" }
@@ -45,22 +50,14 @@ Content-Type: application/json
 
 ?? status == 200
 
-### Delete User — non-existent id (expect 400 from @EntityExists)
+### Delete User — non-existent id (expect 400)
 DELETE {{baseUrl}}/user/99999
-Content-Type: application/json
-
-{
-  "id": 99999
-}
+...headers
 
 ?? status == 400
 
-### Delete User
+### Cleanup — Delete User
 DELETE {{baseUrl}}/user/{{userId}}
-Content-Type: application/json
-
-{
-  "id": {{userId}}
-}
+...headers
 
 ?? status == 200

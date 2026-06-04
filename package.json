@@ -9,6 +9,7 @@
     "start": "cross-env-shell ENV=$npm_config_env nest start --watch",
     "start:debug": "cross-env-shell ENV=$npm_config_env nest start --debug --watch",
     "test": "echo \"Error: no test specified\" && exit 1",
+    "test:http": "npx httpyac send --all src/entities/user/user.http src/entities/pikud/pikud.http src/entities/workspace/workspace.http src/entities/workspace-status/workspace-status.http src/entities/permission/permission.http src/entities/source/source.http src/entities/tag/tag.http src/entities/assignee/assignee.http src/entities/task/task.http src/entities/assignee-task-status/assignee-task-status.http src/entities/message/message.http src/entities/task-history/task-history.http",
     "build:webpack": "npx nest build --webpack --webpackPath webpack.config.js",
     "types:pack": "tsc -p ./src/types/ && npm pack ./src/types/ && tsc --build --clean ./src/types/",
     "types:clean": "tsc --build --clean ./src/types/",

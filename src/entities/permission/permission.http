@@ -1,37 +1,81 @@
 # @import ../../../global.http
 
-### Get all Permissions
-GET {{baseUrl}}/permission?workspaceId={{workspaceId}}
+### Setup — Create test user for permission tests
+POST {{baseUrl}}/user
 ...headers
 
-?? status == 200
+{
+  "upn": "perm-test@army.mil"
+}
 
-### Get Permission by composite key
-GET {{baseUrl}}/permission/me?workspaceId={{workspaceId}}
-...headers
+{{@response
+  exports.permUserId = response.parsedBody.id;
+}}
 
-?? status == 200
+?? status == 201
 
-### Update Permission type
+### Upsert Permission — grant VIEWER to test user
 PATCH {{baseUrl}}/permission
 ...headers
 
 {
-  "upn": "s1111111",
-  "workspaceId": 1,
+  "upn": "perm-test@army.mil",
+  "workspaceId": {{workspaceId}},
   "type": "VIEWER"
 }
 
 ?? status == 200
 
-### Delete Permission — non-existent record (expect error)
-DELETE {{baseUrl}}/permission?userId=9999&workspaceId=9999
+### Get permissions in workspace
+GET {{baseUrl}}/permission?workspaceId={{workspaceId}}
+...headers
+
+?? status == 200
+
+### Get my permission
+GET {{baseUrl}}/permission/me?workspaceId={{workspaceId}}
+...headers
+
+?? status == 200
+
+### Update Permission — upgrade to MANAGER
+PATCH {{baseUrl}}/permission
+...headers
+
+{
+  "upn": "perm-test@army.mil",
+  "workspaceId": {{workspaceId}},
+  "type": "MANAGER"
+}
+
+?? status == 200
+
+### Upsert Permission — invalid type enum (expect 400)
+PATCH {{baseUrl}}/permission
+...headers
+
+{
+  "upn": "perm-test@army.mil",
+  "workspaceId": {{workspaceId}},
+  "type": "INVALID_TYPE"
+}
+
+?? status == 400
+
+### Delete Permission — non-existent user-workspace (expect 400)
+DELETE {{baseUrl}}/permission?userId=99999&workspaceId={{workspaceId}}
 ...headers
 
 ?? status >= 400
 
-### Delete Permission
-DELETE {{baseUrl}}/permission?userId=418&workspaceId=1
+### Cleanup — Delete Permission
+DELETE {{baseUrl}}/permission?userId={{permUserId}}&workspaceId={{workspaceId}}
+...headers
+
+?? status == 200
+
+### Cleanup — Delete test user
+DELETE {{baseUrl}}/user/{{permUserId}}
 ...headers
 
 ?? status == 200

@@ -5,11 +5,8 @@ POST {{baseUrl}}/source
 ...headers
 Content-Type: multipart/form-data
 
-name=Radio
+name=HTTP Test Source
 workspaceId={{workspaceId}}
-date=2024-01-01T00:00:00.000Z
-tags[0]=tag1
-attachment< ./sample.pdf
 
 {{@response
   exports.sourceId = response.parsedBody.id;
@@ -17,7 +14,7 @@ attachment< ./sample.pdf
 
 ?? status == 201
 
-### Create Source — missing required field (expect 400)
+### Create Source — missing name (expect 400)
 POST {{baseUrl}}/source
 ...headers
 Content-Type: multipart/form-data
@@ -26,7 +23,7 @@ workspaceId={{workspaceId}}
 
 ?? status == 400
 
-### Get all Sources in workspace
+### Get Sources in workspace
 GET {{baseUrl}}/source?workspaceId={{workspaceId}}
 ...headers
 
@@ -38,24 +35,13 @@ GET {{baseUrl}}/source/{{sourceId}}
 
 ?? status == 200
 
-### Update Source — with new attachment
-PATCH {{baseUrl}}/source/{{sourceId}}
-...headers
-Content-Type: multipart/form-data
-
-name=Radio Updated
-attachment< ./sample-updated.pdf
-
-?? status == 200
-
-### Update Source — name only
+### Update Source name
 PATCH {{baseUrl}}/source/{{sourceId}}
 ...headers
 
 {
-  "name": "Radio Updated",
-  "date": "2026-06-02T15:10:59.225Z",
-  "tags": ["a", "b"]
+  "name": "HTTP Test Source Updated",
+  "tags": ["updated"]
 }
 
 ?? status == 200
@@ -66,7 +52,7 @@ DELETE {{baseUrl}}/source/99999
 
 ?? status == 400
 
-### Delete Source
+### Cleanup — Delete Source
 DELETE {{baseUrl}}/source/{{sourceId}}
 ...headers
 

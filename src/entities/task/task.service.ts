@@ -35,15 +35,9 @@ export class TaskService {
         ...dto,
         createdBy: userId,
         updatedBy: userId,
-        workspace: {
-          connect: { id: workspaceId }
-        },
+        workspace: { connect: { id: workspaceId } },
         ...(typeof sourceId === 'number' && {
-          source: {
-            connect: {
-              id: sourceId
-            }
-          }
+          source: { connect: { id: sourceId } }
         }),
         ...(assignees && {
           assigneeStatuses: {
