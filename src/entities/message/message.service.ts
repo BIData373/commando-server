@@ -12,7 +12,7 @@ export class MessageService {
 
   constructor(private readonly prisma: PrismaService) { }
 
-  async create(dto: CreateMessageDto, userId: number) {
+  async create({ context, ...dto }: CreateMessageDto, userId: number) {
     return await this.prisma.message.create({
       data: {
         ...dto,
