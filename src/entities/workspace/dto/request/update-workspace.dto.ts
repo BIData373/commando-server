@@ -1,4 +1,4 @@
-import { ApiProperty, IntersectionType, PartialType } from '@nestjs/swagger';
+import { ApiPropertyOptional, IntersectionType, PartialType } from '@nestjs/swagger';
 import { IsOptional } from 'class-validator';
 import { EntityExists } from '../../../../common/decorators/entity-exists.decorator';
 import { IsNotEmptyString } from '../../../../common/decorators/is-not-empty-string.decorator';
@@ -16,7 +16,7 @@ export class UpdateWorkspaceDto extends IntersectionType(
     PartialType(GetWorkspaceFieldsDto),
     GetContextDto<IWorkspaceContext>
 ) {
-    @ApiProperty()
+    @ApiPropertyOptional()
     @IsOptional()
     @IsNotEmptyString()
     @EntityExists('workspace', {
@@ -27,7 +27,7 @@ export class UpdateWorkspaceDto extends IntersectionType(
     })
     urlName?: string
 
-    @ApiProperty()
+    @ApiPropertyOptional()
     @IsOptional()
     @IsNotEmptyString()
     @EntityExists('workspace', {

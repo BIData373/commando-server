@@ -10,6 +10,7 @@ export class TaskService {
     source: { include: { tags: true } },
     tags: true,
     assigneeStatuses: {
+      orderBy: { assigneeId: 'asc' },
       include: {
         assignee: { include: { users: true } },
         status: true
@@ -94,7 +95,7 @@ export class TaskService {
   async findOne(id: number) {
     return await this.prisma.task.findUnique({
       where: { id, deletedAt: null },
-      include: TaskService.includeWithWorkspace
+      include: TaskService.includeWithWorkspace,
     });
   }
 

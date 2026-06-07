@@ -1,7 +1,7 @@
 import { PrismaPg } from '@prisma/adapter-pg';
 import { config } from 'dotenv';
 import path from 'node:path';
-import { DeadlineType, HistoryAction, PermissionType, PrismaClient, WorkspaceStatusType } from '../src/types/prisma';
+import { DeadlineType, HistoryAction, PermissionType, Prisma, PrismaClient, WorkspaceStatusType } from '../src/types/prisma';
 import { DEFAULT_STATUSES } from '../src/entities/workspace-status/consts/default-statuses'
 
 if (process.env.ENV) {
@@ -15,6 +15,7 @@ const prisma = new PrismaClient({ adapter });
 async function main() {
   console.log('🌱 Seeding database...');
 
+  console.time('* DB Clean Up')
   // Cleanup in reverse FK dependency order
   await prisma.taskHistory.deleteMany();
   await prisma.message.deleteMany();
@@ -28,7 +29,9 @@ async function main() {
   await prisma.workspace.deleteMany();
   await prisma.pikud.deleteMany();
   await prisma.user.deleteMany();
+  console.timeEnd('* DB Clean Up')
 
+  console.log('* Creating Users')
   // ── Users ─────────────────────────────────────────────────────────────────
   const [u1, u2, u3, u4, u5, u6, u7, u8, u9, u10, u11, u12] = await Promise.all([
     prisma.user.create({ data: { upn: 'yael@example.com', info: { name: 'סא"ל כהן', color: '#3B82F6' } } }),
@@ -45,11 +48,13 @@ async function main() {
     prisma.user.create({ data: { upn: 'dina@example.com', info: { name: 'דינה אורן', color: '#F43F5E' } } }),
   ]);
 
+  console.log('* Creating Pikuds')
   // ── Pikud ─────────────────────────────────────────────────────────────────
   const pikud = await prisma.pikud.create({
     data: { name: 'פיקוד מרכז', createdBy: u1.id, updatedBy: u1.id },
   });
 
+  console.log('* Creating Workspaces')
   // ── Workspaces ────────────────────────────────────────────────────────────
   const [ws1, ws2, ws3] = await Promise.all([
     prisma.workspace.create({
@@ -63,7 +68,8 @@ async function main() {
     }),
   ]);
 
-  // ── WorkspaceStatuses (4 per workspace) ───────────────────────────────────
+  console.log('* Creating Workspace Statuses')
+  // ── WorkspaceStatuses (3 per workspace) ───────────────────────────────────
   const createStatuses = (workspaceId: number) =>
     Promise.all(DEFAULT_STATUSES.map((s) => prisma.workspaceStatus.create({ data: { ...s, workspaceId } })));
 
@@ -79,6 +85,7 @@ async function main() {
     [ws3.id]: { [WorkspaceStatusType.NOT_STARTED]: ws3NotStarted.id, [WorkspaceStatusType.IN_PROGRESS]: ws3InProgress.id, [WorkspaceStatusType.COMPLETED]: ws3Completed.id },
   } as Record<number, Record<string, number>>;
 
+  console.log('* Creating Assignees')
   // ── Assignees ─────────────────────────────────────────────────────────────
   const [a1, a2, a3, a4, a5, a6, a7, a8] = await Promise.all([
     // workspace 1
@@ -94,6 +101,7 @@ async function main() {
     prisma.assignee.create({ data: { name: 'צוות לוגיסטי', color: '#F97316', workspaceId: ws3.id, createdBy: u3.id, updatedBy: u3.id, users: { connect: [{ id: u3.id }, { id: u6.id }] } } }),
   ]);
 
+  console.log('* Creating Permissions')
   // ── Permissions ───────────────────────────────────────────────────────────
   await prisma.permission.createMany({
     data: [
@@ -115,6 +123,7 @@ async function main() {
     ],
   });
 
+  console.log('* Creating Tags')
   // ── Tags ──────────────────────────────────────────────────────────────────
   const [tBudget, tHR, tIT, tOps, tField, tDev, tQA] = await Promise.all([
     prisma.tag.create({ data: { name: 'תקציב', workspaceId: ws1.id, createdBy: u1.id, updatedBy: u1.id } }),
@@ -126,6 +135,7 @@ async function main() {
     prisma.tag.create({ data: { name: 'בקרה', workspaceId: ws2.id, createdBy: u2.id, updatedBy: u2.id } }),
   ]);
 
+  console.log('* Creating Sources')
   // ── Sources ───────────────────────────────────────────────────────────────
   const [
     src01, src02, src03, src04, src05, src06, src07, src08, src09,
@@ -154,6 +164,20 @@ async function main() {
     prisma.source.create({ data: { date: new Date(), name: 'ישיבת שיווק', workspaceId: ws3.id, createdBy: u3.id, updatedBy: u3.id } }),
     prisma.source.create({ data: { date: new Date(), name: 'ישיבת הנהלה', workspaceId: ws3.id, createdBy: u3.id, updatedBy: u3.id } }),
   ]);
+
+  const RANDOM_DESCRIPTIONS = [
+    'ממתין לאישור מהגורם המוסמך',
+    'בתהליך ביצוע — צפוי להסתיים עד סוף השבוע',
+    'הועבר לטיפול הגורם הרלוונטי',
+    'נדרש תיאום עם יחידות נוספות לפני המשך',
+    'בבדיקה — ממתין לקבלת נתונים משלימים',
+    'הושלם שלב ראשוני, ממשיך לשלב הבא',
+    'בתכנון — טרם החל ביצוע',
+    'ממתין לתגובת הספק',
+    'בביצוע — נתקל בעיכוב קל, מטופל',
+    'הסתיים בהצלחה, ממתין לאימות סופי',
+  ];
+  const randomDesc = () => RANDOM_DESCRIPTIONS[Math.floor(Math.random() * RANDOM_DESCRIPTIONS.length)];
 
   // ── Tasks + AssigneeTaskStatus + TaskHistory ───────────────────────────────
   type AssigneeDef = {
@@ -373,6 +397,7 @@ async function main() {
     },
   ];
 
+  console.log('* Creating Tasks')
   for (const def of taskDefs) {
     const task = await prisma.task.create({
       data: {
@@ -380,7 +405,6 @@ async function main() {
         description: def.description,
         flagged: def.flagged,
         deadlineType: def.deadlineType,
-
         dueDate: def.
           dueDate,
         workspaceId: def.workspaceId,
@@ -388,27 +412,25 @@ async function main() {
         createdBy: def.createdBy,
         updatedBy: def.createdBy,
         ...(def.tagIds.length > 0 && { tags: { connect: def.tagIds.map((id) => ({ id })) } }),
-      },
+        assigneeStatuses: {
+          create: def.assignees.map(({ assigneeId, statusType }) => ({
+            assigneeId,
+            statusId: statusIdByType[def.workspaceId][statusType],
+            description: randomDesc()
+          }))
+        },
+        history: {
+          create: {
+            action: HistoryAction.CREATE,
+            field: 'task',
+            value: def.title,
+            workspaceId: def.workspaceId,
+            userId: def.createdBy,
+          }
+        }
+      }
     });
 
-    await prisma.assigneeTaskStatus.createMany({
-      data: def.assignees.map(({ assigneeId, statusType }) => ({
-        taskId: task.id,
-        assigneeId,
-        statusId: statusIdByType[def.workspaceId][statusType],
-      })),
-    });
-
-    await prisma.taskHistory.create({
-      data: {
-        action: HistoryAction.CREATE,
-        field: 'task',
-        value: def.title,
-        taskId: task.id,
-        workspaceId: def.workspaceId,
-        userId: def.createdBy,
-      },
-    });
   }
 
   const totalAssigneeStatuses = taskDefs.reduce((s, d) => s + d.assignees.length, 0);
