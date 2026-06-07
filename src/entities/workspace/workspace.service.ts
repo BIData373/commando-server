@@ -9,7 +9,7 @@ import { WorkspaceDto } from './dto/response/workspace.dto';
 export class WorkspaceService {
   constructor(private readonly prisma: PrismaService) { }
 
-  async create(dto: CreateWorkspaceDto, userId: number) {
+  async create({ context, ...dto }: CreateWorkspaceDto, userId: number) {
     return await this.prisma.workspace.create({
       data: {
         ...dto,
@@ -36,7 +36,7 @@ export class WorkspaceService {
     });
   }
 
-  async update(id: number, dto: UpdateWorkspaceDto, updatedBy: number) {
+  async update(id: number, { context, ...dto }: UpdateWorkspaceDto, updatedBy: number) {
     return await this.prisma.workspace.update({
       where: { id },
       data: { ...dto, updatedBy }
