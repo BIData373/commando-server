@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
+import { admin } from '../../common/consts/admin';
 import { PrismaService } from '../../common/prisma.service';
-import { PermissionType, Prisma } from '../../types/prisma';
+import { PermissionType, Prisma, User } from '../../types/prisma';
+import { UserInfoDto } from '../user/dto/response/user-info.dto';
 
 // FIX Add createdAt, updatedAt, createdBy, updatedBy?
 @Injectable()
@@ -26,11 +28,14 @@ export class PermissionService {
     });
   }
 
-  async findOne(userId: number, workspaceId: number) {
-    return await this.prisma.permission.findUnique({
-      where: { userId_workspaceId: { userId, workspaceId } },
-      include: PermissionService.include
-    });
+  async findOne(user: User, workspaceId: number) {
+    const info = user.info as unknown as UserInfoDto
+    return info.isBI
+      ? { user: admin, workspaceId, type: PermissionType.MANAGER }
+      : await this.prisma.permission.findUnique({
+        where: { userId_workspaceId: { userId: user.id, workspaceId } },
+        include: PermissionService.include
+      });
   }
 
   async upsert(upn: string, workspaceId: number, type: PermissionType) {
