@@ -32,7 +32,7 @@ export class PermissionController {
     @Req() { user }: Request,
     @Query() { workspaceId }: GetWorkspaceIdFieldDto
   ) {
-    return await this.permissionService.findOne(user.id, workspaceId);
+    return await this.permissionService.findOne(user, workspaceId);
   }
 
   @ApiOperation({ operationId: 'updatePermission' })

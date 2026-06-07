@@ -33,6 +33,7 @@ export class CookieMiddleware implements NestMiddleware {
       user = { upn: info.upn, info }
     }
 
+    // TODO - return UserDto, not User
     req.user = await this.userService.upsert(user);
 
     next()

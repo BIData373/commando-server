@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import { IsArray, IsDate, IsOptional } from 'class-validator';
 import { IsNotEmptyString } from '../../../../common/decorators/is-not-empty-string.decorator';
 import { GetManagerWorkspaceIdFieldDto } from '../../../workspace/dto/request/get-workspace-id-field.dto';
@@ -19,6 +19,15 @@ export class CreateSourceDto extends GetManagerWorkspaceIdFieldDto {
   @IsOptional()
   @IsArray()
   @IsNotEmptyString({ each: true })
+  @Transform(({ value }) => (
+    !!value
+      ? (
+        Array.isArray(value)
+          ? value
+          : [value]
+      )
+      : []
+  ))
   tags?: string[];
 
   @ApiProperty({ type: 'string', format: 'binary', required: false, nullable: true })
