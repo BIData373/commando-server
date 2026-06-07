@@ -180,30 +180,12 @@ async function main() {
   const randomDesc = () => RANDOM_DESCRIPTIONS[Math.floor(Math.random() * RANDOM_DESCRIPTIONS.length)];
 
   // ── Tasks + AssigneeTaskStatus + TaskHistory ───────────────────────────────
-  type AssigneeDef = {
-    assigneeId: number;
-    statusType: WorkspaceStatusType;
-  };
-
-  type TaskDef = {
-    title: string;
-    description: string;
-    flagged: boolean;
-    deadlineType: DeadlineType;
-
-    dueDate: Date;
-    workspaceId: number;
-    sourceId: number;
-    createdBy: number;
-    tagIds: number[];
-    assignees: AssigneeDef[];
-  };
-
-  const taskDefs: TaskDef[] = [
+  const taskDefs = [
     {
       title: 'הכנת תקציב שנתי לשנת 2026',
       description: '## משימה\nיש להכין את התקציב השנתי לשנת 2026 כולל:\n- תקציב תפעולי\n- תקציב פיתוח\n- תקציב שיווק\n\n### הערות\nיש לתאם עם מחלקת כספים לגבי תחזיות ההכנסות.',
-      flagged: true, deadlineType: 'ROLLING',
+      flagged: true,
+      deadlineType: DeadlineType.ROLLING,
       dueDate: new Date('2026-03-01T00:00:00Z'),
       workspaceId: ws1.id, sourceId: src01.id, createdBy: u1.id,
       tagIds: [tBudget.id, tHR.id],
@@ -215,8 +197,8 @@ async function main() {
     {
       title: 'גיוס מנהל פיתוח בכיר',
       description: 'יש לפתוח תהליך גיוס למנהל פיתוח בכיר. כולל:\n- הגדרת דרישות התפקיד\n- פרסום המשרה\n- סינון ראשוני של מועמדים',
-      flagged: true, deadlineType: 'IMMEDIATE',
-      dueDate: new Date('2026-02-20T00:00:00Z'),
+      flagged: true,
+      deadlineType: DeadlineType.IMMEDIATE,
       workspaceId: ws1.id, sourceId: src02.id, createdBy: u1.id,
       tagIds: [tHR.id],
       assignees: [
@@ -226,7 +208,8 @@ async function main() {
     {
       title: 'עדכון מדיניות אבטחת מידע',
       description: 'עדכון מדיניות אבטחת המידע בהתאם לתקנות החדשות. יש לכלול:\n- סקירת נהלים קיימים\n- התאמה לרגולציה\n- הדרכת עובדים',
-      flagged: false, deadlineType: 'DATE',
+      flagged: false,
+      deadlineType: DeadlineType.DATE,
       dueDate: new Date('2026-02-28T00:00:00Z'),
       workspaceId: ws1.id, sourceId: src03.id, createdBy: u2.id,
       tagIds: [tIT.id, tField.id],
@@ -238,7 +221,8 @@ async function main() {
     {
       title: 'השקת קמפיין שיווקי לרבעון 2',
       description: 'תכנון והשקת קמפיין שיווקי חדש לרבעון השני של 2026.',
-      flagged: false, deadlineType: 'ROLLING',
+      flagged: false,
+      deadlineType: DeadlineType.ROLLING,
       dueDate: new Date('2026-04-01T00:00:00Z'),
       workspaceId: ws1.id, sourceId: src04.id, createdBy: u3.id,
       tagIds: [tOps.id],
@@ -249,7 +233,8 @@ async function main() {
     {
       title: 'סיכום ישיבת דירקטוריון Q4 2025',
       description: 'סיכום ותיעוד ההחלטות מישיבת הדירקטוריון.',
-      flagged: false, deadlineType: 'DATE',
+      flagged: false,
+      deadlineType: DeadlineType.DATE,
       dueDate: new Date('2026-01-15T00:00:00Z'),
       workspaceId: ws1.id, sourceId: src05.id, createdBy: u1.id,
       tagIds: [],
@@ -260,7 +245,8 @@ async function main() {
     {
       title: 'הטמעת מערכת ERP חדשה',
       description: 'ניהול תהליך הטמעת מערכת ERP חדשה בארגון. שלבים:\n1. בחירת ספק\n2. POC\n3. פיילוט\n4. הטמעה מלאה',
-      flagged: true, deadlineType: 'ROLLING',
+      flagged: true,
+      deadlineType: DeadlineType.ROLLING,
       dueDate: new Date('2026-06-30T00:00:00Z'),
       workspaceId: ws1.id, sourceId: src06.id, createdBy: u1.id,
       tagIds: [tBudget.id, tIT.id],
@@ -273,7 +259,8 @@ async function main() {
     {
       title: 'ביקורת פנימית - תהליכי רכש',
       description: 'ביצוע ביקורת פנימית על תהליכי הרכש בארגון.',
-      flagged: false, deadlineType: 'ROLLING',
+      flagged: false,
+      deadlineType: DeadlineType.ROLLING,
       dueDate: new Date('2026-01-31T00:00:00Z'),
       workspaceId: ws1.id, sourceId: src07.id, createdBy: u2.id,
       tagIds: [tBudget.id, tField.id],
@@ -284,8 +271,8 @@ async function main() {
     {
       title: 'שדרוג תשתיות שרתים',
       description: 'שדרוג תשתיות השרתים המרכזיים של הארגון.',
-      flagged: true, deadlineType: 'IMMEDIATE',
-      dueDate: new Date('2026-02-15T00:00:00Z'),
+      flagged: true,
+      deadlineType: DeadlineType.IMMEDIATE,
       workspaceId: ws1.id, sourceId: src08.id, createdBy: u2.id,
       tagIds: [tIT.id],
       assignees: [
@@ -296,7 +283,8 @@ async function main() {
     {
       title: 'הכנת מצגת למשקיעים',
       description: 'הכנת מצגת עדכנית למפגש המשקיעים הקרוב.',
-      flagged: false, deadlineType: 'DATE',
+      flagged: false,
+      deadlineType: DeadlineType.DATE,
       dueDate: new Date('2026-03-15T00:00:00Z'),
       workspaceId: ws1.id, sourceId: src09.id, createdBy: u1.id,
       tagIds: [tBudget.id, tOps.id],
@@ -307,7 +295,8 @@ async function main() {
     {
       title: 'חידוש חוזה ספק תקשורת',
       description: 'ניהול מו"מ וחידוש חוזה מול ספק התקשורת.',
-      flagged: false, deadlineType: 'ROLLING',
+      flagged: false,
+      deadlineType: DeadlineType.ROLLING,
       dueDate: new Date('2026-02-10T00:00:00Z'),
       workspaceId: ws1.id, sourceId: src10.id, createdBy: u4.id,
       tagIds: [tBudget.id],
@@ -318,7 +307,8 @@ async function main() {
     {
       title: 'תכנית הדרכות עובדים Q1 2026',
       description: 'תכנון וביצוע תכנית הדרכות לרבעון הראשון.',
-      flagged: false, deadlineType: 'ROLLING',
+      flagged: false,
+      deadlineType: DeadlineType.ROLLING,
       dueDate: new Date('2026-03-31T00:00:00Z'),
       workspaceId: ws1.id, sourceId: src11.id, createdBy: u3.id,
       tagIds: [tHR.id],
@@ -330,10 +320,8 @@ async function main() {
     {
       title: 'בחינת מיזוג עם חברת אלפא',
       description: 'בחינה ראשונית של אפשרות מיזוג אסטרטגי.',
-      flagged: false, deadlineType: 'ROLLING',
-      // no 
-      // dueDate in mock — use sentinel far-future date
-      dueDate: new Date('2099-12-31T00:00:00Z'),
+      flagged: false,
+      deadlineType: DeadlineType.ROLLING,
       workspaceId: ws1.id, sourceId: src12.id, createdBy: u1.id,
       tagIds: [tBudget.id],
       assignees: [
@@ -343,7 +331,8 @@ async function main() {
     {
       title: 'שדרוג React לגרסה 19',
       description: 'שדרוג ה-framework לגרסה האחרונה עם בדיקות רגרסיה.',
-      flagged: true, deadlineType: 'DATE',
+      flagged: true,
+      deadlineType: DeadlineType.DATE,
       dueDate: new Date('2026-03-01T00:00:00Z'),
       workspaceId: ws2.id, sourceId: src13.id, createdBy: u2.id,
       tagIds: [tDev.id, tQA.id],
@@ -354,7 +343,8 @@ async function main() {
     {
       title: 'כתיבת תיעוד API חדש',
       description: 'תיעוד כל ה-endpoints החדשים שנוספו ברבעון האחרון.',
-      flagged: false, deadlineType: 'ROLLING',
+      flagged: false,
+      deadlineType: DeadlineType.ROLLING,
       dueDate: new Date('2026-03-10T00:00:00Z'),
       workspaceId: ws2.id, sourceId: src14.id, createdBy: u2.id,
       tagIds: [tDev.id],
@@ -365,8 +355,8 @@ async function main() {
     {
       title: 'סקירת קוד - מודול תשלומים',
       description: 'ביצוע Code Review למודול התשלומים החדש לפני העלאה לפרודקשן.',
-      flagged: true, deadlineType: 'IMMEDIATE',
-      dueDate: new Date('2026-02-24T00:00:00Z'),
+      flagged: true,
+      deadlineType: DeadlineType.IMMEDIATE,
       workspaceId: ws2.id, sourceId: src15.id, createdBy: u2.id,
       tagIds: [tDev.id, tQA.id],
       assignees: [
@@ -376,7 +366,8 @@ async function main() {
     {
       title: 'הכנת חומרי שיווק לכנס',
       description: 'הכנת ברושורים, מצגות ודוכן לכנס הטכנולוגיה השנתי.',
-      flagged: false, deadlineType: 'ROLLING',
+      flagged: false,
+      deadlineType: DeadlineType.ROLLING,
       dueDate: new Date('2026-03-20T00:00:00Z'),
       workspaceId: ws3.id, sourceId: src16.id, createdBy: u3.id,
       tagIds: [],
@@ -387,7 +378,8 @@ async function main() {
     {
       title: 'סקר שביעות רצון לקוחות Q1',
       description: 'הפצת סקר לקוחות ועיבוד התוצאות.',
-      flagged: false, deadlineType: 'DATE',
+      flagged: false,
+      deadlineType: DeadlineType.DATE,
       dueDate: new Date('2026-02-15T00:00:00Z'),
       workspaceId: ws3.id, sourceId: src17.id, createdBy: u3.id,
       tagIds: [],
@@ -399,14 +391,13 @@ async function main() {
 
   console.log('* Creating Tasks')
   for (const def of taskDefs) {
-    const task = await prisma.task.create({
+    await prisma.task.create({
       data: {
         title: def.title,
         description: def.description,
         flagged: def.flagged,
         deadlineType: def.deadlineType,
-        dueDate: def.
-          dueDate,
+        ...(def.dueDate && { dueDate: def.dueDate }),
         workspaceId: def.workspaceId,
         sourceId: def.sourceId,
         createdBy: def.createdBy,
@@ -416,7 +407,7 @@ async function main() {
           create: def.assignees.map(({ assigneeId, statusType }) => ({
             assigneeId,
             statusId: statusIdByType[def.workspaceId][statusType],
-            description: randomDesc()
+            ...(def.assignees.length > 1 && { description: randomDesc() }),
           }))
         },
         history: {
