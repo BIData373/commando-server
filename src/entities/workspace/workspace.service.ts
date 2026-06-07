@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../common/prisma.service';
 import { Prisma } from '../../types/prisma';
+import { DEFAULT_STATUSES } from '../workspace-status/consts/default-statuses';
 import { CreateWorkspaceDto } from './dto/request/create-workspace.dto';
 import { UpdateWorkspaceDto } from './dto/request/update-workspace.dto';
 import { WorkspaceDto } from './dto/response/workspace.dto';
@@ -14,7 +15,12 @@ export class WorkspaceService {
       data: {
         ...dto,
         createdBy: userId,
-        updatedBy: userId
+        updatedBy: userId,
+        workspaceStatuses: {
+          createMany: {
+            data: DEFAULT_STATUSES
+          }
+        }
       }
     });
   }

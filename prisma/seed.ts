@@ -2,6 +2,7 @@ import { PrismaPg } from '@prisma/adapter-pg';
 import { config } from 'dotenv';
 import path from 'node:path';
 import { DeadlineType, HistoryAction, PermissionType, PrismaClient, WorkspaceStatusType } from '../src/types/prisma';
+import { DEFAULT_STATUSES } from '../src/entities/workspace-status/consts/default-statuses'
 
 if (process.env.ENV) {
   config({ path: path.join('./config', process.env.ENV, '.env') });
@@ -63,14 +64,8 @@ async function main() {
   ]);
 
   // ── WorkspaceStatuses (4 per workspace) ───────────────────────────────────
-  const statusDefs = [
-    { name: 'פתוח', color: '#6B7280', type: WorkspaceStatusType.NOT_STARTED },
-    { name: 'בתהליך', color: '#3B82F6', type: WorkspaceStatusType.IN_PROGRESS },
-    { name: 'הושלם', color: '#10B981', type: WorkspaceStatusType.COMPLETED },
-  ] as const;
-
   const createStatuses = (workspaceId: number) =>
-    Promise.all(statusDefs.map((s) => prisma.workspaceStatus.create({ data: { ...s, workspaceId } })));
+    Promise.all(DEFAULT_STATUSES.map((s) => prisma.workspaceStatus.create({ data: { ...s, workspaceId } })));
 
   const [
     [ws1NotStarted, ws1InProgress, ws1Completed],
@@ -171,7 +166,7 @@ async function main() {
     description: string;
     flagged: boolean;
     deadlineType: DeadlineType;
-    
+
     dueDate: Date;
     workspaceId: number;
     sourceId: number;
@@ -385,9 +380,9 @@ async function main() {
         description: def.description,
         flagged: def.flagged,
         deadlineType: def.deadlineType,
-        
+
         dueDate: def.
-        dueDate,
+          dueDate,
         workspaceId: def.workspaceId,
         sourceId: def.sourceId,
         createdBy: def.createdBy,
