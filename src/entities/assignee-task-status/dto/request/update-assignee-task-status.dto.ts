@@ -1,16 +1,40 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsOptional, IsString } from 'class-validator';
-import { IsIdPermitted } from '../../../../common/decorators/is-permitted-id.decorator';
+import { IdExists } from '../../../../common/decorators/id-exists.decorator';
+import { ExtractValue } from '../../../../common/types/extract-value.type';
+import { PredicateParams } from '../../../../common/types/predicate-params.type';
 import { PermissionType } from '../../../../types/prisma';
-import { GetManagerAssigneeIdFieldDto } from '../../../assignee/dto/request/get-assignee-id-field.dto';
+import { GetPermittedTaskIdFieldDto } from '../../../task/dto/request/get-task-id-field.dto';
 
-export class UpdateAssigneeTaskStatusDto extends GetManagerAssigneeIdFieldDto {
+const findInTask = <
+  TDto extends { taskId: number },
+  TDtoField extends keyof TDto,
+  TDtoValue extends ExtractValue<TDto, TDtoField>
+>(
+  { value, obj }: PredicateParams<TDto, TDtoField, TDtoValue>
+) => ({
+  where: {
+    id: value,
+    workspace: { tasks: { some: { id: obj.taskId } } }
+  }
+})
+
+interface IAssigneeId {
+  assigneeId: number
+}
+
+class GetTaskIdFieldInAssigneeDto extends GetPermittedTaskIdFieldDto(
+  PermissionType.MANAGER,
+  (obj: IAssigneeId) => obj.assigneeId
+) { }
+
+export class UpdateAssigneeTaskStatusDto extends GetTaskIdFieldInAssigneeDto {
   @ApiProperty()
-  @IsIdPermitted('task', PermissionType.MANAGER, { filterDeletedAt: true })
-  taskId: number;
+  @IdExists('assignee', { filterDeletedAt: true, findArgs: findInTask })
+  assigneeId: number
 
   @ApiProperty()
-  @IsIdPermitted('workspaceStatus', PermissionType.MANAGER)
+  @IdExists('workspaceStatus', { findArgs: findInTask })
   statusId: number;
 
   @ApiProperty({ required: false })

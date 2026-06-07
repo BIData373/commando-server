@@ -1,10 +1,12 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { admin } from '../../common/consts/admin';
+import { removeUpnSuffix } from '../../common/functions/user';
 import { PrismaService } from '../../common/prisma.service';
 import { Prisma } from '../../types/prisma';
 import { CreateUserDto } from './dto/request/create-user.dto';
 import { GetUserInfoDto } from './dto/request/get-user-info.dto';
 import { UpdateUserDto } from './dto/request/update-user.dto';
+import { UserInfoDto } from './dto/response/user-info.dto';
 import { UserDto } from './dto/response/user.dto';
 
 const MOCK_USERS: UserDto[] = [
@@ -33,14 +35,28 @@ export class UserService implements OnModuleInit {
   async search(search: string): Promise<UserDto[]> {
     const term = search.toLowerCase();
 
-    return MOCK_USERS.filter(({ upn, info }) => {
-      const { name = '', displayName = '' } = (info as GetUserInfoDto) ?? {};
-      return (
-        upn.toLowerCase().includes(term) ||
-        name.toLowerCase().includes(term) ||
-        displayName.toLowerCase().includes(term)
-      );
-    });
+    return MOCK_USERS
+      .map(({ id, upn, info }) => ({
+        id,
+        upn: removeUpnSuffix(upn),
+        info: {
+          ...(info?.id && {
+            id: info.id
+          }),
+          ...(info?.upn && {
+            upn: removeUpnSuffix(info?.upn)
+          }),
+          ...(info ?? {})
+        } as UserInfoDto
+      }))
+      .filter(({ upn, info }) => {
+        const { name = '', displayName = '' } = (info as GetUserInfoDto) ?? {};
+        return (
+          upn.toLowerCase().includes(term) ||
+          name.toLowerCase().includes(term) ||
+          displayName.toLowerCase().includes(term)
+        );
+      });
   }
 
   static formatInfoForSave(info?: GetUserInfoDto | null) {
@@ -49,16 +65,19 @@ export class UserService implements OnModuleInit {
 
   static async upsertTx(tx: Prisma.TransactionClient, { upn, info }: CreateUserDto) {
     const infoToSave = UserService.formatInfoForSave(info)
+    const userFields = { upn: removeUpnSuffix(upn) }
 
     return await tx.user.upsert({
-      where: { upn },
-      create: { upn, info: infoToSave },
-      update: { upn, info: infoToSave }
+      where: userFields,
+      create: { ...userFields, info: infoToSave },
+      update: { ...userFields, info: infoToSave }
     })
   }
 
   async upsert(dto: CreateUserDto) {
-    return await this.prisma.$transaction(async tx => await UserService.upsertTx(tx, dto))
+    return await this.prisma.$transaction(async tx => (
+      await UserService.upsertTx(tx, dto)
+    ))
   }
 
   async create({ upn, info }: CreateUserDto) {

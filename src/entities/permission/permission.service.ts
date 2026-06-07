@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../common/prisma.service';
 import { PermissionType, Prisma } from '../../types/prisma';
+import { UserService } from '../user/user.service';
 
 // FIX Add createdAt, updatedAt, createdBy, updatedBy?
 @Injectable()
@@ -34,14 +35,10 @@ export class PermissionService {
   }
 
   async upsert(upn: string, workspaceId: number, type: PermissionType) {
-    return await this.prisma.$transaction(async prisma => {
-      const user = await prisma.user.upsert({
-        where: { upn },
-        create: { upn },
-        update: { upn }
-      })
+    return await this.prisma.$transaction(async tx => {
+      const user = await UserService.upsertTx(tx, { upn })
 
-      return await prisma.permission.upsert({
+      return await tx.permission.upsert({
         where: { userId_workspaceId: { userId: user.id, workspaceId } },
         create: { userId: user.id, workspaceId, type },
         update: { type },

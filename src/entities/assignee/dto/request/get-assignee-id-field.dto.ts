@@ -5,13 +5,13 @@ import { PermissionType } from "../../../../types/prisma";
 import { IUserContext } from "../../../user/interfaces/user-context.interface";
 
 export function GetPermittedAssigneeIdFieldDto(type: PermissionType) {
-    class GetAssigneeIdDto extends GetContextDto<IUserContext> {
+    class GetAssigneeIdFieldDto extends GetContextDto<IUserContext> {
         @ApiProperty()
         @IsIdPermitted('assignee', type, { filterDeletedAt: true })
         assigneeId: number
     }
 
-    return GetAssigneeIdDto
+    return GetAssigneeIdFieldDto
 }
 
 export class GetViewerAssigneeIdFieldDto extends GetPermittedAssigneeIdFieldDto(PermissionType.VIEWER) { }
