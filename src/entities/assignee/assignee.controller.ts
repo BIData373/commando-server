@@ -8,6 +8,7 @@ import { CreateAssigneeDto } from './dto/request/create-assignee.dto';
 import { GetManagerAssigneeIdDto, GetViewerAssigneeIdDto } from './dto/request/get-assignee-id.dto';
 import { UpdateAssigneeDto } from './dto/request/update-assignee.dto';
 import { AssigneeDto } from './dto/response/assignee.dto';
+import { AssigneesDto } from './dto/response/assignees.dto';
 
 @Controller('assignee')
 export class AssigneeController {
@@ -28,8 +29,8 @@ export class AssigneeController {
   @ApiOperation({ operationId: 'listAssignees' })
   @ApiQuery({ type: GetViewerWorkspaceIdFieldDto })
   @Get()
-  @ApiOkResponse({ type: [AssigneeDto] })
-  @TransformPlainToInstance(AssigneeDto)
+  @ApiOkResponse({ type: [AssigneesDto] })
+  @TransformPlainToInstance(AssigneesDto)
   async findInWorkspace(
     @Query() { workspaceId }: GetViewerWorkspaceIdFieldDto
   ) {

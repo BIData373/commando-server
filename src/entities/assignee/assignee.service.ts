@@ -12,6 +12,11 @@ export class AssigneeService {
     users: true
   }
 
+  static readonly includeMany: Prisma.AssigneeInclude = {
+    ...AssigneeService.include,
+    _count: { select: { taskStatuses: true } }
+  };
+
   constructor(private readonly prisma: PrismaService) { }
 
   static async upsertUsersTx(tx: Prisma.TransactionClient, users: CreateUserDto[]) {
@@ -46,8 +51,8 @@ export class AssigneeService {
   async findInWorkspace(workspaceId: number) {
     return await this.prisma.assignee.findMany({
       where: { workspaceId, deletedAt: null },
-      include: AssigneeService.include
-    });
+      include: AssigneeService.includeMany
+    })
   }
 
   async findOne(id: number) {
