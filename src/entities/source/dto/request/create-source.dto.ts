@@ -20,13 +20,13 @@ export class CreateSourceDto extends GetManagerWorkspaceIdFieldDto {
   @IsArray()
   @IsNotEmptyString({ each: true })
   @Transform(({ value }) => (
-    value === undefined || value === null
-      ? []
-      : (
+    !!value
+      ? (
         Array.isArray(value)
           ? value
           : [value]
       )
+      : []
   ))
   tags?: string[];
 
