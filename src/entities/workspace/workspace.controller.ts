@@ -1,8 +1,9 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req, UseGuards, UseInterceptors } from '@nestjs/common';
 import { ApiBody, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { TransformPlainToInstance } from 'class-transformer';
 import { Request } from 'express';
 import { BIGuard } from '../../common/guards/bi.guard';
+import { AddDtosToContext } from '../../common/interceptors/add-dtos-to-context.interceptor';
 import { CreateWorkspaceDto } from './dto/request/create-workspace.dto';
 import { GetManagerWorkspaceIdDto, GetWorkspaceIdDto } from './dto/request/get-workspace-id.dto';
 import { GetOptionalWorkspaceUrlNameDto } from './dto/request/get-workspace-url-name.dto';
@@ -53,13 +54,16 @@ export class WorkspaceController {
   @ApiOperation({ operationId: 'updateWorkspace' })
   @ApiParam({ name: 'id', type: Number })
   @ApiBody({ type: UpdateWorkspaceDto })
+  @UseInterceptors(AddDtosToContext({
+    from: 'params', to: 'body', dto: GetManagerWorkspaceIdDto, field: 'workspace'
+  }))
   @Patch(':id')
   @ApiOkResponse({ type: WorkspaceDto })
   @TransformPlainToInstance(WorkspaceDto)
   async update(
     @Req() { user }: Request,
     @Param() { id }: GetManagerWorkspaceIdDto,
-    @Body() { context: _, ...dto }: UpdateWorkspaceDto
+    @Body() dto: UpdateWorkspaceDto
   ) {
     return await this.workspaceService.update(id, dto, user.id);
   }
