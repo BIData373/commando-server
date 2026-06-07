@@ -7,7 +7,7 @@ import { UpdateTaskDto } from './dto/request/update-task.dto';
 @Injectable()
 export class TaskService {
   static readonly include: Prisma.TaskInclude = {
-    source: true,
+    source: { include: { tags: true } },
     tags: true,
     assigneeStatuses: {
       include: {
