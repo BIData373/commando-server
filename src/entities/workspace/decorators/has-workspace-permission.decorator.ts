@@ -2,6 +2,7 @@ import { Injectable } from "@nestjs/common";
 import { FORBIDDEN_MESSAGE } from "@nestjs/core/guards";
 import { registerDecorator, ValidationArguments, ValidatorConstraint, ValidatorConstraintInterface } from "class-validator";
 import { entityExists, IEntityExistsValidationOptions } from "../../../common/decorators/entity-exists.decorator";
+import { validateIfNotBI } from "../../../common/functions/user";
 import { PrismaService } from "../../../common/prisma.service";
 import { ExtractValue } from "../../../common/types/extract-value.type";
 import { PredicateParams } from "../../../common/types/predicate-params.type";
@@ -38,10 +39,11 @@ interface IHasWorkspacePermissionContraints<
 const managerTypes = [PermissionType.MANAGER]
 const viewerTypes = [PermissionType.VIEWER, ...managerTypes]
 
-const allowedTypes = {
+export const allowedTypes = {
     [PermissionType.VIEWER]: viewerTypes,
     [PermissionType.MANAGER]: managerTypes
 }
+
 
 @ValidatorConstraint({ async: true })
 @Injectable()
@@ -70,7 +72,7 @@ export class HasWorkspacePermissionConstraint<
                 constraints: [{
                     model: 'permission',
                     message: FORBIDDEN_MESSAGE,
-                    validateIf: ({ obj }) => !(extractUser(obj).info?.isBI ?? false),
+                    validateIf: ({ obj }) => validateIfNotBI(extractUser(obj)),
                     findArgs: ({ value, obj }) => ({
                         where: {
                             type: { in: allowedTypes[type] },
