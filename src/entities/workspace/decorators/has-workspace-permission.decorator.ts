@@ -2,11 +2,11 @@ import { Injectable } from "@nestjs/common";
 import { FORBIDDEN_MESSAGE } from "@nestjs/core/guards";
 import { registerDecorator, ValidationArguments, ValidatorConstraint, ValidatorConstraintInterface } from "class-validator";
 import { entityExists, IEntityExistsValidationOptions } from "../../../common/decorators/entity-exists.decorator";
-import { validateIfNotBI } from "../../../common/functions/user";
 import { PrismaService } from "../../../common/prisma.service";
 import { ExtractValue } from "../../../common/types/extract-value.type";
 import { PredicateParams } from "../../../common/types/predicate-params.type";
 import { PermissionType, Prisma } from "../../../types/prisma";
+import { allowedTypes } from "../../permission/consts/permission-types";
 import { UserDto } from "../../user/dto/response/user.dto";
 
 interface IPermissionExistsValidationOptions<
@@ -36,15 +36,6 @@ interface IHasWorkspacePermissionContraints<
     extractUser: (obj: TDto) => UserDto,
 }
 
-const managerTypes = [PermissionType.MANAGER]
-const viewerTypes = [PermissionType.VIEWER, ...managerTypes]
-
-export const allowedTypes = {
-    [PermissionType.VIEWER]: viewerTypes,
-    [PermissionType.MANAGER]: managerTypes
-}
-
-
 @ValidatorConstraint({ async: true })
 @Injectable()
 export class HasWorkspacePermissionConstraint<
@@ -63,7 +54,6 @@ export class HasWorkspacePermissionConstraint<
             workspaceFindArgs,
             ...entityExistsArgs
         } = constraints[0] as IHasWorkspacePermissionContraints<TDtoField, TDto>
-
         return await entityExists<TDto, TDtoField, 'permission'>(
             this.prisma,
             value,
@@ -72,7 +62,7 @@ export class HasWorkspacePermissionConstraint<
                 constraints: [{
                     model: 'permission',
                     message: FORBIDDEN_MESSAGE,
-                    validateIf: ({ obj }) => validateIfNotBI(extractUser(obj)),
+                    validateIf: ({ obj }) => !extractUser(obj).info?.isBI,
                     findArgs: ({ value, obj }) => ({
                         where: {
                             type: { in: allowedTypes[type] },

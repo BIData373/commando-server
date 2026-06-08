@@ -5,7 +5,12 @@ import { IUserContext } from "../../../user/interfaces/user-context.interface";
 
 export function GetPermittedAssigneeIdDto(type: PermissionType) {
     class GetAssigneeIdDto extends GetContextDto<IUserContext> {
-        @IsIdPermitted('assignee', type, { filterDeletedAt: true })
+        @IsIdPermitted('assignee', type, {
+            filterDeletedAt: true,
+            workspaceFindArgs: ({ value }) => ({
+                assignees: { some: { id: value, deletedAt: null } }
+            })
+        })
         id: number
     }
 

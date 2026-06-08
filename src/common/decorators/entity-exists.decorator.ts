@@ -87,21 +87,9 @@ export async function entityExists<
   } as unknown as ModelFindFirstSelectArgs<TModel>
 
   const repo = prisma[model] as ModelDelegate<TModel>
-
-  const findFirst = async (
-    value: ExtractValue<TDto, TDtoField>,
-    obj: TDto
-  ) => await repo.findFirst(customFindArgs?.({ value, obj }) ?? defaultFindArgs)
-
-  const record = await findFirst(value, obj)
-
-  const recordExists = !!record && (
-    !each ||
-    !Array.isArray(record) ||
-    record.length > 0
-  )
-
-  if (recordExists && contextField) {
+  const record = await repo.findFirst(customFindArgs?.({ value, obj }) ?? defaultFindArgs)
+  
+  if (!!record && contextField) {
     merge(object, {
       context: {
         [contextField]: {
@@ -112,7 +100,7 @@ export async function entityExists<
     })
   }
 
-  return failIfExists ? !recordExists : recordExists;
+  return failIfExists ? !record : !!record;
 }
 
 @ValidatorConstraint({ async: true })
