@@ -4,8 +4,8 @@ import { IdExists } from '../../../../common/decorators/id-exists.decorator';
 import { ExtractValue } from '../../../../common/types/extract-value.type';
 import { PredicateParams } from '../../../../common/types/predicate-params.type';
 import { PermissionType } from '../../../../types/prisma';
-import { GetPermittedTaskIdFieldDto } from '../../../task/dto/request/get-task-id-field.dto';
 import { IAssigneeId } from '../../../assignee/interfaces/assignee-id.interface';
+import { GetPermittedTaskIdFieldDto } from '../../../task/dto/request/get-task-id-field.dto';
 
 const findInTask = <
   TDto extends { taskId: number },
