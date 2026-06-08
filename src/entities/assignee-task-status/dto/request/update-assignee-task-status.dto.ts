@@ -5,6 +5,7 @@ import { ExtractValue } from '../../../../common/types/extract-value.type';
 import { PredicateParams } from '../../../../common/types/predicate-params.type';
 import { PermissionType } from '../../../../types/prisma';
 import { GetPermittedTaskIdFieldDto } from '../../../task/dto/request/get-task-id-field.dto';
+import { IAssigneeId } from '../../../assignee/interfaces/assignee-id.interface';
 
 const findInTask = <
   TDto extends { taskId: number },
@@ -18,10 +19,6 @@ const findInTask = <
     workspace: { tasks: { some: { id: obj.taskId } } }
   }
 })
-
-interface IAssigneeId {
-  assigneeId: number
-}
 
 class GetTaskIdFieldInAssigneeDto extends GetPermittedTaskIdFieldDto(
   PermissionType.MANAGER,
