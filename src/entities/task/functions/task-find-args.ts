@@ -9,13 +9,21 @@ import { allowedTypes } from "../../workspace/decorators/has-workspace-permissio
 
 export type CheckForAssignee<TDto> = boolean | ((obj: TDto) => number)
 
+type FindArgsOptions<
+    TDtoField extends keyof TDto,
+    TDto extends Record<TDtoField, number> & IContext<IUserContext>
+> = {
+    type: PermissionType,
+    checkForAssignee?: CheckForAssignee<TDto>
+}
+
 export const findArgsInPermittedTask = <
     TDtoField extends keyof TDto,
     TDto extends Record<TDtoField, number> & IContext<IUserContext>
->(
-    type: PermissionType,
-    checkForAssignee: CheckForAssignee<TDto> = false
-): IEntityExistsValidationOptions<TDto, TDtoField, ExtractValue<TDto, TDtoField>, "task"> => ({
+>({
+    type,
+    checkForAssignee = false,
+}: FindArgsOptions<TDtoField, TDto>): IEntityExistsValidationOptions<TDto, TDtoField, ExtractValue<TDto, TDtoField>, "task"> => ({
     message: FORBIDDEN_MESSAGE,
     validateIf: ({ obj }) => validateIfNotBI(obj.context.user),
     findArgs: ({ value, obj }) => ({
@@ -34,11 +42,15 @@ export const findArgsInPermittedTask = <
                     },
                     ...(checkForAssignee
                         ? [{
+                            ...(type === PermissionType.MANAGER && {
+                                assigneeStatusEditable: true
+                            }),
                             assignees: {
                                 some: {
                                     ...(typeof checkForAssignee === 'function' && {
                                         id: checkForAssignee(obj as TDto)
                                     }),
+                                    deletedAt: null,
                                     users: { some: { id: obj.context.user.id } }
                                 }
                             }

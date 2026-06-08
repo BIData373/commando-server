@@ -12,14 +12,14 @@ export function GetPermittedTaskIdDto<TDto>(
 ) {
     class GetTaskIdDto extends GetContextDto<IUserContext & ITaskContext> {
         @ApiProperty()
-        @IdExists('task', findArgsInPermittedTask(
+        @IdExists('task', findArgsInPermittedTask({
             type,
-            checkForAssignee && (
+            checkForAssignee: checkForAssignee && (
                 typeof checkForAssignee === 'function'
                     ? obj => checkForAssignee(obj as TDto)
                     : true
             )
-        ))
+        }))
         @IdExists('task', { filterDeletedAt: true, contextField: 'task' })
         id: number
     }
