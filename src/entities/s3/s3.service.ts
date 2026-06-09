@@ -1,6 +1,7 @@
-import { DeleteObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
-import { NodeHttpHandler } from '@smithy/node-http-handler';
+import { DeleteObjectCommand, GetObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { Injectable } from '@nestjs/common';
+import { NodeHttpHandler } from '@smithy/node-http-handler';
 import { randomUUID } from 'crypto';
 import * as https from 'https';
 import { s3AccessKeyId, s3Bucket, s3EndpointUrl, s3Region, s3RejectUnauthorized, s3SecretAccessKey } from '../../common/consts/env';
@@ -86,6 +87,24 @@ export class S3Service {
       }));
     } catch (err) {
       console.error(`[S3] Delete failed for key "${key}"`, err);
+    }
+  }
+
+  async signUrl(key: string, expiresIn?: number): Promise<string | null> {
+    if (!this.client || !this.bucket) {
+      console.warn('[S3] Sign skipped — client not initialized');
+      return null;
+    }
+
+    try {
+      return await getSignedUrl(
+        this.client,
+        new GetObjectCommand({ Bucket: this.bucket, Key: key }),
+        { expiresIn }
+      );
+    } catch (err) {
+      console.error(`[S3] Sign failed for key "${key}"`, err);
+      return null;
     }
   }
 }

@@ -18,7 +18,6 @@ async function bootstrap() {
       credentials: ssoEnabled && isDev,
     }
   });
-  app.setGlobalPrefix(PREFIX);
 
   const config = new DocumentBuilder()
     .setTitle('Vector')
@@ -39,8 +38,11 @@ async function bootstrap() {
 
   // FIX Dont setup swagger in prod
   SwaggerModule.setup(openApiRoute, app, document, {
-    jsonDocumentUrl: `${PREFIX}/${openApiRoute}/json`,
+    jsonDocumentUrl: `${openApiRoute}/json`,
   });
+
+  app.setGlobalPrefix(PREFIX);
+
 
   useContainer(app.select(AppModule), { fallbackOnErrors: true });
 
