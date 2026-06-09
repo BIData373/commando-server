@@ -37,9 +37,11 @@ async function bootstrap() {
   });
 
   // FIX Dont setup swagger in prod
-  SwaggerModule.setup(openApiRoute, app, document, {
-    jsonDocumentUrl: `${openApiRoute}/json`,
-  });
+  if (process.env.SWAGGER_ENABLED === 'true') {
+    SwaggerModule.setup(openApiRoute, app, document, {
+      jsonDocumentUrl: `${openApiRoute}/json`,
+    });
+  }
 
   app.setGlobalPrefix(PREFIX);
 
