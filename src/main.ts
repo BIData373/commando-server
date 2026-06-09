@@ -45,7 +45,6 @@ async function bootstrap() {
 
   app.setGlobalPrefix(PREFIX);
 
-
   useContainer(app.select(AppModule), { fallbackOnErrors: true });
 
   const port = process.env.PORT;
