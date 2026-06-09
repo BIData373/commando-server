@@ -16,35 +16,25 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
 
     const cwd = process.cwd()
 
-    console.log({
-      host: config.getOrThrow<string>('PGHOST_UNPOOLED'),
-      port: Number(config.getOrThrow<string>('PG_PORT')),
-      user: config.getOrThrow<string>('PGUSER'),
-      password: config.getOrThrow<string>('POSTGRES_PASSWORD'),
-      database: config.getOrThrow<string>('POSTGRES_DATABASE'),
-      ...(useSSL && {
-        ssl: {
-          cert: readFileSync(join(cwd, config.getOrThrow<string>('DB_SSLCERT_NAME'))),
-          key: readFileSync(join(cwd, config.getOrThrow<string>('DB_SSLKEY_NAME'))),
-          rejectUnauthorized: false
-        }
-      })
-    })
+    // VERCEL ONLY
+    const prismaUrl = config.get<string>('POSTGRES_PRISMA_URL')
 
-    const adapter = new PrismaPg({
-      host: config.getOrThrow<string>('PGHOST_UNPOOLED'),
-      port: Number(config.getOrThrow<string>('PG_PORT')),
-      user: config.getOrThrow<string>('PGUSER'),
-      password: config.getOrThrow<string>('POSTGRES_PASSWORD'),
-      database: config.getOrThrow<string>('POSTGRES_DATABASE'),
-      ...(useSSL && {
-        ssl: {
-          cert: readFileSync(join(cwd, config.getOrThrow<string>('DB_SSLCERT_NAME'))),
-          key: readFileSync(join(cwd, config.getOrThrow<string>('DB_SSLKEY_NAME'))),
-          rejectUnauthorized: false
-        }
+    const adapter = new PrismaPg(prismaUrl
+      ? { connectionString: prismaUrl }
+      : {
+        host: config.getOrThrow<string>('POSTGRES_HOST'),
+        port: Number(config.getOrThrow<string>('PG_PORT')),
+        user: config.getOrThrow<string>('PGUSER'),
+        password: config.getOrThrow<string>('POSTGRES_PASSWORD'),
+        database: config.getOrThrow<string>('POSTGRES_DATABASE'),
+        ...(useSSL && {
+          ssl: {
+            cert: readFileSync(join(cwd, config.getOrThrow<string>('DB_SSLCERT_NAME'))),
+            key: readFileSync(join(cwd, config.getOrThrow<string>('DB_SSLKEY_NAME'))),
+            rejectUnauthorized: false
+          }
+        })
       })
-    })
 
     super({ adapter, errorFormat: 'minimal' })
   }
