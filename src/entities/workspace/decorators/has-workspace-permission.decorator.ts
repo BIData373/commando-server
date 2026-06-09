@@ -54,6 +54,7 @@ export class HasWorkspacePermissionConstraint<
             workspaceFindArgs,
             ...entityExistsArgs
         } = constraints[0] as IHasWorkspacePermissionContraints<TDtoField, TDto>
+        
         return await entityExists<TDto, TDtoField, 'permission'>(
             this.prisma,
             value,

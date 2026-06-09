@@ -7,7 +7,6 @@ import 'reflect-metadata';
 import { AppModule, openApiRoute } from './app.module';
 import { isDev, ssoEnabled } from './common/consts/env';
 import { staticTokenHeader } from './common/consts/headers';
-console.log('isDev', isDev)
 
 const server = express()
 
@@ -35,6 +34,7 @@ async function bootstrap() {
     autoTagControllers: true,
   });
 
+  // FIX Dont setup swagger in prod
   SwaggerModule.setup(openApiRoute, app, document, {
     jsonDocumentUrl: `${openApiRoute}/json`,
   });
