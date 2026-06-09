@@ -17,10 +17,10 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
     const cwd = process.cwd()
 
     console.log({
-      host: config.getOrThrow<string>('POSTGRES_HOST'),
+      host: config.getOrThrow<string>('PGHOST_UNPOOLED'),
       port: Number(config.getOrThrow<string>('PG_PORT')),
       user: config.getOrThrow<string>('PGUSER'),
-      password: config.getOrThrow<string>('PGPASSWORD'),
+      password: config.getOrThrow<string>('POSTGRES_PASSWORD'),
       database: config.getOrThrow<string>('POSTGRES_DATABASE'),
       ...(useSSL && {
         ssl: {
@@ -32,10 +32,10 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
     })
 
     const adapter = new PrismaPg({
-      host: config.getOrThrow<string>('POSTGRES_HOST'),
+      host: config.getOrThrow<string>('PGHOST_UNPOOLED'),
       port: Number(config.getOrThrow<string>('PG_PORT')),
       user: config.getOrThrow<string>('PGUSER'),
-      password: config.getOrThrow<string>('PGPASSWORD'),
+      password: config.getOrThrow<string>('POSTGRES_PASSWORD'),
       database: config.getOrThrow<string>('POSTGRES_DATABASE'),
       ...(useSSL && {
         ssl: {
