@@ -1,14 +1,13 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, IntersectionType } from '@nestjs/swagger';
 import { IsEnum } from 'class-validator';
-import { IsNotEmptyString } from '../../../../common/decorators/is-not-empty-string.decorator';
 import { PermissionType } from '../../../../types/prisma';
+import { CreateUserDto } from '../../../user/dto/request/create-user.dto';
 import { GetManagerWorkspaceIdFieldDto } from '../../../workspace/dto/request/get-workspace-id-field.dto';
 
-export class UpdatePermissionDto extends GetManagerWorkspaceIdFieldDto {
-  @ApiProperty()
-  @IsNotEmptyString()
-  upn: string;
-
+export class UpsertPermissionDto extends IntersectionType(
+  GetManagerWorkspaceIdFieldDto,
+  CreateUserDto
+) {
   @ApiProperty({ enumName: 'PermissionType', enum: PermissionType })
   @IsEnum(PermissionType)
   type: PermissionType;
