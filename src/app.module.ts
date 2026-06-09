@@ -1,7 +1,7 @@
 import { MiddlewareConsumer, Module, NestModule, ValidationPipe } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
-import path from 'node:path';
+import { envFilePath } from './common/consts/env';
 import { forbiddenExceptionFactory } from './common/functions/transform';
 import { BIGuard } from './common/guards/bi.guard';
 import { AddUserToContextInterceptor } from './common/interceptors/add-user-to-context.interceptor';
@@ -26,13 +26,7 @@ export const openApiRoute = 'open-api'
 // FIX Add POST recover endpoints for all entities with deletedAt
 @Module({
   imports: [
-    ConfigModule.forRoot({
-      isGlobal: true,
-      envFilePath: [
-        path.join(__dirname, '../config/common.env'),
-        path.join(__dirname, `../config`, process.env.ENV ?? '', '.env')
-      ],
-    }),
+    ConfigModule.forRoot({ isGlobal: true, envFilePath }),
     PrismaModule,
     PikudModule,
     WorkspaceModule,
