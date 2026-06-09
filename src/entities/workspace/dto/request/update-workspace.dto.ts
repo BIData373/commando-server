@@ -7,6 +7,9 @@ import { IContext } from '../../../../common/interfaces/context.interface';
 import { IWorkspaceContext } from '../../interfaces/workspace-context.interface';
 import { GetWorkspaceFieldsDto } from './get-workspace-fields.dto';
 
+const urlNameExistsError = 'urlname-exists'
+const titleExistsError = 'title-exists'
+
 const isInDifferentWorkspace = (obj: IContext<IWorkspaceContext>) => ({
     id: { not: obj.context.workspace.id },
     deletedAt: null
@@ -21,6 +24,7 @@ export class UpdateWorkspaceDto extends IntersectionType(
     @IsNotEmptyString()
     @EntityExists('workspace', {
         failIfExists: true,
+        message: urlNameExistsError,
         findArgs: ({ value, obj }) => ({
             where: { ...isInDifferentWorkspace(obj), urlName: value }
         })
@@ -32,6 +36,7 @@ export class UpdateWorkspaceDto extends IntersectionType(
     @IsNotEmptyString()
     @EntityExists('workspace', {
         failIfExists: true,
+        message: titleExistsError,
         findArgs: ({ value, obj }) => ({
             where: { ...isInDifferentWorkspace(obj), title: value }
         })
