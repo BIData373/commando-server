@@ -14,7 +14,7 @@ export class S3Controller {
   @Get('signed-url')
   @ApiOkResponse({ type: SignedUrlDto })
   @TransformPlainToInstance(SignedUrlDto)
-  async getSignedUrl(@Query() { key }: GetSignedUrlDto): Promise<SignedUrlDto> {
-    return { url: await this.s3.signUrl(key) };
+  async getSignedUrl(@Query() { key, filename }: GetSignedUrlDto): Promise<SignedUrlDto> {
+    return { url: await this.s3.signUrl(key, filename) };
   }
 }

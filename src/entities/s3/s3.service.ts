@@ -90,7 +90,7 @@ export class S3Service {
     }
   }
 
-  async signUrl(key: string, expiresIn?: number): Promise<string | null> {
+  async signUrl(key: string, filename?: string, expiresIn?: number): Promise<string | null> {
     if (!this.client || !this.bucket) {
       console.warn('[S3] Sign skipped — client not initialized');
       return null;
@@ -99,7 +99,13 @@ export class S3Service {
     try {
       return await getSignedUrl(
         this.client,
-        new GetObjectCommand({ Bucket: this.bucket, Key: key }),
+        new GetObjectCommand({
+          Bucket: this.bucket,
+          Key: key,
+          ...(filename && {
+            ResponseContentDisposition: `attachment; filename="${filename}"`
+          })
+        }),
         { expiresIn }
       );
     } catch (err) {
