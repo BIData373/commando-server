@@ -60,18 +60,44 @@ export class UserService implements OnModuleInit {
   }
 
   static formatInfoForSave(info?: GetUserInfoDto | null) {
-    return (info as Readonly<GetUserInfoDto>) ?? Prisma.JsonNull
+    return info
+      ? {
+        ...info,
+        upn: removeUpnSuffix(info.upn)
+      } as Readonly<GetUserInfoDto>
+      : Prisma.JsonNull
   }
 
   static async upsertTx(tx: Prisma.TransactionClient, { upn, info }: CreateUserDto) {
     const infoToSave = UserService.formatInfoForSave(info)
-    const userFields = { upn: removeUpnSuffix(upn) }
 
-    return await tx.user.upsert({
-      where: userFields,
-      create: { ...userFields, info: infoToSave },
-      update: { ...userFields, info: infoToSave }
+    // Serialize concurrent upserts for the same stripped UPN; lock is released when the transaction ends
+    const strippedUpn = removeUpnSuffix(upn)
+    await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${strippedUpn}))`
+
+    const existing = await tx.user.findFirst({
+      where: {
+        OR: [
+          { upn: strippedUpn },
+          { upn: { startsWith: `${strippedUpn}@` } },
+        ],
+      },
     })
+
+    const userToSave = {
+      upn: strippedUpn,
+      info: {
+        ...(existing && typeof existing?.info === 'object'
+          ? existing?.info
+          : {}
+        ),
+        ...(info ? infoToSave : {})
+      }
+    }
+
+    return existing
+      ? await tx.user.update({ where: { id: existing.id }, data: userToSave })
+      : await tx.user.create({ data: userToSave })
   }
 
   async upsert(dto: CreateUserDto) {

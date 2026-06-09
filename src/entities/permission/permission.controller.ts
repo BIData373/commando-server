@@ -4,7 +4,7 @@ import { TransformPlainToInstance } from 'class-transformer';
 import type { Request } from 'express';
 import { GetViewerWorkspaceIdFieldDto, GetWorkspaceIdFieldDto } from '../workspace/dto/request/get-workspace-id-field.dto';
 import { DeletePermissionDto } from './dto/request/delete-permission.dto';
-import { UpdatePermissionDto } from './dto/request/update-permission.dto';
+import { UpsertPermissionDto } from './dto/request/upsert-permission.dto';
 import { PermissionDto } from './dto/response/permission.dto';
 import { PermissionService } from './permission.service';
 
@@ -35,15 +35,15 @@ export class PermissionController {
     return await this.permissionService.findOne(user, workspaceId);
   }
 
-  @ApiOperation({ operationId: 'updatePermission' })
-  @ApiBody({ type: UpdatePermissionDto })
+  @ApiOperation({ operationId: 'upsertPermission' })
+  @ApiBody({ type: UpsertPermissionDto })
   @Patch()
   @ApiOkResponse({ type: PermissionDto })
   @TransformPlainToInstance(PermissionDto)
-  async update(
-    @Body() { upn, workspaceId, type }: UpdatePermissionDto
+  async upsert(
+    @Body() dto: UpsertPermissionDto
   ) {
-    return await this.permissionService.upsert(upn, workspaceId, type);
+    return await this.permissionService.upsert(dto);
   }
 
   @ApiOperation({ operationId: 'deletePermission' })

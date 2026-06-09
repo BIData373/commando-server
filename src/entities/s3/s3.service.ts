@@ -1,13 +1,17 @@
-import { DeleteObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import { DeleteObjectCommand, GetObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { Injectable } from '@nestjs/common';
+import { NodeHttpHandler } from '@smithy/node-http-handler';
 import { randomUUID } from 'crypto';
-import { awsAccessKeyId, awsRegion, awsS3Bucket, awsSecretAccessKey } from '../../common/consts/env';
+import * as https from 'https';
+import { s3AccessKeyId, s3Bucket, s3EndpointUrl, s3Region, s3RejectUnauthorized, s3SecretAccessKey } from '../../common/consts/env';
 
 const requiredEnv = {
-  AWS_REGION: awsRegion,
-  AWS_ACCESS_KEY_ID: awsAccessKeyId,
-  AWS_SECRET_ACCESS_KEY: awsSecretAccessKey,
-  AWS_S3_BUCKET: awsS3Bucket
+  S3_REGION: s3Region,
+  S3_ACCESS_KEY_ID: s3AccessKeyId,
+  S3_SECRET_ACCESS_KEY: s3SecretAccessKey,
+  S3_BUCKET_NAME: s3Bucket,
+  S3_ENDPOINT_URL: s3EndpointUrl
 };
 
 @Injectable()
@@ -25,16 +29,23 @@ export class S3Service {
       return;
     }
 
-    this.bucket = awsS3Bucket!;
+    this.bucket = s3Bucket!;
 
     try {
       this.client = new S3Client({
-        region: awsRegion!,
+        region: s3Region!,
+        endpoint: s3EndpointUrl,
+        forcePathStyle: true,
         credentials: {
-          accessKeyId: awsAccessKeyId!,
-          secretAccessKey: awsSecretAccessKey!,
+          accessKeyId: s3AccessKeyId!,
+          secretAccessKey: s3SecretAccessKey!,
         },
+        requestHandler: new NodeHttpHandler({
+          httpsAgent: new https.Agent({ rejectUnauthorized: s3RejectUnauthorized }),
+        }),
       });
+
+      console.log('[S3] Client initialized');
     } catch (err) {
       console.error('[S3] Client failed to initialize', err);
     }
@@ -76,6 +87,30 @@ export class S3Service {
       }));
     } catch (err) {
       console.error(`[S3] Delete failed for key "${key}"`, err);
+    }
+  }
+
+  async signUrl(key: string, filename?: string, expiresIn?: number): Promise<string | null> {
+    if (!this.client || !this.bucket) {
+      console.warn('[S3] Sign skipped — client not initialized');
+      return null;
+    }
+
+    try {
+      return await getSignedUrl(
+        this.client,
+        new GetObjectCommand({
+          Bucket: this.bucket,
+          Key: key,
+          ...(filename && {
+            ResponseContentDisposition: `attachment; filename="${filename}"`
+          })
+        }),
+        { expiresIn }
+      );
+    } catch (err) {
+      console.error(`[S3] Sign failed for key "${key}"`, err);
+      return null;
     }
   }
 }

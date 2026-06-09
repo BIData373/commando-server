@@ -7,9 +7,10 @@ import 'reflect-metadata';
 import { AppModule, openApiRoute } from './app.module';
 import { isDev, ssoEnabled } from './common/consts/env';
 import { staticTokenHeader } from './common/consts/headers';
-console.log('isDev', isDev)
 
 const server = express()
+
+const PREFIX = process.env.SERVER_PREFIX ?? ''
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, new ExpressAdapter(server), {
@@ -35,9 +36,14 @@ async function bootstrap() {
     autoTagControllers: true,
   });
 
-  SwaggerModule.setup(openApiRoute, app, document, {
-    jsonDocumentUrl: `${openApiRoute}/json`,
-  });
+  // FIX Dont setup swagger in prod
+  if (process.env.SWAGGER_ENABLED === 'true') {
+    SwaggerModule.setup(openApiRoute, app, document, {
+      jsonDocumentUrl: `${openApiRoute}/json`,
+    });
+  }
+
+  app.setGlobalPrefix(PREFIX);
 
   useContainer(app.select(AppModule), { fallbackOnErrors: true });
 

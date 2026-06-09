@@ -4,6 +4,7 @@ import { PrismaService } from '../../common/prisma.service';
 import { PermissionType, Prisma, User } from '../../types/prisma';
 import { UserInfoDto } from '../user/dto/response/user-info.dto';
 import { UserService } from '../user/user.service';
+import { UpsertPermissionDto } from './dto/request/upsert-permission.dto';
 
 // FIX Add createdAt, updatedAt, createdBy, updatedBy?
 @Injectable()
@@ -31,6 +32,7 @@ export class PermissionService {
 
   async findOne(user: User, workspaceId: number) {
     const info = user.info as unknown as UserInfoDto
+
     return info.isBI
       ? { user: admin, workspaceId, type: PermissionType.MANAGER }
       : await this.prisma.permission.findUnique({
@@ -39,9 +41,9 @@ export class PermissionService {
       });
   }
 
-  async upsert(upn: string, workspaceId: number, type: PermissionType) {
+  async upsert({ upn, info, workspaceId, type }: UpsertPermissionDto) {
     return await this.prisma.$transaction(async tx => {
-      const user = await UserService.upsertTx(tx, { upn })
+      const user = await UserService.upsertTx(tx, { upn, info })
 
       return await tx.permission.upsert({
         where: { userId_workspaceId: { userId: user.id, workspaceId } },

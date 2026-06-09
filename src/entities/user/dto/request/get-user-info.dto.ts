@@ -1,22 +1,30 @@
-import { IsBoolean, IsString } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { IsBoolean, IsOptional, IsString } from 'class-validator';
 import { IsNotEmptyString } from '../../../../common/decorators/is-not-empty-string.decorator';
-import { IdDto } from '../../../../common/dto/response/id.dto';
-import { ApiProperty } from '@nestjs/swagger';
+import { IsPositiveInt } from '../../../../common/decorators/is-positive-int.decorator';
 
-export class GetUserInfoDto extends IdDto {
+export class GetUserInfoDto {
+    @ApiPropertyOptional()
+    @IsOptional()
+    @IsPositiveInt()
+    id?: number;
+
     @ApiProperty()
     @IsNotEmptyString()
     upn: string;
 
-    @ApiProperty({ required: false })
+    @ApiPropertyOptional()
+    @IsOptional()
     @IsString()
     name?: string;
 
-    @ApiProperty({ required: false })
+    @ApiPropertyOptional()
+    @IsOptional()
     @IsString()
     displayName?: string;
 
-    @ApiProperty()
+    @ApiPropertyOptional()
+    @IsOptional()
     @IsBoolean()
-    isBI: boolean;
+    isBI?: boolean;
 }
