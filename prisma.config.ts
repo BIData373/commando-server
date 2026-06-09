@@ -14,6 +14,9 @@ export default defineConfig({
     seed: "tsx prisma/seed.ts"
   },
   datasource: {
+    // TODO - needs an identity file which is basically just a bundle of the cert/key
+    // openssl pkcs12 -export -in <cert> -inkey <key> -out identity.p12 -name <name>
+    // then added via `sslidentity=<path>`
     url: process.env.DATABASE_URL
   },
 });
