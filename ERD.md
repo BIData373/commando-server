@@ -93,6 +93,7 @@ COMPLETED COMPLETED
     String name 
     DateTime date "❓"
     String attachment_key "❓"
+    String attachment_name "❓"
     Int workspace_id 
     DateTime created_at 
     Int created_by 

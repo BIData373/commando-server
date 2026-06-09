@@ -22,12 +22,14 @@ export class SourceService {
     file?: Express.Multer.File
   ) {
     const attachmentKey = file && await this.s3.upload(file, 'sources')
+    const attachmentName = file ? file.originalname : undefined
 
     return await this.prisma.source.create({
       data: {
         ...dto,
         workspaceId,
         attachmentKey,
+        attachmentName,
         ...(tags !== undefined && ({
           tags: {
             connectOrCreate: tags.map(name => ({
@@ -69,6 +71,7 @@ export class SourceService {
     file?: Express.Multer.File
   ) {
     let attachmentKey: string | undefined;
+    let attachmentName: string | undefined;
 
     if (file) {
       if (source?.attachmentKey) {
@@ -76,6 +79,7 @@ export class SourceService {
       }
 
       attachmentKey = await this.s3.upload(file, 'sources');
+      attachmentName = file.originalname;
     }
 
     return await this.prisma.source.update({
@@ -83,6 +87,7 @@ export class SourceService {
       data: {
         ...dto,
         attachmentKey,
+        attachmentName,
         updatedBy,
         ...(tags !== undefined && {
           tags: {

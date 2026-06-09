@@ -17,6 +17,9 @@ export class SourceDto extends IdMetaFieldsDto {
   @ExposeProperty({ type: String, nullable: true })
   attachmentKey: string | null;
 
+  @ExposeProperty({ type: String, nullable: true })
+  attachmentName: string | null;
+
   @ExposeProperty({ type: [TagDto] })
   @Type(() => TagDto)
   tags: TagDto[];
