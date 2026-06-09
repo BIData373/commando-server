@@ -40,3 +40,8 @@ Thumbs.db
 /src/types/prisma/**
 *.tgz
 .vercel
+
+
+*.pem
+*.key
+*.crt
