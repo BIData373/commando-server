@@ -2,13 +2,12 @@ import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '../types/prisma/client';
+import { getSSLDatabaseURL } from './functions/database-url';
 
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
   constructor(private readonly config: ConfigService) {
-
-    const connectionString = config.getOrThrow<string>('DATABASE_URL')
-
+    const connectionString = getSSLDatabaseURL()
     const adapter = new PrismaPg({ connectionString })
 
     super({ adapter, errorFormat: 'minimal' })

@@ -39,6 +39,7 @@ async function bootstrap() {
     jsonDocumentUrl: `${openApiRoute}/json`,
   });
 
+  app.setGlobalPrefix(process.env.SERVER_PREFIX ?? '');
   useContainer(app.select(AppModule), { fallbackOnErrors: true });
 
   const port = process.env.PORT;
