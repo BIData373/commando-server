@@ -17,7 +17,7 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
     const cwd = process.cwd()
 
     const adapter = new PrismaPg({
-      host: config.getOrThrow<string>('PGHOST'),
+      host: config.getOrThrow<string>('POSTGRES_HOST'),
       port: Number(config.getOrThrow<string>('PG_PORT')),
       user: config.getOrThrow<string>('PGUSER'),
       password: config.getOrThrow<string>('PGPASSWORD'),
