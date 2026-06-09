@@ -10,12 +10,15 @@ import { staticTokenHeader } from './common/consts/headers';
 
 const server = express()
 
+const PREFIX = process.env.SERVER_PREFIX ?? ''
+
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, new ExpressAdapter(server), {
     cors: {
       credentials: ssoEnabled && isDev,
     }
   });
+  app.setGlobalPrefix(PREFIX);
 
   const config = new DocumentBuilder()
     .setTitle('Vector')
@@ -36,7 +39,7 @@ async function bootstrap() {
 
   // FIX Dont setup swagger in prod
   SwaggerModule.setup(openApiRoute, app, document, {
-    jsonDocumentUrl: `${openApiRoute}/json`,
+    jsonDocumentUrl: `${PREFIX}/${openApiRoute}/json`,
   });
 
   useContainer(app.select(AppModule), { fallbackOnErrors: true });
