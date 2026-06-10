@@ -88,7 +88,18 @@ export class TaskService {
         assigneeStatuses: { some: { assignee: { users: { some: { id: user.id } } } } },
         deletedAt: null
       },
-      include: TaskService.includeWithWorkspace
+      include: {
+        ...TaskService.includeWithWorkspace,
+        workspace: {
+          include: {
+            permissions: {
+              where: {
+                userId: user.id
+              }
+            }
+          }
+        }
+      }
     });
   }
 
