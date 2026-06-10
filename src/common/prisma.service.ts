@@ -9,7 +9,7 @@ import { saveDatabaseCertificates } from './functions/ssl';
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
   constructor(private readonly config: ConfigService) {
-    const useSSL = config.getOrThrow<string>('DB_USE_SSL') === 'true'
+    const useSSL = (config.get<string>('DB_USE_SSL') ?? 'false') === 'true'
     if (useSSL) {
       saveDatabaseCertificates()
     }
