@@ -1,4 +1,4 @@
 import { PartialType } from '@nestjs/swagger';
-import { CreateAssigneeDto } from './create-assignee.dto';
+import { GetAssigneeFieldsDto } from './get-assignee-fields.dto';
 
-export class UpdateAssigneeDto extends PartialType(CreateAssigneeDto) { }
+export class UpdateAssigneeDto extends PartialType(GetAssigneeFieldsDto) { }
