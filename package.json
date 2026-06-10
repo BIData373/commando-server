@@ -21,7 +21,8 @@
     "migration:generate": "cross-env-shell ENV=$npm_config_env prisma migrate dev --create-only",
     "migration:deploy": "cross-env-shell ENV=$npm_config_env prisma migrate deploy",
     "migration:reset": "cross-env-shell ENV=$npm_config_env prisma migrate reset",
-    "migration:status": "cross-env-shell ENV=$npm_config_env prisma migrate status"
+    "migration:status": "cross-env-shell ENV=$npm_config_env prisma migrate status",
+    "mock:sso": "cross-env-shell ENV=$npm_config_env tsx scripts/mock-sso.ts"
   },
   "repository": {
     "type": "git",
