@@ -133,17 +133,22 @@ export class TaskService {
         }),
         ...(assignees !== undefined && {
           assigneeStatuses: {
-            deleteMany: {},
-            ...(notStartedStatus && {
-              createMany: {
-                data: assignees.map(({ id, description }) => ({
-                  assigneeId: id,
-                  description,
-                  statusId: notStartedStatus.id
-                })),
-                skipDuplicates: true
+            deleteMany: {
+              assigneeId: { notIn: assignees.map(a => a.id) }
+            },
+            upsert: assignees.map(({ id: assigneeId, description, statusId }) => ({
+              where: { taskId_assigneeId: { taskId: id, assigneeId } },
+              create: {
+                assigneeId,
+                description,
+                statusId: statusId ?? notStartedStatus!.id
+              },
+              update: {
+                assigneeId,
+                ...(description !== undefined && { description }),
+                ...(statusId !== undefined && { statusId })
               }
-            })
+            }))
           }
         }),
         ...(tags !== undefined && {

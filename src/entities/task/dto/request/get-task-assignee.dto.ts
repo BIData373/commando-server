@@ -1,4 +1,4 @@
-import { ApiProperty } from "@nestjs/swagger"
+import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger"
 import { Type } from "class-transformer"
 import { IsOptional, IsString } from "class-validator"
 import { IdExists } from "../../../../common/decorators/id-exists.decorator"
@@ -10,12 +10,13 @@ export class GetTaskAssigneeDto {
   @Type(() => Number)
   id: number
 
-  @ApiProperty({ required: false })
+  @ApiPropertyOptional()
   @IsOptional()
   @IsString()
   description?: string
 
-  @ApiProperty()
+  @ApiPropertyOptional()
+  @IsOptional()
   @IdExists('workspaceStatus', {
     findArgs: ({ obj, value }) => ({
       where: {
@@ -24,5 +25,5 @@ export class GetTaskAssigneeDto {
       }
     })
   })
-  statusId: number;
+  statusId?: number;
 }
