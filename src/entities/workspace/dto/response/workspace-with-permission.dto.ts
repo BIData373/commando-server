@@ -8,6 +8,6 @@ type WorkspaceWithPermission = Prisma.WorkspaceGetPayload<{ include: { permissio
 @Exclude()
 export class WorkspaceWithPermissionDto extends WorkspaceDto {
   @ExposeProperty({ enumName: 'PermissionType', enum: PermissionType, nullable: true })
-  @Transform(({ obj: { permissions } }: { obj: WorkspaceWithPermission }) => permissions[0]?.type)
+  @Transform(({ obj: { permissions } }: { obj: WorkspaceWithPermission }) => permissions?.[0]?.type)
   permissionType: PermissionType | null;
 }
