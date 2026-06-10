@@ -64,7 +64,7 @@ export class AssigneeService {
 
   async update(
     id: number,
-    { users, context, ...dto }: UpdateAssigneeDto,
+    { users, ...dto }: UpdateAssigneeDto,
     updatedBy: number
   ) {
     return await this.prisma.$transaction(async tx => {

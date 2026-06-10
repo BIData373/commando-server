@@ -34,18 +34,18 @@ async function main() {
   console.log('* Creating Users')
   // ── Users ─────────────────────────────────────────────────────────────────
   const [u1, u2, u3, u4, u5, u6, u7, u8, u9, u10, u11, u12] = await Promise.all([
-    prisma.user.create({ data: { upn: 'yael', info: { name: 'סא"ל כהן', color: '#3B82F6' } } }),
-    prisma.user.create({ data: { upn: 'avi', info: { name: 'רס"ן לוי', color: '#10B981' } } }),
-    prisma.user.create({ data: { upn: 'dana', info: { name: 'סרן מזרחי', color: '#F59E0B' } } }),
-    prisma.user.create({ data: { upn: 'moshe', info: { name: 'רב"ט ישראלי', color: '#EF4444' } } }),
-    prisma.user.create({ data: { upn: 'noa', info: { name: 'סמ"ר ברק', color: '#8B5CF6' } } }),
-    prisma.user.create({ data: { upn: 'oren', info: { name: 'נועה ברקוביץ', color: '#EC4899' } } }),
-    prisma.user.create({ data: { upn: 'shapira', info: { name: 'אורן שפירא', color: '#06B6D4' } } }),
-    prisma.user.create({ data: { upn: 'tamar', info: { name: 'תמר אבידן', color: '#84CC16' } } }),
-    prisma.user.create({ data: { upn: 'gil', info: { name: 'גיל נחמן', color: '#F97316' } } }),
-    prisma.user.create({ data: { upn: 'sara', info: { name: 'שרה ויסמן', color: '#A855F7' } } }),
-    prisma.user.create({ data: { upn: 'binyamin', info: { name: 'בנימין חזן', color: '#14B8A6' } } }),
-    prisma.user.create({ data: { upn: 'dina', info: { name: 'דינה אורן', color: '#F43F5E' } } }),
+    prisma.user.create({ data: { upn: 'yael', info: { upn: 'yael', name: 'סא"ל כהן', displayName: 'סא"ל כהן', } } }),
+    prisma.user.create({ data: { upn: 'avi', info: { upn: 'avi', name: 'רס"ן לוי', displayName: 'רס"ן לוי', } } }),
+    prisma.user.create({ data: { upn: 'dana', info: { upn: 'dana', name: 'סרן מזרחי', displayName: 'סרן מזרחי', } } }),
+    prisma.user.create({ data: { upn: 'moshe', info: { upn: 'moshe', name: 'רב"ט ישראלי', displayName: 'רב"ט ישראלי', } } }),
+    prisma.user.create({ data: { upn: 'noa', info: { upn: 'noa', name: 'סמ"ר ברק', displayName: 'סמ"ר ברק', } } }),
+    prisma.user.create({ data: { upn: 'oren', info: { upn: 'oren', name: 'נועה ברקוביץ', displayName: 'נועה ברקוביץ', } } }),
+    prisma.user.create({ data: { upn: 'shapira', info: { upn: 'shapira', name: 'אורן שפירא', displayName: 'אורן שפירא', } } }),
+    prisma.user.create({ data: { upn: 'tamar', info: { upn: 'tamar', name: 'תמר אבידן', displayName: 'תמר אבידן', } } }),
+    prisma.user.create({ data: { upn: 'gil', info: { upn: 'gil', name: 'גיל נחמן', displayName: 'גיל נחמן', } } }),
+    prisma.user.create({ data: { upn: 'sara', info: { upn: 'sara', name: 'שרה ויסמן', displayName: 'שרה ויסמן', } } }),
+    prisma.user.create({ data: { upn: 'binyamin', info: { upn: 'binyamin', name: 'בנימין חזן', displayName: 'בנימין חזן', } } }),
+    prisma.user.create({ data: { upn: 'dina', info: { upn: 'dina', name: 'דינה אורן', displayName: 'דינה אורן', } } }),
   ]);
 
   console.log('* Creating Pikuds')
