@@ -1,5 +1,5 @@
 # Build stage
-FROM node:22 AS builder
+FROM --platform=linux/amd64 node:22 AS builder
 
 WORKDIR /app
 
@@ -14,7 +14,7 @@ RUN npm run prisma:client:generate --env=production
 RUN npm run build
 
 # Production stage
-FROM node:22
+FROM --platform=linux/amd64 node:22 AS builder
 
 WORKDIR /app
 
