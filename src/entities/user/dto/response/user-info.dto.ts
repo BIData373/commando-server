@@ -1,17 +1,21 @@
-import { Exclude } from 'class-transformer';
+import { Exclude, Expose } from 'class-transformer';
 import { ExposeProperty } from '../../../../common/decorators/expose-property.decorator';
+import { ApiPropertyOptional } from '@nestjs/swagger';
 
 @Exclude()
 export class UserInfoDto {
   @ExposeProperty()
   upn: string;
 
-  @ExposeProperty({ type: String, nullable: true })
-  displayName: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true })
+  @Expose()
+  displayName?: string;
 
-  @ExposeProperty({ type: String, nullable: true })
-  name: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true })
+  @Expose()
+  name?: string;
 
-  @ExposeProperty({ type: Boolean, nullable: true })
+  @ApiPropertyOptional({ type: Boolean, nullable: true })
+  @Expose()
   isBI?: boolean;
 }
