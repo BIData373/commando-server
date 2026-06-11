@@ -6,6 +6,7 @@ import { CreateUserDto } from './dto/request/create-user.dto';
 import { GetSearchDto } from './dto/request/get-search.dto';
 import { GetUserIdDto } from './dto/request/get-user-id.dto';
 import { UpdateUserDto } from './dto/request/update-user.dto';
+import { MirageUserDto } from './dto/response/mirage-user.dto';
 import { UserDto } from './dto/response/user.dto';
 import { UserService } from './user.service';
 
@@ -36,8 +37,8 @@ export class UserController {
   @ApiOperation({ operationId: 'searchUsers' })
   @ApiQuery({ type: GetSearchDto })
   @Get('search')
-  @ApiOkResponse({ type: [UserDto] })
-  @TransformPlainToInstance(UserDto)
+  @ApiOkResponse({ type: [MirageUserDto] })
+  @TransformPlainToInstance(MirageUserDto)
   async search(
     @Query() { search }: GetSearchDto
   ) {
