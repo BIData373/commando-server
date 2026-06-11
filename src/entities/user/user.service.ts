@@ -1,27 +1,16 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
+import axios from 'axios';
+import * as https from 'node:https';
 import { admin } from '../../common/consts/admin';
-import { removeUpnSuffix } from '../../common/functions/user';
+import { formatUpnForEntity, removeUpnSuffix } from '../../common/functions/user';
 import { PrismaService } from '../../common/prisma.service';
 import { Prisma } from '../../types/prisma';
 import { CreateUserDto } from './dto/request/create-user.dto';
 import { GetUserInfoDto } from './dto/request/get-user-info.dto';
 import { UpdateUserDto } from './dto/request/update-user.dto';
-import { UserInfoDto } from './dto/response/user-info.dto';
+import { MirageUserDto } from './dto/response/mirage-user.dto';
 import { UserDto } from './dto/response/user.dto';
-
-const MOCK_USERS: UserDto[] = [
-  { id: 1, upn: 's1111111@idf.il', info: { id: 1, upn: 's1111111@idf.il', name: 'Alice Johnson', displayName: 'Alice Johnson', isBI: false } },
-  { id: 2, upn: 's1111112@idf.il', info: { id: 2, upn: 's1111112@idf.il', name: 'Bob Smith', displayName: 'Bob Smith', isBI: false } },
-  { id: 3, upn: 's1111113@idf.il', info: { id: 3, upn: 's1111113@idf.il', name: 'Carol White', displayName: 'Carol White', isBI: false } },
-  { id: 4, upn: 's1111114@idf.il', info: { id: 4, upn: 's1111114@idf.il', name: 'David Brown', displayName: 'David Brown', isBI: false } },
-  { id: 5, upn: 's1111115@idf.il', info: { id: 5, upn: 's1111115@idf.il', name: 'Eva Martinez', displayName: 'Eva Martinez', isBI: false } },
-  { id: 6, upn: 's1111116@idf.il', info: { id: 6, upn: 's1111116@idf.il', name: 'Frank Lee', displayName: 'Frank Lee', isBI: false } },
-  { id: 7, upn: 's1111117@idf.il', info: { id: 7, upn: 's1111117@idf.il', name: 'Grace Kim', displayName: 'Grace Kim', isBI: false } },
-  { id: 8, upn: 's1111118@idf.il', info: { id: 8, upn: 's1111118@idf.il', name: 'Henry Taylor', displayName: 'Henry Taylor', isBI: false } },
-  { id: 9, upn: 's1111119@idf.il', info: { id: 9, upn: 's1111119@idf.il', name: 'Iris Chen', displayName: 'Iris Chen', isBI: false } },
-  { id: 10, upn: 's1111110@idf.il', info: { id: 10, upn: 's1111110@idf.il', name: 'Jack Wilson', displayName: 'Jack Wilson', isBI: false } },
-  { id: 11, upn: 's0000000@idf.il', info: { id: 10, upn: 's0000000@idf.il', name: 'Admin', displayName: 'Admin', isBI: false } }
-];
+import { IMirageUser } from './interfaces/mirage-user.interface';
 
 @Injectable()
 export class UserService implements OnModuleInit {
@@ -31,32 +20,49 @@ export class UserService implements OnModuleInit {
     await this.upsert(admin);
   }
 
-  // FIX Implement mirage API
-  async search(search: string): Promise<UserDto[]> {
+  async search(search: string): Promise<MirageUserDto[]> {
     const term = search.toLowerCase();
 
-    return MOCK_USERS
-      .map(({ id, upn, info }) => ({
+    let usersList: MirageUserDto[] = []
+
+    if (process.env.MIRAGE_ENABLED === 'true') {
+      const { data } = await axios.get<IMirageUser[]>(`${process.env.MIRAGE_URL}/users`, {
+        httpsAgent: new https.Agent({ rejectUnauthorized: false }),
+        params: { search: term },
+        headers: {
+          'X-Mirage-Key': process.env.MIRAGE_KEY,
+          'X-Mirage-Version': process.env.MIRAGE_VERSION,
+          'Content-Type': 'application/json'
+        }
+      })
+
+      usersList = data.map(({
         id,
-        upn: removeUpnSuffix(upn),
+        firstName,
+        lastName,
+        displayName
+      }) => ({
+        upn: formatUpnForEntity(id)!,
         info: {
-          ...(info?.id && {
-            id: info.id
-          }),
-          ...(info?.upn && {
-            upn: removeUpnSuffix(info?.upn)
-          }),
-          ...(info ?? {})
-        } as UserInfoDto
+          upn: formatUpnForEntity(id)!,
+          name: (firstName || lastName) && `${firstName ?? ''}${lastName && ' '}${lastName ?? ' '}`,
+          displayName
+        }
       }))
-      .filter(({ upn, info }) => {
-        const { name = '', displayName = '' } = (info as GetUserInfoDto) ?? {};
-        return (
-          upn.toLowerCase().includes(term) ||
-          name.toLowerCase().includes(term) ||
-          displayName.toLowerCase().includes(term)
-        );
-      });
+    } else {
+      const likeSearch = `%${term}%`
+      usersList = await this.prisma.$queryRaw<UserDto[]>`
+        SELECT *
+        FROM users
+        WHERE
+          "upn" ILIKE ${likeSearch}
+          OR "info"->>'name' ILIKE ${likeSearch}
+          OR "info"->>'displayName' ILIKE ${likeSearch}
+      ` satisfies UserDto[]
+    }
+
+
+    return usersList
   }
 
   static formatInfoForSave(info?: GetUserInfoDto | null) {

@@ -1,18 +1,17 @@
 import { Exclude } from 'class-transformer';
 import { ExposeProperty } from '../../../../common/decorators/expose-property.decorator';
-import { IdDto } from '../../../../common/dto/response/id.dto';
 
 @Exclude()
-export class UserInfoDto extends IdDto {
+export class UserInfoDto {
   @ExposeProperty()
   upn: string;
 
-  @ExposeProperty()
-  name: string;
+  @ExposeProperty({ type: String, nullable: true })
+  displayName: string | null;
 
-  @ExposeProperty()
-  displayName: string;
+  @ExposeProperty({ type: String, nullable: true })
+  name: string | null;
 
-  @ExposeProperty()
-  isBI: boolean;
+  @ExposeProperty({ type: Boolean, nullable: true })
+  isBI?: boolean;
 }
