@@ -1,14 +1,7 @@
-import { Exclude, Type } from 'class-transformer';
-import { ExposeProperty } from '../../../../common/decorators/expose-property.decorator';
+import { IntersectionType } from '@nestjs/swagger';
+import { Exclude } from 'class-transformer';
 import { IdDto } from '../../../../common/dto/response/id.dto';
-import { UserInfoDto } from './user-info.dto';
+import { MirageUserDto } from './mirage-user.dto';
 
 @Exclude()
-export class UserDto extends IdDto {
-  @ExposeProperty()
-  upn: string;
-
-  @ExposeProperty({ nullable: true, type: UserInfoDto })
-  @Type(() => UserInfoDto)
-  info: UserInfoDto | null;
-}
+export class UserDto extends IntersectionType(IdDto, MirageUserDto) { }

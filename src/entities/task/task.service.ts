@@ -25,11 +25,15 @@ export class TaskService {
 
   constructor(private readonly prisma: PrismaService) { }
 
-  async create({ tags, workspaceId, sourceId, assignees, context, ...dto }: CreateTaskDto, userId: number) {
-    const notStartedStatus = await this.prisma.workspaceStatus.findFirstOrThrow({
-      where: { type: 'NOT_STARTED' },
+  async findDefaultStatusInWorkspace(workspaceId: number) {
+    return await this.prisma.workspaceStatus.findFirstOrThrow({
+      where: { type: 'NOT_STARTED', workspaceId },
       orderBy: { id: 'asc' }
     })
+  }
+
+  async create({ tags, workspaceId, sourceId, assignees, context, ...dto }: CreateTaskDto, userId: number) {
+    const notStartedStatus = await this.findDefaultStatusInWorkspace(workspaceId)
 
     return await this.prisma.task.create({
       data: {
@@ -116,10 +120,7 @@ export class TaskService {
     updatedBy: number
   ) {
     const notStartedStatus = assignees !== undefined && assignees.length > 0
-      ? await this.prisma.workspaceStatus.findFirstOrThrow({
-        where: { type: 'NOT_STARTED' },
-        orderBy: { id: 'asc' }
-      })
+      ? await this.findDefaultStatusInWorkspace(workspaceId)
       : null;
 
     return await this.prisma.task.update({

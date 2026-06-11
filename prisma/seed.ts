@@ -389,6 +389,23 @@ async function main() {
     },
   ];
 
+  // Guard: every assignee must belong to the same workspace as its task.
+  const assigneeWorkspace: Record<number, number> = {
+    [a1.id]: ws1.id, [a2.id]: ws1.id, [a3.id]: ws1.id,
+    [a4.id]: ws1.id, [a5.id]: ws1.id, [a6.id]: ws1.id,
+    [a7.id]: ws2.id,
+    [a8.id]: ws3.id,
+  };
+  for (const def of taskDefs) {
+    for (const { assigneeId } of def.assignees) {
+      if (assigneeWorkspace[assigneeId] !== def.workspaceId) {
+        throw new Error(
+          `Seed integrity error: assignee ${assigneeId} belongs to workspace ${assigneeWorkspace[assigneeId]} but task "${def.title}" is in workspace ${def.workspaceId}`,
+        );
+      }
+    }
+  }
+
   console.log('* Creating Tasks')
   for (const def of taskDefs) {
     await prisma.task.create({
