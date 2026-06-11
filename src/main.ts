@@ -13,12 +13,18 @@ const server = express()
 const PREFIX = process.env.SERVER_PREFIX ?? ''
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, new ExpressAdapter(server), {
-    cors: isDev && {
-      credentials: ssoEnabled,
-      origin: (origin, callback) => callback(null, origin ?? false)
+  const app = await NestFactory.create(
+    AppModule,
+    new ExpressAdapter(server),
+    {
+      cors: {
+        credentials: true,
+        ...(isDev && ssoEnabled && {
+          origin: (origin, callback) => callback(null, origin ?? false)
+        })
+      }
     }
-  });
+  );
 
   const config = new DocumentBuilder()
     .setTitle('Vector')
