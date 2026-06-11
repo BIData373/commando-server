@@ -45,7 +45,7 @@ const server = createServer((req, res) => {
 
 	const url = new URL(req.url ?? "/", `http://localhost:${PORT}`)
 
-	if (req.method === "POST" && url.pathname === "/cookies") {
+	if (req.method === "GET" && url.pathname === "/cookies") {
 		const token = issueToken()
 		res.writeHead(200, { "Content-Type": "application/json" })
 		res.end(JSON.stringify({ ssoUser: token }))
