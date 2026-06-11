@@ -20,7 +20,6 @@ export class UserService implements OnModuleInit {
     await this.upsert(admin);
   }
 
-  // FIX Implement mirage API
   async search(search: string): Promise<MirageUserDto[]> {
     const term = search.toLowerCase();
 
