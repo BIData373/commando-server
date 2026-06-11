@@ -46,8 +46,7 @@ export class UserService implements OnModuleInit {
         info: {
           upn: formatUpnForEntity(id)!,
           name: (firstName || lastName) && `${firstName ?? ''}${lastName && ' '}${lastName ?? ' '}`,
-          displayName,
-          // TODO - remove
+          displayName
         }
       }))
     } else {
