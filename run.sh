@@ -10,7 +10,7 @@ CONTAINER_FILE_PATH="/home/app/server.tar.gz"
 
 rm -rf $REPO_NAME
 
-git clone git@github.com:BIData373/$REPO_NAME.git
+git clone git@github.com:BIData373/$REPO_NAME.git --depth=1
 cd $REPO_NAME
 git checkout dev
 
