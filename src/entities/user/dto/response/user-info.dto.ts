@@ -7,15 +7,15 @@ export class UserInfoDto {
   @ExposeProperty()
   upn: string;
 
-  @ApiPropertyOptional({ type: String, nullable: true })
+  @ApiPropertyOptional({ type: String })
   @Expose()
   displayName?: string;
 
-  @ApiPropertyOptional({ type: String, nullable: true })
+  @ApiPropertyOptional({ type: String })
   @Expose()
   name?: string;
 
-  @ApiPropertyOptional({ type: Boolean, nullable: true })
+  @ApiPropertyOptional({ type: Boolean })
   @Expose()
   isBI?: boolean;
 }
