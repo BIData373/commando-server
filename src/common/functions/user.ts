@@ -1,4 +1,4 @@
-export declare const UPN_SUFFIX = '@idf.il'
+export const UPN_SUFFIX = '@idf.il'
 
 export function removeUpnSuffix(upn: string) {
   return upn.split('@')[0]
