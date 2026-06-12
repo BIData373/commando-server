@@ -79,7 +79,7 @@ export class UserService implements OnModuleInit {
 
     // Serialize concurrent upserts for the same stripped UPN; lock is released when the transaction ends
     const strippedUpn = removeUpnSuffix(upn)
-    await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${strippedUpn}))`
+    // await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${strippedUpn}))`
 
     const existing = await tx.user.findFirst({
       where: {
