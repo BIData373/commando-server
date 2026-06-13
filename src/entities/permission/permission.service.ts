@@ -34,7 +34,7 @@ export class PermissionService {
     const info = user.info as unknown as UserInfoDto
 
     return info.isBI
-      ? { user: admin, workspaceId, type: PermissionType.MANAGER }
+      ? { user, workspaceId, type: PermissionType.MANAGER }
       : await this.prisma.permission.findUnique({
         where: { userId_workspaceId: { userId: user.id, workspaceId } },
         include: PermissionService.include
