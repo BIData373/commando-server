@@ -1,8 +1,7 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import axios from 'axios';
 import { isMatch } from 'lodash';
 import * as https from 'node:https';
-import { admin } from '../../common/consts/admin';
 import { formatUpnForEntity } from '../../common/functions/user';
 import { PrismaService } from '../../common/prisma.service';
 import { Prisma } from '../../types/prisma';
@@ -14,12 +13,8 @@ import { UserDto } from './dto/response/user.dto';
 import { IMirageUser } from './interfaces/mirage-user.interface';
 
 @Injectable()
-export class UserService implements OnModuleInit {
+export class UserService {
   constructor(private readonly prisma: PrismaService) { }
-
-  async onModuleInit() {
-    await this.upsert(admin);
-  }
 
   async search(search: string): Promise<MirageUserDto[]> {
     const term = search.toLowerCase();
