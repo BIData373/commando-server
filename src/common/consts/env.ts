@@ -18,3 +18,5 @@ export const s3EndpointUrl = process.env.S3_ENDPOINT_URL
 export const s3RejectUnauthorized = process.env.S3_REJECT_UNAUTHORIZED !== 'false'
 
 export const isDev = process.env.ENVIRONMENT === 'development'
+
+export const sendForbiddenMessages = process.env.SEND_FORBIDDEN_MESSAGES === 'true'

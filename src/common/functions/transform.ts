@@ -3,6 +3,7 @@ import { FORBIDDEN_MESSAGE } from "@nestjs/core/guards";
 import { ClassConstructor, plainToInstance } from "class-transformer";
 import { ValidationError } from "class-validator";
 import type { Request } from "express";
+import { sendForbiddenMessages } from "../consts/env";
 
 export type DtoToAdd<TDto> = {
   from: keyof Request
@@ -46,6 +47,6 @@ export function forbiddenExceptionFactory(errors: ValidationError[]) {
   const messages = errors.flatMap(e => Object.values(e.constraints ?? {}));
 
   return isForbidden
-    ? new ForbiddenException()
+    ? new ForbiddenException(sendForbiddenMessages ? errors : undefined)
     : new BadRequestException(messages);
 }
