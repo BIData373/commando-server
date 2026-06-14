@@ -18,6 +18,7 @@ async function bootstrap() {
     AppModule,
     new ExpressAdapter(server),
     {
+      logger: ['verbose'],
       cors: {
         credentials: true,
         ...(isDev && ssoEnabled && {
