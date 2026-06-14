@@ -1,12 +1,18 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../common/prisma.service';
-import { Prisma, Task, User } from '../../types/prisma';
+import { PermissionType, Prisma, Task, User } from '../../types/prisma';
+import { UserDto } from '../user/dto/response/user.dto';
+import { WorkspaceWithPermissions } from '../workspace/types/workspace-with-permission.type';
 import { CreateTaskDto } from './dto/request/create-task.dto';
 import { UpdateTaskDto } from './dto/request/update-task.dto';
 
+export type AssigneeStatusEntity = Prisma.AssigneeTaskStatusGetPayload<{
+  include: { assignee: { include: { users: true } }; status: true };
+}>
+
 @Injectable()
 export class TaskService {
-  static readonly include: Prisma.TaskInclude = {
+  static readonly include = {
     source: { include: { tags: true } },
     tags: true,
     assigneeStatuses: {
@@ -16,11 +22,52 @@ export class TaskService {
         status: true
       }
     }
-  }
+  } satisfies Prisma.TaskInclude;
 
-  static readonly includeWithWorkspace: Prisma.TaskInclude = {
+  static readonly includeWithWorkspace = {
     ...TaskService.include,
     workspace: true
+  } satisfies Prisma.TaskInclude;
+
+  static workspaceWithPermissionsInclude(userId: number) {
+    return {
+      include: {
+        permissions: {
+          where: { userId }
+        }
+      }
+    } as const;
+  }
+
+  static formatAssigneeStatus(
+    assigneeStatus: AssigneeStatusEntity,
+    workspace: WorkspaceWithPermissions,
+    user: User,
+  ) {
+    const isManager = workspace.permissions[0]?.type === PermissionType.MANAGER || !!user.info?.isBI
+    const isAssigned = assigneeStatus.assignee.users.some(u => u.id === user.id)
+    const editable = (
+      (workspace.assigneeStatusEditable && isAssigned) ||
+      isManager
+    )
+
+    return {
+      ...assigneeStatus,
+      editable
+    }
+  }
+
+  static formatTask(
+    { assigneeStatuses, ...rest }: { assigneeStatuses: AssigneeStatusEntity[]; [key: string]: any },
+    workspace: WorkspaceWithPermissions,
+    user: User,
+  ) {
+    return {
+      ...rest,
+      assigneeStatuses: assigneeStatuses.map(as =>
+        TaskService.formatAssigneeStatus(as, workspace, user)
+      )
+    };
   }
 
   constructor(private readonly prisma: PrismaService) { }
@@ -78,40 +125,42 @@ export class TaskService {
   }
 
   // FIX Dont include assignee users?
-  async findInWorkspace(workspaceId: number) {
-    return await this.prisma.task.findMany({
-      where: { workspaceId, deletedAt: null },
+  async findInWorkspace(workspace: WorkspaceWithPermissions, user: User) {
+    const tasks = await this.prisma.task.findMany({
+      where: { workspaceId: workspace.id, deletedAt: null },
       include: TaskService.include
     });
+
+    return tasks.map(task => TaskService.formatTask(task, workspace, user));
   }
 
-  // FIX Implement
   async findPersonal(user: User) {
-    return await this.prisma.task.findMany({
+    const tasks = await this.prisma.task.findMany({
       where: {
         assigneeStatuses: { some: { assignee: { users: { some: { id: user.id } } } } },
         deletedAt: null
       },
       include: {
-        ...TaskService.includeWithWorkspace,
-        workspace: {
-          include: {
-            permissions: {
-              where: {
-                userId: user.id
-              }
-            }
-          }
-        }
+        ...TaskService.include,
+        workspace: TaskService.workspaceWithPermissionsInclude(user.id)
       }
     });
+
+    return tasks.map(task => TaskService.formatTask(task, task.workspace, user));
   }
 
-  async findOne(id: number) {
-    return await this.prisma.task.findUnique({
+  async findOne(id: number, user: User) {
+    const task = await this.prisma.task.findUnique({
       where: { id, deletedAt: null },
-      include: TaskService.includeWithWorkspace,
+      include: {
+        ...TaskService.include,
+        workspace: TaskService.workspaceWithPermissionsInclude(user.id)
+      }
     });
+
+    if (!task) return null;
+
+    return TaskService.formatTask(task, task.workspace, user);
   }
 
   async update(

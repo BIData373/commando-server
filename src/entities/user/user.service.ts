@@ -83,9 +83,10 @@ export class UserService {
     // Lock is released when the transaction ends
     await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${strippedUpn}))`
 
-    const userToSave = {
+    const userToSave: Prisma.UserCreateInput = {
       upn: strippedUpn,
       info: {
+        upn: strippedUpn,
         ...(existing && typeof existing?.info === 'object'
           ? existing?.info
           : {}
