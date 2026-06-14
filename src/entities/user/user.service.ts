@@ -2,7 +2,7 @@ import { Injectable, OnModuleInit } from '@nestjs/common';
 import axios from 'axios';
 import * as https from 'node:https';
 import { admin } from '../../common/consts/admin';
-import { formatUpnForEntity, removeUpnSuffix } from '../../common/functions/user';
+import { formatUpnForEntity } from '../../common/functions/user';
 import { PrismaService } from '../../common/prisma.service';
 import { Prisma } from '../../types/prisma';
 import { CreateUserDto } from './dto/request/create-user.dto';
@@ -69,7 +69,7 @@ export class UserService implements OnModuleInit {
     return info
       ? {
         ...info,
-        upn: removeUpnSuffix(info.upn)
+        upn: formatUpnForEntity(info.upn)
       } as Readonly<GetUserInfoDto>
       : Prisma.JsonNull
   }
@@ -78,8 +78,8 @@ export class UserService implements OnModuleInit {
     const infoToSave = UserService.formatInfoForSave(info)
 
     // Serialize concurrent upserts for the same stripped UPN; lock is released when the transaction ends
-    const strippedUpn = removeUpnSuffix(upn)
-    // await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${strippedUpn}))`
+    const strippedUpn = formatUpnForEntity(upn)!
+    await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${strippedUpn}))`
 
     const existing = await tx.user.findFirst({
       where: {

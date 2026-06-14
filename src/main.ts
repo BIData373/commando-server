@@ -2,6 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { ExpressAdapter } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { useContainer } from 'class-validator';
+import cookieParser from 'cookie-parser';
 import express from 'express';
 import 'reflect-metadata';
 import { AppModule, openApiRoute } from './app.module';
@@ -50,6 +51,7 @@ async function bootstrap() {
     });
   }
 
+  app.use(cookieParser())
   app.setGlobalPrefix(PREFIX);
 
   useContainer(app.select(AppModule), { fallbackOnErrors: true });
