@@ -9,31 +9,29 @@ import { IEntityExistsValidationOptions } from "./entity-exists.decorator";
 import { IdExists } from "./id-exists.decorator";
 
 interface IIsIdPermittedOptions<
-    TDtoField extends keyof Object,
-    TModel extends Models
+    TDtoField extends keyof TDto,
+    TModel extends Models,
+    TDto extends Record<TDtoField, number> & IContext<IUserContext>
 > extends
     IEntityExistsValidationOptions<
-        Record<TDtoField, number>,
+        TDto,
         TDtoField,
-        ExtractValue<Record<TDtoField, number>, TDtoField>,
+        ExtractValue<TDto, TDtoField>,
         TModel
     >,
-    IWorkspaceFindArgs<TDtoField, Record<TDtoField, number>> { }
+    IWorkspaceFindArgs<TDtoField, TDto> { }
 
 export function IsIdPermitted<
-    TDtoField extends keyof Object,
-    TContextField extends keyof Object,
+    TDtoField extends keyof TDto,
     TModel extends Models,
-    TDtoContext extends Record<TContextField, TModel>,
-    TContext extends IUserContext & TDtoContext,
-    TDto extends Record<TDtoField, number> & IContext<TContext>
+    TDto extends Record<TDtoField, number> & IContext<IUserContext>
 >(
     model: TModel,
     type: PermissionType,
-    { workspaceFindArgs, ...options }: IIsIdPermittedOptions<TDtoField, TModel> = {}
+    { workspaceFindArgs, ...options }: IIsIdPermittedOptions<TDtoField, TModel, TDto> = {}
 ) {
     return applyDecorators(
         HasWorkspacePermission<TDtoField, TDto>(type, obj => obj.context.user, { workspaceFindArgs }) as PropertyDecorator,
         IdExists<TModel, TDto, TDtoField, ExtractValue<TDto, TDtoField>>(model, options) as PropertyDecorator
-    )
+    ) as (target: TDto, propertyName: TDtoField) => void
 }
