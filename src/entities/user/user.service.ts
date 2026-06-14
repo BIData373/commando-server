@@ -42,9 +42,9 @@ export class UserService implements OnModuleInit {
         lastName,
         displayName
       }) => ({
-        upn: formatUpnForEntity(id)!,
+        upn: formatUpnForEntity(id),
         info: {
-          upn: formatUpnForEntity(id)!,
+          upn: formatUpnForEntity(id),
           name: (firstName || lastName) && `${firstName ?? ''}${lastName && ' '}${lastName ?? ' '}`,
           displayName
         }
@@ -76,9 +76,10 @@ export class UserService implements OnModuleInit {
 
   static async upsertTx(tx: Prisma.TransactionClient, { upn, info }: CreateUserDto) {
     const infoToSave = UserService.formatInfoForSave(info)
-
-    // Serialize concurrent upserts for the same stripped UPN; lock is released when the transaction ends
-    const strippedUpn = formatUpnForEntity(upn)!
+    const strippedUpn = formatUpnForEntity(upn)
+    
+    // Serialize concurrent upserts for the same stripped UPN
+    // Lock is released when the transaction ends
     await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${strippedUpn}))`
 
     const existing = await tx.user.findFirst({
