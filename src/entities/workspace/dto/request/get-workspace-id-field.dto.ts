@@ -13,10 +13,6 @@ export class GetWorkspaceIdFieldDto {
   workspaceId: number
 }
 
-interface IWorkspaceId extends IContext<IUserContext & IWorkspaceContext> {
-  workspaceId: number
-}
-
 export function GetPermittedWorkspaceIdFieldDto(type: PermissionType) {
   class GetWorkspaceIdDto extends GetContextDto<IUserContext & IWorkspaceWithPermissionContext> {
     @ApiProperty()
