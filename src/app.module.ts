@@ -3,6 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
 import { LoggerModule } from 'pino-nestjs';
 import { envFilePath, isDev } from './common/consts/env';
+import { excludedLogHeaders } from './common/consts/headers';
 import { forbiddenExceptionFactory } from './common/functions/transform';
 import { BIGuard } from './common/guards/bi.guard';
 import { AddUserToContextInterceptor } from './common/interceptors/add-user-to-context.interceptor';
@@ -31,11 +32,15 @@ export const openApiRoute = 'open-api'
     ConfigModule.forRoot({ isGlobal: true, envFilePath }),
     LoggerModule.forRoot({
       pinoHttp: {
-        redact: ['req.headers.cookie'],
+        redact: { paths: excludedLogHeaders, remove: true, },
         transport: isDev
           ? {
             target: 'pino-pretty',
-            options: { colorize: true, translateTime: 'SYS:standard', ignore: 'pid,hostname' },
+            options: {
+              colorize: true,
+              translateTime: 'SYS:standard',
+              ignore: 'pid,hostname'
+            },
           }
           : undefined,
       },
