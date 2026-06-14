@@ -1,12 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../common/prisma.service';
-import { Prisma, Task, User } from '../../types/prisma';
+import { Prisma, Task } from '../../types/prisma';
 import { CreateTaskDto } from './dto/request/create-task.dto';
 import { UpdateTaskDto } from './dto/request/update-task.dto';
+import { AssigneeTaskStatusService, WorkspaceWithPermissionsEntity } from '../assignee-task-status/assignee-task-status.service';
+import { UserDto } from '../user/dto/response/user.dto';
 
 @Injectable()
 export class TaskService {
-  static readonly include: Prisma.TaskInclude = {
+  static readonly include = {
     source: { include: { tags: true } },
     tags: true,
     assigneeStatuses: {
@@ -16,11 +18,21 @@ export class TaskService {
         status: true
       }
     }
-  }
+  } satisfies Prisma.TaskInclude;
 
-  static readonly includeWithWorkspace: Prisma.TaskInclude = {
+  static readonly includeWithWorkspace = {
     ...TaskService.include,
     workspace: true
+  } satisfies Prisma.TaskInclude;
+
+  static workspaceWithPermissionsInclude(userId: number) {
+    return {
+      include: {
+        permissions: {
+          where: { userId }
+        }
+      }
+    } as const;
   }
 
   constructor(private readonly prisma: PrismaService) { }
@@ -78,40 +90,60 @@ export class TaskService {
   }
 
   // FIX Dont include assignee users?
-  async findInWorkspace(workspaceId: number) {
-    return await this.prisma.task.findMany({
-      where: { workspaceId, deletedAt: null },
+  async findInWorkspace(workspace: WorkspaceWithPermissionsEntity, user: UserDto) {
+    const tasks = await this.prisma.task.findMany({
+      where: { workspaceId: workspace.id, deletedAt: null },
       include: TaskService.include
     });
+
+    return tasks.map(({ assigneeStatuses, ...task }) => ({
+      ...task,
+      assigneeStatuses: assigneeStatuses.map(as => (
+        AssigneeTaskStatusService.formatAssigneeStatus(as, workspace, user)
+      ))
+    }))
   }
 
-  // FIX Implement
-  async findPersonal(user: User) {
-    return await this.prisma.task.findMany({
+  async findPersonal(user: UserDto) {
+    const tasks = await this.prisma.task.findMany({
       where: {
         assigneeStatuses: { some: { assignee: { users: { some: { id: user.id } } } } },
         deletedAt: null
       },
       include: {
-        ...TaskService.includeWithWorkspace,
-        workspace: {
-          include: {
-            permissions: {
-              where: {
-                userId: user.id
-              }
-            }
-          }
-        }
+        ...TaskService.include,
+        workspace: TaskService.workspaceWithPermissionsInclude(user.id)
       }
     });
+
+    return tasks.map(({ assigneeStatuses, workspace, ...task }) => ({
+      ...task,
+      workspace,
+      assigneeStatuses: assigneeStatuses.map(as =>
+        AssigneeTaskStatusService.formatAssigneeStatus(as, workspace, user)
+      )
+    }));
   }
 
-  async findOne(id: number) {
-    return await this.prisma.task.findUnique({
+  async findOne(id: number, user: UserDto) {
+    const task = await this.prisma.task.findUnique({
       where: { id, deletedAt: null },
-      include: TaskService.includeWithWorkspace,
+      include: {
+        ...TaskService.include,
+        workspace: TaskService.workspaceWithPermissionsInclude(user.id)
+      }
     });
+
+    if (!task) return null;
+
+    const { assigneeStatuses, workspace, ...rest } = task;
+    return {
+      ...rest,
+      workspace,
+      assigneeStatuses: assigneeStatuses.map(as =>
+        AssigneeTaskStatusService.formatAssigneeStatus(as, workspace, user)
+      )
+    };
   }
 
   async update(

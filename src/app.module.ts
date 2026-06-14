@@ -33,7 +33,7 @@ export const openApiRoute = 'open-api'
     LoggerModule.forRoot({
       pinoHttp: {
         redact: { paths: excludedLogHeaders, remove: true, },
-        transport: isDev
+        transport: false
           ? {
             target: 'pino-pretty',
             options: {

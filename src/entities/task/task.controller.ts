@@ -34,9 +34,9 @@ export class TaskController {
   @ApiOkResponse({ type: [TaskDto] })
   @TransformPlainToInstance(TaskDto)
   async findInWorkspace(
-    @Query() { workspaceId }: GetViewerWorkspaceIdFieldDto
+    @Query() { context: { workspace, user } }: GetViewerWorkspaceIdFieldDto
   ) {
-    return await this.taskService.findInWorkspace(workspaceId);
+    return await this.taskService.findInWorkspace(workspace, user);
   }
 
   @ApiOperation({ operationId: 'listPersonalTasks' })
@@ -46,7 +46,7 @@ export class TaskController {
   async findPersonal(
     @Req() { user }: Request
   ) {
-    return await this.taskService.findPersonal(user);
+    return await this.taskService.findPersonal(user as any);
   }
 
   @ApiOperation({ operationId: 'getTask' })
@@ -55,9 +55,9 @@ export class TaskController {
   @ApiOkResponse({ type: TaskWithWorkspaceDto })
   @TransformPlainToInstance(TaskWithWorkspaceDto)
   async findOne(
-    @Param() { id }: GetViewerTaskIdDto
+    @Param() { id, context: { user } }: GetViewerTaskIdDto
   ) {
-    return await this.taskService.findOne(id);
+    return await this.taskService.findOne(id, user);
   }
 
   // FIX Add to history

@@ -15,4 +15,7 @@ export class AssigneeStatusDto {
 
     @ExposeProperty()
     description: string
+
+    @ExposeProperty()
+    editable: boolean
 }

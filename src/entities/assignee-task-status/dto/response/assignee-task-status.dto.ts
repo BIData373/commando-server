@@ -19,5 +19,5 @@ export class AssigneeTaskStatusDto {
   status: WorkspaceStatusDto;
 
   @ExposeProperty()
-  description: string
+  description: string;
 }
