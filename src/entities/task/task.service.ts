@@ -1,10 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../common/prisma.service';
-import { Prisma, Task } from '../../types/prisma';
+import { PermissionType, Prisma, Task, User } from '../../types/prisma';
+import { UserDto } from '../user/dto/response/user.dto';
+import { WorkspaceWithPermissions } from '../workspace/types/workspace-with-permission.type';
 import { CreateTaskDto } from './dto/request/create-task.dto';
 import { UpdateTaskDto } from './dto/request/update-task.dto';
-import { AssigneeTaskStatusService, WorkspaceWithPermissionsEntity } from '../assignee-task-status/assignee-task-status.service';
-import { UserDto } from '../user/dto/response/user.dto';
+
+export type AssigneeStatusEntity = Prisma.AssigneeTaskStatusGetPayload<{
+  include: { assignee: { include: { users: true } }; status: true };
+}>
 
 @Injectable()
 export class TaskService {
@@ -33,6 +37,37 @@ export class TaskService {
         }
       }
     } as const;
+  }
+
+  static formatAssigneeStatus(
+    assigneeStatus: AssigneeStatusEntity,
+    workspace: WorkspaceWithPermissions,
+    user: User,
+  ) {
+    const isManager = workspace.permissions[0]?.type === PermissionType.MANAGER || !!user.info?.isBI
+    const isAssigned = assigneeStatus.assignee.users.some(u => u.id === user.id)
+    const editable = (
+      (workspace.assigneeStatusEditable && isAssigned) ||
+      isManager
+    )
+
+    return {
+      ...assigneeStatus,
+      editable
+    }
+  }
+
+  static formatTask(
+    { assigneeStatuses, ...rest }: { assigneeStatuses: AssigneeStatusEntity[]; [key: string]: any },
+    workspace: WorkspaceWithPermissions,
+    user: User,
+  ) {
+    return {
+      ...rest,
+      assigneeStatuses: assigneeStatuses.map(as =>
+        TaskService.formatAssigneeStatus(as, workspace, user)
+      )
+    };
   }
 
   constructor(private readonly prisma: PrismaService) { }
@@ -90,21 +125,16 @@ export class TaskService {
   }
 
   // FIX Dont include assignee users?
-  async findInWorkspace(workspace: WorkspaceWithPermissionsEntity, user: UserDto) {
+  async findInWorkspace(workspace: WorkspaceWithPermissions, user: User) {
     const tasks = await this.prisma.task.findMany({
       where: { workspaceId: workspace.id, deletedAt: null },
       include: TaskService.include
     });
 
-    return tasks.map(({ assigneeStatuses, ...task }) => ({
-      ...task,
-      assigneeStatuses: assigneeStatuses.map(as => (
-        AssigneeTaskStatusService.formatAssigneeStatus(as, workspace, user)
-      ))
-    }))
+    return tasks.map(task => TaskService.formatTask(task, workspace, user));
   }
 
-  async findPersonal(user: UserDto) {
+  async findPersonal(user: User) {
     const tasks = await this.prisma.task.findMany({
       where: {
         assigneeStatuses: { some: { assignee: { users: { some: { id: user.id } } } } },
@@ -116,16 +146,10 @@ export class TaskService {
       }
     });
 
-    return tasks.map(({ assigneeStatuses, workspace, ...task }) => ({
-      ...task,
-      workspace,
-      assigneeStatuses: assigneeStatuses.map(as =>
-        AssigneeTaskStatusService.formatAssigneeStatus(as, workspace, user)
-      )
-    }));
+    return tasks.map(task => TaskService.formatTask(task, task.workspace, user));
   }
 
-  async findOne(id: number, user: UserDto) {
+  async findOne(id: number, user: User) {
     const task = await this.prisma.task.findUnique({
       where: { id, deletedAt: null },
       include: {
@@ -136,14 +160,7 @@ export class TaskService {
 
     if (!task) return null;
 
-    const { assigneeStatuses, workspace, ...rest } = task;
-    return {
-      ...rest,
-      workspace,
-      assigneeStatuses: assigneeStatuses.map(as =>
-        AssigneeTaskStatusService.formatAssigneeStatus(as, workspace, user)
-      )
-    };
+    return TaskService.formatTask(task, task.workspace, user);
   }
 
   async update(

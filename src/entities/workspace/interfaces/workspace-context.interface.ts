@@ -1,10 +1,10 @@
 import { Workspace } from "../../../types/prisma";
-import { WorkspaceWithPermissionsEntity } from "../../assignee-task-status/assignee-task-status.service";
+import { WorkspaceWithPermissions } from "../types/workspace-with-permission.type";
 
 export interface IWorkspaceContext {
-    workspace: Workspace
+  workspace: Workspace
 }
 
 export interface IWorkspaceWithPermissionContext {
-    workspace: WorkspaceWithPermissionsEntity
+  workspace: WorkspaceWithPermissions
 }

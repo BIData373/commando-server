@@ -46,7 +46,7 @@ export class TaskController {
   async findPersonal(
     @Req() { user }: Request
   ) {
-    return await this.taskService.findPersonal(user as any);
+    return await this.taskService.findPersonal(user);
   }
 
   @ApiOperation({ operationId: 'getTask' })
