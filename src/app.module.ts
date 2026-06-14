@@ -1,7 +1,8 @@
 import { MiddlewareConsumer, Module, NestModule, ValidationPipe } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
-import { envFilePath } from './common/consts/env';
+import { LoggerModule } from 'pino-nestjs';
+import { envFilePath, isDev } from './common/consts/env';
 import { forbiddenExceptionFactory } from './common/functions/transform';
 import { BIGuard } from './common/guards/bi.guard';
 import { AddUserToContextInterceptor } from './common/interceptors/add-user-to-context.interceptor';
@@ -21,12 +22,24 @@ import { UserModule } from './entities/user/user.module';
 import { WorkspaceStatusModule } from './entities/workspace-status/workspace-status.module';
 import { WorkspaceModule } from './entities/workspace/workspace.module';
 
+// FIX Move to env
 export const openApiRoute = 'open-api'
 
 // FIX Add POST recover endpoints for all entities with deletedAt
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true, envFilePath }),
+    LoggerModule.forRoot({
+      pinoHttp: {
+        redact: ['req.headers.cookie'],
+        transport: isDev
+          ? {
+            target: 'pino-pretty',
+            options: { colorize: true, translateTime: 'SYS:standard', ignore: 'pid,hostname' },
+          }
+          : undefined,
+      },
+    }),
     PrismaModule,
     PikudModule,
     WorkspaceModule,

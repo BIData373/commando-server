@@ -8,7 +8,15 @@ export const envFilePath = [
 
 config({ path: envFilePath });
 
+export const isDev = process.env.ENVIRONMENT === 'development'
+
+export const serverPrefix = process.env.SERVER_PREFIX ?? ''
+export const port = process.env.PORT;
+
+export const swaggerEnabled = process.env.SWAGGER_ENABLED === 'true'
 export const ssoEnabled = process.env.VITE_USE_SSO === 'true'
+
+export const staticToken = process.env.STATIC_TOKEN
 
 export const s3Region = process.env.S3_REGION
 export const s3AccessKeyId = process.env.S3_ACCESS_KEY_ID
@@ -16,7 +24,5 @@ export const s3SecretAccessKey = process.env.S3_SECRET_ACCESS_KEY
 export const s3Bucket = process.env.S3_BUCKET_NAME
 export const s3EndpointUrl = process.env.S3_ENDPOINT_URL
 export const s3RejectUnauthorized = process.env.S3_REJECT_UNAUTHORIZED !== 'false'
-
-export const isDev = process.env.ENVIRONMENT === 'development'
 
 export const sendForbiddenMessages = process.env.SEND_FORBIDDEN_MESSAGES === 'true'
