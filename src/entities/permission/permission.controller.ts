@@ -13,12 +13,12 @@ export class PermissionController {
   constructor(private readonly permissionService: PermissionService) { }
 
   @ApiOperation({ operationId: 'listPermissions' })
-  @ApiQuery({ type: GetViewerWorkspaceIdFieldDto })
+  @ApiQuery({ type: GetWorkspaceIdFieldDto })
   @Get()
   @ApiOkResponse({ type: [PermissionDto] })
   @TransformPlainToInstance(PermissionDto)
   async findInWorkspace(
-    @Query() { workspaceId }: GetViewerWorkspaceIdFieldDto
+    @Query() { workspaceId }: GetWorkspaceIdFieldDto
   ) {
     return await this.permissionService.findInWorkspace(workspaceId);
   }
