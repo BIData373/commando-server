@@ -12,6 +12,10 @@ export type AssigneeStatusEntity = Prisma.AssigneeTaskStatusGetPayload<{
 
 @Injectable()
 export class TaskService {
+  static readonly orderBy = {
+    id: 'asc'
+  } satisfies Prisma.TaskOrderByWithRelationInput;
+
   static readonly include = {
     source: { include: { tags: true } },
     tags: true,
@@ -58,7 +62,7 @@ export class TaskService {
   }
 
   static formatTask(
-    { assigneeStatuses, ...rest }: { assigneeStatuses: AssigneeStatusEntity[]; [key: string]: any },
+    { assigneeStatuses, ...rest }: { assigneeStatuses: AssigneeStatusEntity[];[key: string]: any },
     workspace: WorkspaceWithPermissions,
     user: User,
   ) {
@@ -128,7 +132,8 @@ export class TaskService {
   async findInWorkspace(workspace: WorkspaceWithPermissions, user: User) {
     const tasks = await this.prisma.task.findMany({
       where: { workspaceId: workspace.id, deletedAt: null },
-      include: TaskService.include
+      include: TaskService.include,
+      orderBy: TaskService.orderBy
     });
 
     return tasks.map(task => TaskService.formatTask(task, workspace, user));
@@ -143,7 +148,8 @@ export class TaskService {
       include: {
         ...TaskService.include,
         workspace: TaskService.workspaceWithPermissionsInclude(user.id)
-      }
+      },
+      orderBy: TaskService.orderBy
     });
 
     return tasks.map(task => TaskService.formatTask(task, task.workspace, user));
