@@ -1,9 +1,10 @@
+import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Exclude, Expose } from 'class-transformer';
 import { ExposeProperty } from '../../../../common/decorators/expose-property.decorator';
-import { ApiPropertyOptional } from '@nestjs/swagger';
+import { UserInfo } from '../../types/user-info.type';
 
 @Exclude()
-export class UserInfoDto {
+export class UserInfoDto implements UserInfo {
   @ExposeProperty()
   upn: string;
 

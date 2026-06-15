@@ -3,21 +3,22 @@ import { ExpressAdapter } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { useContainer } from 'class-validator';
 import cookieParser from 'cookie-parser';
-import express from 'express';
+import express, { json, urlencoded } from 'express';
+import { Logger } from 'pino-nestjs';
 import 'reflect-metadata';
 import { AppModule, openApiRoute } from './app.module';
-import { isDev, ssoEnabled } from './common/consts/env';
+import { isDev, port, serverPrefix, ssoEnabled, swaggerEnabled } from './common/consts/env';
 import { staticTokenHeader } from './common/consts/headers';
 
 const server = express()
-
-const PREFIX = process.env.SERVER_PREFIX ?? ''
 
 async function bootstrap() {
   const app = await NestFactory.create(
     AppModule,
     new ExpressAdapter(server),
     {
+      logger: ['verbose'],
+      bufferLogs: true,
       cors: {
         credentials: true,
         ...(isDev && ssoEnabled && {
@@ -27,36 +28,40 @@ async function bootstrap() {
     }
   );
 
-  const config = new DocumentBuilder()
-    .setTitle('Vector')
-    .setDescription('The Vector API')
-    .setVersion('1.0')
-    .addCookieAuth('ssoUser')
-    .addApiKey({
-      type: 'apiKey',
-      name: staticTokenHeader,
-      in: 'header',
-    }, staticTokenHeader)
-    .addSecurityRequirements(staticTokenHeader)
-    .build();
+  app.useLogger(app.get(Logger));
 
-  const document = SwaggerModule.createDocument(app, config, {
-    autoTagControllers: true,
-  });
+  if (swaggerEnabled) {
+    const config = new DocumentBuilder()
+      .setTitle('Vector')
+      .setDescription('The Vector API')
+      .setVersion('1.0')
+      .addCookieAuth('ssoUser')
+      .addApiKey({
+        type: 'apiKey',
+        name: staticTokenHeader,
+        in: 'header',
+      }, staticTokenHeader)
+      .addSecurityRequirements(staticTokenHeader)
+      .build();
 
-  // FIX Dont setup swagger in prod
-  if (process.env.SWAGGER_ENABLED === 'true') {
+    const document = SwaggerModule.createDocument(app, config, {
+      autoTagControllers: true,
+    });
+
     SwaggerModule.setup(openApiRoute, app, document, {
       jsonDocumentUrl: `${openApiRoute}/json`,
     });
   }
 
   app.use(cookieParser())
-  app.setGlobalPrefix(PREFIX);
+  
+  app.setGlobalPrefix(serverPrefix);
+
+  app.use(json({ limit: '10mb' }));
+  app.use(urlencoded({ extended: true, limit: '10mb' }));
 
   useContainer(app.select(AppModule), { fallbackOnErrors: true });
 
-  const port = process.env.PORT;
   await app.listen(Number(port));
 
   console.log(`Application is running on: http://localhost:${port}`);

@@ -1,7 +1,7 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import axios from 'axios';
+import { isMatch } from 'lodash';
 import * as https from 'node:https';
-import { admin } from '../../common/consts/admin';
 import { formatUpnForEntity } from '../../common/functions/user';
 import { PrismaService } from '../../common/prisma.service';
 import { Prisma } from '../../types/prisma';
@@ -13,12 +13,8 @@ import { UserDto } from './dto/response/user.dto';
 import { IMirageUser } from './interfaces/mirage-user.interface';
 
 @Injectable()
-export class UserService implements OnModuleInit {
+export class UserService {
   constructor(private readonly prisma: PrismaService) { }
-
-  async onModuleInit() {
-    await this.upsert(admin);
-  }
 
   async search(search: string): Promise<MirageUserDto[]> {
     const term = search.toLowerCase();
@@ -77,23 +73,20 @@ export class UserService implements OnModuleInit {
   static async upsertTx(tx: Prisma.TransactionClient, { upn, info }: CreateUserDto) {
     const infoToSave = UserService.formatInfoForSave(info)
     const strippedUpn = formatUpnForEntity(upn)
-    
+
+    const existing = await tx.user.findFirst({ where: { upn: strippedUpn } })
+    if (existing && isMatch(existing.info as object, infoToSave)) {
+      return existing
+    }
+
     // Serialize concurrent upserts for the same stripped UPN
     // Lock is released when the transaction ends
     await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${strippedUpn}))`
 
-    const existing = await tx.user.findFirst({
-      where: {
-        OR: [
-          { upn: strippedUpn },
-          { upn: { startsWith: `${strippedUpn}@` } },
-        ],
-      },
-    })
-
-    const userToSave = {
+    const userToSave: Prisma.UserCreateInput = {
       upn: strippedUpn,
       info: {
+        upn: strippedUpn,
         ...(existing && typeof existing?.info === 'object'
           ? existing?.info
           : {}
