@@ -23,6 +23,13 @@ type ModelDelegate<TModel extends Models> = {
   findFirst(args: ModelFindFirstSelectArgs<TModel>): Promise<ModelFindFirst<TModel>['result']>
 }
 
+export type EntityExistsFindArgs<
+  TDto,
+  TDtoField extends keyof TDto,
+  TDtoValue extends ExtractValue<TDto, TDtoField>,
+  TModel extends Models
+> = (params: PredicateParams<TDto, TDtoField, TDtoValue>) => ModelFindFirstSelectArgs<TModel>
+
 interface IEntityExistsOptions<
   TDto,
   TDtoField extends keyof TDto,
@@ -32,7 +39,7 @@ interface IEntityExistsOptions<
   contextField?: string
   failIfExists?: boolean
   validateIf?: (params: PredicateParams<TDto, TDtoField, TDtoValue>) => boolean
-  findArgs?(params: PredicateParams<TDto, TDtoField, TDtoValue>): ModelFindFirstSelectArgs<TModel>,
+  findArgs?: EntityExistsFindArgs<TDto, TDtoField, TDtoValue, TModel>,
   filterDeletedAt?: boolean
 }
 
@@ -65,7 +72,6 @@ export async function entityExists<
 ) {
   const {
     model,
-    each,
     contextField,
     failIfExists,
     filterDeletedAt,
@@ -88,7 +94,7 @@ export async function entityExists<
 
   const repo = prisma[model] as ModelDelegate<TModel>
   const record = await repo.findFirst(customFindArgs?.({ value, obj }) ?? defaultFindArgs)
-  
+
   if (!!record && contextField) {
     merge(object, {
       context: {

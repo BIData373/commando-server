@@ -1,7 +1,7 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiBody, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { TransformPlainToInstance } from 'class-transformer';
-import { GetViewerWorkspaceIdFieldDto } from '../workspace/dto/request/get-workspace-id-field.dto';
+import { GetAssignedWorkspaceIdDto } from '../workspace/dto/request/get-workspace-id-field.dto';
 import { CreateWorkspaceStatusDto } from './dto/request/create-workspace-status.dto';
 import { GetManagerWorkspaceStatusIdDto, GetViewerWorkspaceStatusIdDto } from './dto/request/get-workspace-status-id.dto';
 import { UpdateWorkspaceStatusDto } from './dto/request/update-workspace-status.dto';
@@ -24,12 +24,12 @@ export class WorkspaceStatusController {
   }
 
   @ApiOperation({ operationId: 'listWorkspaceStatuses' })
-  @ApiQuery({ type: GetViewerWorkspaceIdFieldDto })
+  @ApiQuery({ type: GetAssignedWorkspaceIdDto })
   @Get()
   @ApiOkResponse({ type: [WorkspaceStatusDto] })
   @TransformPlainToInstance(WorkspaceStatusDto)
   async findInWorkspace(
-    @Query() { workspaceId }: GetViewerWorkspaceIdFieldDto
+    @Query() { workspaceId }: GetAssignedWorkspaceIdDto
   ) {
     return await this.workspaceStatusService.findInWorkspace(workspaceId);
   }

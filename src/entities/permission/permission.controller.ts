@@ -2,7 +2,7 @@ import { Body, Controller, Delete, Get, Patch, Query, Req } from '@nestjs/common
 import { ApiBody, ApiOkResponse, ApiOperation, ApiQuery } from '@nestjs/swagger';
 import { TransformPlainToInstance } from 'class-transformer';
 import type { Request } from 'express';
-import { GetViewerWorkspaceIdFieldDto, GetWorkspaceIdFieldDto } from '../workspace/dto/request/get-workspace-id-field.dto';
+import { GetWorkspaceIdFieldDto } from '../workspace/dto/request/get-workspace-id-field.dto';
 import { DeletePermissionDto } from './dto/request/delete-permission.dto';
 import { UpsertPermissionDto } from './dto/request/upsert-permission.dto';
 import { PermissionDto } from './dto/response/permission.dto';
@@ -24,7 +24,7 @@ export class PermissionController {
   }
 
   @ApiOperation({ operationId: 'getMyPermission' })
-  @ApiQuery({ type: GetViewerWorkspaceIdFieldDto })
+  @ApiQuery({ type: GetWorkspaceIdFieldDto })
   @Get('me')
   @ApiOkResponse({ type: PermissionDto })
   @TransformPlainToInstance(PermissionDto)
