@@ -3,14 +3,16 @@ import { ApiProperty } from "@nestjs/swagger";
 import { IdExists } from "../../../../common/decorators/id-exists.decorator";
 import { IsIdPermitted } from "../../../../common/decorators/is-permitted-id.decorator";
 import { GetContextDto } from "../../../../common/dto/request/get-context.dto";
+import { IContext } from "../../../../common/interfaces/context.interface";
 import { PermissionType } from "../../../../types/prisma";
 import { allowedTypes } from "../../../permission/consts/permission-types";
 import { IUserContext } from "../../../user/interfaces/user-context.interface";
+import { IWorkspaceContext, IWorkspaceWithPermissionContext } from "../../interfaces/workspace-context.interface";
 
 export class GetWorkspaceIdFieldDto {
-    @ApiProperty()
-    @IdExists('workspace', { filterDeletedAt: true })
-    workspaceId: number
+  @ApiProperty()
+  @IdExists('workspace', { filterDeletedAt: true })
+  workspaceId: number
 }
 
 export class GetAssignedWorkspaceIdDto extends GetContextDto<IUserContext> {
@@ -48,13 +50,27 @@ export class GetAssignedWorkspaceIdDto extends GetContextDto<IUserContext> {
 }
 
 export function GetPermittedWorkspaceIdFieldDto(type: PermissionType) {
-    class GetWorkspaceIdDto extends GetContextDto<IUserContext> {
-        @ApiProperty()
-        @IsIdPermitted('workspace', type, { filterDeletedAt: true })
-        workspaceId: number
-    }
+  class GetWorkspaceIdDto extends GetContextDto<IUserContext & IWorkspaceWithPermissionContext> {
+    @ApiProperty()
+    @IsIdPermitted('workspace', type, {
+      findArgs: ({ obj, value }) => ({
+        where: { id: value },
+        include: {
+          permissions: {
+            where: {
+              userId: obj.context.user.id
+            }
+          }
+        }
 
-    return GetWorkspaceIdDto
+      }),
+      filterDeletedAt: true,
+      contextField: 'workspace'
+    })
+    workspaceId: number
+  }
+
+  return GetWorkspaceIdDto
 }
 
 export class GetViewerWorkspaceIdFieldDto extends GetPermittedWorkspaceIdFieldDto(PermissionType.VIEWER) { }
