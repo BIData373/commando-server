@@ -2,14 +2,32 @@ import { execSync } from 'child_process';
 import { writeFileSync } from 'fs';
 import { join } from 'path';
 
+const cwd = process.cwd()
+const identityFilePath = join(cwd, 'db_identity.p12')
+
 export function saveDatabaseCertificates() {
-  const cwd = process.cwd()
+  const certPath = process.env.DB_SSLCERT_NAME!
+  const keyPath = process.env.DB_SSLKEY_NAME!
+
+  writeFileSync(join(cwd, certPath), `${process.env.DB_SSLCERT_DATA}`, 'utf8')
+  execSync(`chmod 755 ${certPath}`)
+
+  writeFileSync(join(cwd, keyPath), `${process.env.DB_SSLKEY_DATA}`, 'utf8')
+  execSync(`chmod 755 ${keyPath}`)
+
+  execSync(`openssl pkcs12 -export -in ${certPath} -inkey ${keyPath} -out ${identityFilePath} -passout pass:`)
+  execSync(`chmod 755 ${identityFilePath}`)
+
+}
+
+export function addIdentityPath(databaseUrl: string) {
+  const parsedUrl = new URL(databaseUrl)
 
   if (process.env.DB_USE_SSL === 'true') {
-    writeFileSync(join(cwd, process.env.DB_SSLCERT_NAME!), `${process.env.DB_SSLCERT_DATA}`, 'utf8')
-    execSync(`chmod 755 ${process.env.DB_SSLCERT_NAME!}`)
+    saveDatabaseCertificates()
 
-    writeFileSync(join(cwd, process.env.DB_SSLKEY_NAME!), `${process.env.DB_SSLKEY_DATA}`, 'utf8')
-    execSync(`chmod 755 ${process.env.DB_SSLKEY_NAME!}`)
+    parsedUrl.searchParams.append('sslidentity', identityFilePath)
   }
+
+  return parsedUrl.toString()
 }
