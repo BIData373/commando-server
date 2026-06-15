@@ -9,12 +9,12 @@ import { saveDatabaseCertificates } from './functions/ssl';
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
   constructor(private readonly config: ConfigService) {
+    const cwd = process.cwd()
+
     const useSSL = (config.get<string>('DB_USE_SSL') ?? 'false') === 'true'
     if (useSSL) {
       saveDatabaseCertificates()
     }
-
-    const cwd = process.cwd()
 
     // VERCEL ONLY
     const prismaUrl = config.get<string>('POSTGRES_PRISMA_URL')
