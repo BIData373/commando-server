@@ -30,6 +30,8 @@ async function bootstrap() {
 
   app.useLogger(app.get(Logger));
 
+  app.setGlobalPrefix(serverPrefix);
+
   if (swaggerEnabled) {
     const config = new DocumentBuilder()
       .setTitle('Vector')
@@ -54,8 +56,6 @@ async function bootstrap() {
   }
 
   app.use(cookieParser())
-  
-  app.setGlobalPrefix(serverPrefix);
 
   app.use(json({ limit: '10mb' }));
   app.use(urlencoded({ extended: true, limit: '10mb' }));
