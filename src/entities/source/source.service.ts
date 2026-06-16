@@ -66,12 +66,12 @@ export class SourceService {
 
   async update(
     { id, workspaceId, ...source }: Source,
-    { tags, context, ...dto }: UpdateSourceDto,
+    { tags, context, deleteAttachment, ...dto }: UpdateSourceDto,
     updatedBy: number,
     file?: Express.Multer.File
   ) {
-    let attachmentKey: string | undefined;
-    let attachmentName: string | undefined;
+    let attachmentKey: string | null | undefined;
+    let attachmentName: string | null | undefined;
 
     if (file) {
       if (source?.attachmentKey) {
@@ -80,6 +80,10 @@ export class SourceService {
 
       attachmentKey = await this.s3.upload(file, 'sources');
       attachmentName = file.originalname;
+    } else if (deleteAttachment && source?.attachmentKey) {
+      await this.s3.delete(source.attachmentKey);
+      attachmentKey = null;
+      attachmentName = null;
     }
 
     return await this.prisma.source.update({
