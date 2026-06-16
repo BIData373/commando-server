@@ -20,7 +20,10 @@ export class SourceController {
   @ApiConsumes('multipart/form-data')
   @ApiBody({ type: CreateSourceDto })
   @UseInterceptors(
-    FileInterceptor('attachment', { storage: memoryStorage() }),
+    FileInterceptor('attachment', {
+      storage: memoryStorage(),
+      limits: { fileSize: 30 * 1024 * 1024 }
+    }),
     AddUserToContextInterceptor
   )
   @Post()
