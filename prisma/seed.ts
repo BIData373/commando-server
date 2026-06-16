@@ -8,7 +8,7 @@ if (process.env.ENV) {
   config({ path: path.join('./config', process.env.ENV, '.env') });
 }
 
-const connectionString = process.env.DATABASE_URL
+const connectionString = process.env.POSTGRES_PRISMA_URL ?? process.env.DATABASE_URL
 const adapter = new PrismaPg({ connectionString })
 const prisma = new PrismaClient({ adapter });
 
