@@ -10,11 +10,11 @@ import { MirageUserDto } from './dto/response/mirage-user.dto';
 import { UserDto } from './dto/response/user.dto';
 import { UserService } from './user.service';
 
-@UseGuards(BIGuard)
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) { }
 
+  @UseGuards(BIGuard)
   @ApiOperation({ operationId: 'createUser' })
   @ApiBody({ type: CreateUserDto })
   @Post()
@@ -26,6 +26,7 @@ export class UserController {
     return await this.userService.create(dto);
   }
 
+  @UseGuards(BIGuard)
   @ApiOperation({ operationId: 'listUsers' })
   @Get()
   @ApiOkResponse({ type: [UserDto] })
@@ -45,6 +46,7 @@ export class UserController {
     return await this.userService.search(search);
   }
 
+  @UseGuards(BIGuard)
   @ApiOperation({ operationId: 'getUser' })
   @ApiParam({ name: 'id', type: Number })
   @Get(':id')
@@ -56,6 +58,7 @@ export class UserController {
     return await this.userService.findOne(id);
   }
 
+  @UseGuards(BIGuard)
   @ApiOperation({ operationId: 'updateUser' })
   @ApiParam({ name: 'id', type: Number })
   @ApiBody({ type: UpdateUserDto })
@@ -69,6 +72,7 @@ export class UserController {
     return await this.userService.update(id, dto);
   }
 
+  @UseGuards(BIGuard)
   @ApiOperation({ operationId: 'deleteUser' })
   @ApiParam({ name: 'id', type: Number })
   @Delete(':id')
