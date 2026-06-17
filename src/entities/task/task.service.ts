@@ -18,12 +18,18 @@ export class TaskService {
   } satisfies Prisma.TaskOrderByWithRelationInput;
 
   static readonly include = {
-    source: { include: { tags: true } },
     tags: true,
+    source: {
+      where: { deletedAt: null },
+      include: { tags: true }
+    },
     assigneeStatuses: {
+      where: { assignee: { deletedAt: null } },
       orderBy: { assigneeId: 'asc' },
       include: {
-        assignee: { include: { users: true } },
+        assignee: {
+          include: { users: true }
+        },
         status: true
       }
     }
