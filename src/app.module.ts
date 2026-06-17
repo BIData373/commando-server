@@ -2,6 +2,7 @@ import { MiddlewareConsumer, Module, NestModule, ValidationPipe } from '@nestjs/
 import { ConfigModule } from '@nestjs/config';
 import { APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
 import { LoggerModule } from 'pino-nestjs';
+import { PrettyOptions } from 'pino-pretty';
 import { envFilePath, isDev } from './common/consts/env';
 import { excludedLogHeaders } from './common/consts/headers';
 import { forbiddenExceptionFactory } from './common/functions/transform';
@@ -39,8 +40,10 @@ export const openApiRoute = 'open-api'
             options: {
               colorize: true,
               translateTime: 'SYS:standard',
-              ignore: 'pid,hostname'
-            },
+              hideObject: true,
+              singleLine: false,
+              messageFormat: '{req.method} {req.url} {res.statusCode} {msg}'
+            } as PrettyOptions,
           }
           : undefined,
       },

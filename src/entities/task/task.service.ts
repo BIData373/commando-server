@@ -1,14 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../common/prisma.service';
 import { PermissionType, Prisma, Task, User } from '../../types/prisma';
-import { UserDto } from '../user/dto/response/user.dto';
 import { WorkspaceWithPermissions } from '../workspace/types/workspace-with-permission.type';
 import { CreateTaskDto } from './dto/request/create-task.dto';
 import { UpdateTaskDto } from './dto/request/update-task.dto';
 
-export type AssigneeStatusEntity = Prisma.AssigneeTaskStatusGetPayload<{
+type AssigneeStatusInclude = {
   include: { assignee: { include: { users: true } }; status: true };
-}>
+}
+
+type AssigneeStatusEntity = Prisma.AssigneeTaskStatusGetPayload<AssigneeStatusInclude>
 
 @Injectable()
 export class TaskService {
@@ -48,8 +49,13 @@ export class TaskService {
     workspace: WorkspaceWithPermissions,
     user: User,
   ) {
-    const isManager = workspace.permissions[0]?.type === PermissionType.MANAGER || !!user.info?.isBI
+    const isManager = (
+      workspace.permissions[0]?.type === PermissionType.MANAGER ||
+      !!user.info?.isBI
+    )
+
     const isAssigned = assigneeStatus.assignee.users.some(u => u.id === user.id)
+
     const editable = (
       (workspace.assigneeStatusEditable && isAssigned) ||
       isManager
@@ -62,15 +68,25 @@ export class TaskService {
   }
 
   static formatTask(
-    { assigneeStatuses, ...rest }: { assigneeStatuses: AssigneeStatusEntity[];[key: string]: any },
+    { assigneeStatuses, ...rest }: Prisma.TaskGetPayload<{
+      include: { assigneeStatuses: AssigneeStatusInclude }
+    }>,
     workspace: WorkspaceWithPermissions,
     user: User,
   ) {
     return {
       ...rest,
-      assigneeStatuses: assigneeStatuses.map(as =>
-        TaskService.formatAssigneeStatus(as, workspace, user)
-      )
+      assigneeStatuses: assigneeStatuses.map(assigneeStatus =>
+        TaskService.formatAssigneeStatus(assigneeStatus, workspace, user)
+      ),
+      ...(workspace && {
+        workspace: {
+          ...workspace,
+          permissionType: !!user.info?.isBI
+            ? PermissionType.MANAGER
+            : workspace?.permissions?.[0]?.type
+        }
+      }),
     };
   }
 

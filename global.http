@@ -5,7 +5,7 @@
     exports.baseUrl = local
     exports.headers = {
         'Content-Type': 'application/json',
-        'static-token': 'd7d47dc2-f442-4e01-8c8b-59f30014050d',
+        'static-token': '3650244b-61fc-4f75-95eb-359d7483ff70',
         // 'requestusername': 's9336069',
         'is-bi': true
     }
