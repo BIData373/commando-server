@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { decodeMulterFilename } from '../../common/functions/string';
 import { PrismaService } from '../../common/prisma.service';
 import { Prisma, Source } from '../../types/prisma';
 import { S3Service } from '../s3/s3.service';
@@ -22,7 +23,7 @@ export class SourceService {
     file?: Express.Multer.File
   ) {
     const attachmentKey = file && await this.s3.upload(file, 'sources')
-    const attachmentName = file ? file.originalname : undefined
+    const attachmentName = file ? decodeMulterFilename(file.originalname) : undefined
 
     return await this.prisma.source.create({
       data: {
@@ -79,7 +80,7 @@ export class SourceService {
       }
 
       attachmentKey = await this.s3.upload(file, 'sources');
-      attachmentName = file.originalname;
+      attachmentName = decodeMulterFilename(file.originalname);
     } else if (deleteAttachment && source?.attachmentKey) {
       await this.s3.delete(source.attachmentKey);
       attachmentKey = null;
