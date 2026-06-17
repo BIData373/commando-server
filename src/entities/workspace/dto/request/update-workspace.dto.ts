@@ -2,6 +2,7 @@ import { ApiPropertyOptional, IntersectionType, PartialType } from '@nestjs/swag
 import { IsOptional } from 'class-validator';
 import { EntityExists } from '../../../../common/decorators/entity-exists.decorator';
 import { IsNotEmptyString } from '../../../../common/decorators/is-not-empty-string.decorator';
+import { IsUrlName } from '../../../../common/decorators/is-url-name.decorator';
 import { GetContextDto } from '../../../../common/dto/request/get-context.dto';
 import { IContext } from '../../../../common/interfaces/context.interface';
 import { IWorkspaceContext } from '../../interfaces/workspace-context.interface';
@@ -21,7 +22,6 @@ export class UpdateWorkspaceDto extends IntersectionType(
 ) {
     @ApiPropertyOptional()
     @IsOptional()
-    @IsNotEmptyString()
     @EntityExists('workspace', {
         failIfExists: true,
         message: urlNameExistsError,
@@ -29,6 +29,7 @@ export class UpdateWorkspaceDto extends IntersectionType(
             where: { ...isInDifferentWorkspace(obj), urlName: value }
         })
     })
+    @IsUrlName()
     urlName?: string
 
     @ApiPropertyOptional()
