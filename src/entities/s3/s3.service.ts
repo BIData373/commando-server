@@ -6,6 +6,9 @@ import { randomUUID } from 'crypto';
 import * as https from 'https';
 import { s3AccessKeyId, s3Bucket, s3EndpointUrl, s3Region, s3RejectUnauthorized, s3SecretAccessKey } from '../../common/consts/env';
 
+const UPLOAD_TIMEOUT_MS = 15_000;
+const DELETE_TIMEOUT_MS = 5_000;
+
 const requiredEnv = {
   S3_REGION: s3Region,
   S3_ACCESS_KEY_ID: s3AccessKeyId,
@@ -61,15 +64,18 @@ export class S3Service {
     const key = `${folder}/${randomUUID()}.${ext}`;
 
     try {
-      await this.client.send(new PutObjectCommand({
-        Bucket: this.bucket,
-        Key: key,
-        Body: file.buffer,
-        ContentType: file.mimetype,
-      }));
+      await this.client.send(
+        new PutObjectCommand({
+          Bucket: this.bucket,
+          Key: key,
+          Body: file.buffer,
+          ContentType: file.mimetype,
+        }),
+        { abortSignal: AbortSignal.timeout(UPLOAD_TIMEOUT_MS) },
+      );
       return key;
     } catch (err) {
-      console.error('[S3] Upload failed', err);
+      console.error('[S3] Upload failed: ', err);
       return undefined;
     }
   }
@@ -81,10 +87,13 @@ export class S3Service {
     }
 
     try {
-      await this.client.send(new DeleteObjectCommand({
-        Bucket: this.bucket,
-        Key: key,
-      }));
+      await this.client.send(
+        new DeleteObjectCommand({
+          Bucket: this.bucket,
+          Key: key,
+        }),
+        { abortSignal: AbortSignal.timeout(DELETE_TIMEOUT_MS) },
+      );
     } catch (err) {
       console.error(`[S3] Delete failed for key "${key}"`, err);
     }
