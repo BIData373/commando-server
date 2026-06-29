@@ -14,8 +14,18 @@ export class AssigneeService {
 
   static readonly includeMany: Prisma.AssigneeInclude = {
     ...AssigneeService.include,
-    _count: { select: { taskStatuses: true } }
-  };
+    _count: {
+      select: {
+        taskStatuses: {
+          where: {
+            task: {
+              deletedAt: null
+            }
+          }
+        }
+      }
+    }
+  }
 
   constructor(private readonly prisma: PrismaService) { }
 
