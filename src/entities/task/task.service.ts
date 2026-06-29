@@ -14,7 +14,7 @@ type AssigneeStatusEntity = Prisma.AssigneeTaskStatusGetPayload<AssigneeStatusIn
 @Injectable()
 export class TaskService {
   static readonly orderBy = {
-    createdAt: 'asc'
+    createdAt: 'desc'
   } satisfies Prisma.TaskOrderByWithRelationInput;
 
   static readonly include = {
