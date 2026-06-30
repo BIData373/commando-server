@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../common/prisma.service';
-import { PermissionType, Prisma, Task, User } from '../../types/prisma';
+import { PermissionType, Prisma, Task, User, WorkspaceStatus } from '../../types/prisma';
 import { WorkspaceWithPermissions } from '../workspace/types/workspace-with-permission.type';
 import { CreateTaskDto } from './dto/request/create-task.dto';
 import { UpdateTaskDto } from './dto/request/update-task.dto';
@@ -11,8 +11,14 @@ type AssigneeStatusInclude = {
 
 type AssigneeStatusEntity = Prisma.AssigneeTaskStatusGetPayload<AssigneeStatusInclude>
 
+type TaskWithRelations = Prisma.TaskGetPayload<{
+  include: { assigneeStatuses: AssigneeStatusInclude, source: true, tags: true }
+}>
+
 @Injectable()
 export class TaskService {
+  static readonly TASK_ROW_ID_SEPARATOR = "_"
+
   static readonly orderBy = {
     id: 'asc'
   } satisfies Prisma.TaskOrderByWithRelationInput;
@@ -74,9 +80,7 @@ export class TaskService {
   }
 
   static formatTask(
-    { assigneeStatuses, ...rest }: Prisma.TaskGetPayload<{
-      include: { assigneeStatuses: AssigneeStatusInclude }
-    }>,
+    { assigneeStatuses, ...rest }: TaskWithRelations,
     workspace: WorkspaceWithPermissions,
     user: User,
   ) {
@@ -105,7 +109,10 @@ export class TaskService {
     })
   }
 
-  async create({ tags, workspaceId, sourceId, assignees, context, ...dto }: CreateTaskDto, userId: number) {
+  async create(
+    { tags, workspaceId, sourceId, assignees, context, ...dto }: CreateTaskDto,
+    userId: number
+  ) {
     const notStartedStatus = await this.findDefaultStatusInWorkspace(workspaceId)
 
     return await this.prisma.task.create({
@@ -152,13 +159,50 @@ export class TaskService {
 
   // FIX Dont include assignee users?
   async findInWorkspace(workspace: WorkspaceWithPermissions, user: User) {
-    const tasks = await this.prisma.task.findMany({
+    return await this.prisma.task.findMany({
       where: { workspaceId: workspace.id, deletedAt: null },
       include: TaskService.include,
       orderBy: TaskService.orderBy
     });
+  }
+
+  async findInWorkspaceFormatted(workspace: WorkspaceWithPermissions, user: User) {
+    const tasks = await this.findInWorkspace(workspace, user)
 
     return tasks.map(task => TaskService.formatTask(task, workspace, user));
+  }
+
+  static formatTaskRowId(taskId: number, assigneeId?: number) {
+    return `${taskId}${TaskService.TASK_ROW_ID_SEPARATOR}${assigneeId}`
+  }
+
+  static toTaskRows(
+    tasks: TaskWithRelations[],
+    defaultStatus: WorkspaceStatus
+  ) {
+    return tasks.flatMap((task) =>
+      task.assigneeStatuses.length > 0
+        ? task.assigneeStatuses.map((assigneeStatus) => ({
+          ...task,
+          rowKey: TaskService.formatTaskRowId(task.id, assigneeStatus.assignee.id),
+          ...assigneeStatus,
+          otherAssignees: task.assigneeStatuses.filter(
+            (as) => as.assignee.id !== assigneeStatus.assignee.id,
+          )
+        }))
+        : [{
+          ...task,
+          rowKey: TaskService.formatTaskRowId(task.id),
+          status: defaultStatus
+        }],
+    )
+  }
+
+  async findRowsInWorkspace(workspace: WorkspaceWithPermissions, user: User) {
+    const tasks = await this.findInWorkspace(workspace, user)
+    const defaultStatus = await this.findDefaultStatusInWorkspace(workspace.id)
+
+    return TaskService.toTaskRows(tasks, defaultStatus)
   }
 
   async findPersonal(user: User) {
@@ -175,6 +219,15 @@ export class TaskService {
     });
 
     return tasks.map(task => TaskService.formatTask(task, task.workspace, user));
+  }
+
+  async findPersonalFormatted(user: User) {
+
+
+  }
+
+  async findPersonalRows(user: User) {
+    return TaskService.toTaskRows(await this.findPersonal(user))
   }
 
   async findOne(id: number, user: User) {

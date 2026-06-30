@@ -7,6 +7,8 @@ import { GetViewerWorkspaceIdFieldDto } from '../workspace/dto/request/get-works
 import { CreateTaskDto } from './dto/request/create-task.dto';
 import { GetManagerTaskIdDto, GetViewerTaskIdDto } from './dto/request/get-task-id.dto';
 import { UpdateTaskDto } from './dto/request/update-task.dto';
+import { TaskRowWithWorkspaceDto } from './dto/response/task-row-with-workspace.dto';
+import { TaskRowDto } from './dto/response/task-row.dto';
 import { TaskWithWorkspaceDto } from './dto/response/task-with-workspace.dto';
 import { TaskDto } from './dto/response/task.dto';
 import { TaskService } from './task.service';
@@ -36,7 +38,18 @@ export class TaskController {
   async findInWorkspace(
     @Query() { context: { workspace, user } }: GetViewerWorkspaceIdFieldDto
   ) {
-    return await this.taskService.findInWorkspace(workspace, user);
+    return await this.taskService.findInWorkspaceFormatted(workspace, user);
+  }
+
+  @ApiOperation({ operationId: 'listTaskRows' })
+  @ApiQuery({ type: GetViewerWorkspaceIdFieldDto })
+  @Get('rows')
+  @ApiOkResponse({ type: [TaskRowDto] })
+  @TransformPlainToInstance(TaskRowDto)
+  async findRowsInWorkspace(
+    @Query() { context: { workspace, user } }: GetViewerWorkspaceIdFieldDto
+  ) {
+    return await this.taskService.findRowsInWorkspace(workspace, user);
   }
 
   @ApiOperation({ operationId: 'listPersonalTasks' })
@@ -47,6 +60,16 @@ export class TaskController {
     @Req() { user }: Request
   ) {
     return await this.taskService.findPersonal(user);
+  }
+
+  @ApiOperation({ operationId: 'listPersonalTaskRows' })
+  @Get('personal/rows')
+  @ApiOkResponse({ type: [TaskRowWithWorkspaceDto] })
+  @TransformPlainToInstance(TaskRowWithWorkspaceDto)
+  async findPersonalRows(
+    @Req() { user }: Request
+  ) {
+    return await this.taskService.findPersonalRows(user);
   }
 
   @ApiOperation({ operationId: 'getTask' })
