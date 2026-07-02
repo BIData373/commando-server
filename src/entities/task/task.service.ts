@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { keyBy, map, uniq } from 'lodash';
 import { PrismaService } from '../../common/prisma.service';
 import { PermissionType, Prisma, Task, User, WorkspaceStatus } from '../../types/prisma';
 import { WorkspaceWithPermissions } from '../workspace/types/workspace-with-permission.type';
@@ -11,7 +12,7 @@ type AssigneeStatusInclude = {
 
 type AssigneeStatusEntity = Prisma.AssigneeTaskStatusGetPayload<AssigneeStatusInclude>
 
-type TaskWithRelations = Prisma.TaskGetPayload<{
+type TaskInclude = Prisma.TaskGetPayload<{
   include: { assigneeStatuses: AssigneeStatusInclude, source: true, tags: true }
 }>
 
@@ -80,7 +81,7 @@ export class TaskService {
   }
 
   static formatTask(
-    { assigneeStatuses, ...rest }: TaskWithRelations,
+    { assigneeStatuses, ...rest }: TaskInclude,
     workspace: WorkspaceWithPermissions,
     user: User,
   ) {
@@ -102,9 +103,9 @@ export class TaskService {
 
   constructor(private readonly prisma: PrismaService) { }
 
-  async findDefaultStatusInWorkspace(workspaceId: number) {
-    return await this.prisma.workspaceStatus.findFirstOrThrow({
-      where: { type: 'NOT_STARTED', workspaceId },
+  async findDefaultStatusInWorkspaces(...workspaceIds: number[]) {
+    return await this.prisma.workspaceStatus.findMany({
+      where: { type: 'NOT_STARTED', workspaceId: { in: workspaceIds } },
       orderBy: { id: 'asc' }
     })
   }
@@ -113,7 +114,7 @@ export class TaskService {
     { tags, workspaceId, sourceId, assignees, context, ...dto }: CreateTaskDto,
     userId: number
   ) {
-    const notStartedStatus = await this.findDefaultStatusInWorkspace(workspaceId)
+    const [notStartedStatus] = await this.findDefaultStatusInWorkspaces(workspaceId)
 
     return await this.prisma.task.create({
       data: {
@@ -176,9 +177,9 @@ export class TaskService {
     return `${taskId}${TaskService.TASK_ROW_ID_SEPARATOR}${assigneeId}`
   }
 
-  static toTaskRows(
-    tasks: TaskWithRelations[],
-    defaultStatus: WorkspaceStatus
+  static toTaskRows<TTask extends TaskInclude>(
+    tasks: TTask[],
+    defaultStatuses: Record<number, WorkspaceStatus>
   ) {
     return tasks.flatMap((task) =>
       task.assigneeStatuses.length > 0
@@ -193,20 +194,22 @@ export class TaskService {
         : [{
           ...task,
           rowKey: TaskService.formatTaskRowId(task.id),
-          status: defaultStatus
+          status: defaultStatuses[task.workspaceId]
         }],
     )
   }
 
   async findRowsInWorkspace(workspace: WorkspaceWithPermissions, user: User) {
     const tasks = await this.findInWorkspace(workspace, user)
-    const defaultStatus = await this.findDefaultStatusInWorkspace(workspace.id)
+    const [defaultStatus] = await this.findDefaultStatusInWorkspaces(workspace.id)
 
-    return TaskService.toTaskRows(tasks, defaultStatus)
+    const taskRows = TaskService.toTaskRows(tasks, { [workspace.id]: defaultStatus })
+
+    return taskRows.map(task => TaskService.formatTask(task, workspace, user));
   }
 
   async findPersonal(user: User) {
-    const tasks = await this.prisma.task.findMany({
+    return await this.prisma.task.findMany({
       where: {
         assigneeStatuses: { some: { assignee: { users: { some: { id: user.id } } } } },
         deletedAt: null
@@ -217,17 +220,24 @@ export class TaskService {
       },
       orderBy: TaskService.orderBy
     });
+  }
+
+  async findPersonalFormatted(user: User) {
+    const tasks = await this.findPersonal(user)
 
     return tasks.map(task => TaskService.formatTask(task, task.workspace, user));
   }
 
-  async findPersonalFormatted(user: User) {
-
-
-  }
-
   async findPersonalRows(user: User) {
-    return TaskService.toTaskRows(await this.findPersonal(user))
+    const tasks = await this.findPersonal(user)
+
+    const workspaceIds = uniq(map(tasks, 'workspaceId'))
+    const defaultStatuses = await this.findDefaultStatusInWorkspaces(...workspaceIds)
+    const defaultStatusesMap = keyBy(defaultStatuses, 'workspaceId')
+
+    const taskRows = TaskService.toTaskRows(tasks, defaultStatusesMap)
+
+    return taskRows.map(task => TaskService.formatTask(task, task.workspace, user));
   }
 
   async findOne(id: number, user: User) {
@@ -249,9 +259,9 @@ export class TaskService {
     { assignees, tags, context, sourceId, ...dto }: UpdateTaskDto,
     updatedBy: number
   ) {
-    const notStartedStatus = assignees !== undefined && assignees.length > 0
-      ? await this.findDefaultStatusInWorkspace(workspaceId)
-      : null;
+    const [notStartedStatus] = assignees !== undefined && assignees.length > 0
+      ? await this.findDefaultStatusInWorkspaces(workspaceId)
+      : [null];
 
     return await this.prisma.task.update({
       where: { id },

@@ -59,7 +59,7 @@ export class TaskController {
   async findPersonal(
     @Req() { user }: Request
   ) {
-    return await this.taskService.findPersonal(user);
+    return await this.taskService.findPersonalFormatted(user);
   }
 
   @ApiOperation({ operationId: 'listPersonalTaskRows' })
