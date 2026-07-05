@@ -2,7 +2,8 @@ model Assignee {
   id    Int     @id @default(autoincrement())
   name  String
   color String
-  icon  String?
+  icon     String?
+  iconName String? @map("icon_name")
 
   workspaceId Int       @map("workspace_id")
   workspace   Workspace @relation(fields: [workspaceId], references: [id])
