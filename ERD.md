@@ -36,6 +36,7 @@ COMPLETED COMPLETED
     String name 
     String color 
     String icon "❓"
+    String icon_name "❓"
     Int workspace_id 
     DateTime created_at 
     Int created_by 

@@ -14,6 +14,9 @@ export class AssigneeDto extends IdMetaFieldsDto {
   @ExposeProperty({ type: String, nullable: true })
   icon: string | null;
 
+  @ExposeProperty({ type: String, nullable: true })  
+  iconName: string | null;
+
   @ExposeProperty()
   workspaceId: number;
 
