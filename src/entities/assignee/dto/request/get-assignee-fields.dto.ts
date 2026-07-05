@@ -14,13 +14,11 @@ export class GetAssigneeFieldsDto {
     color: string;
 
     @ApiProperty({ type: String, required: false, nullable: true })
-    @ValidateIf((o) => o.iconName)
     @IsOptional()
     @IsNotEmptyString()
     icon?: string;
 
     @ApiProperty({ type: String, required: false, nullable: true })
-    @ValidateIf((o) => o.icon)
     @IsOptional()
     @IsNotEmptyString()
     iconName?: string;
