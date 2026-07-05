@@ -10,13 +10,16 @@ export class TaskRowDto extends TaskFieldsDto {
     @ExposeProperty()
     rowKey: string
 
+    @ExposeProperty({ type: AssigneeDto })
+    @Type(() => AssigneeDto)
+    assignee?: AssigneeDto
+
     @ExposeProperty({ type: WorkspaceStatusDto })
     @Type(() => WorkspaceStatusDto)
     status: WorkspaceStatusDto
 
-    @ExposeProperty({ type: AssigneeDto })
-    @Type(() => AssigneeDto)
-    assignee?: AssigneeDto
+    @ExposeProperty()
+    editable: boolean
 
     @ExposeProperty({ type: [AssigneeStatusDto] })
     @Type(() => AssigneeStatusDto)

@@ -39,8 +39,20 @@ GET {{baseUrl}}/task?workspaceId={{workspaceId}}
 
 ?? status == 200
 
+### Get all Task rows in workspace
+GET {{baseUrl}}/task/rows?workspaceId={{workspaceId}}
+...headers
+
+?? status == 200
+
 ### Get personal Tasks
 GET {{baseUrl}}/task/personal
+...headers
+
+?? status == 200
+
+### Get personal Task rows
+GET {{baseUrl}}/task/personal/rows
 ...headers
 
 ?? status == 200
