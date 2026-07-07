@@ -10,7 +10,7 @@ export class TaskRowDto extends TaskFieldsDto {
     @ExposeProperty()
     rowKey: string
 
-    @ExposeProperty({ type: AssigneeDto })
+    @ExposeProperty({ type: AssigneeDto, required: false })
     @Type(() => AssigneeDto)
     assignee?: AssigneeDto
 
@@ -23,5 +23,5 @@ export class TaskRowDto extends TaskFieldsDto {
 
     @ExposeProperty({ type: [AssigneeStatusDto] })
     @Type(() => AssigneeStatusDto)
-    otherAssignees?: AssigneeStatusDto[]
+    otherAssignees: AssigneeStatusDto[]
 }

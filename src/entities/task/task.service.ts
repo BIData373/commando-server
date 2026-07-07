@@ -183,21 +183,25 @@ export class TaskService {
     workspace: WorkspaceWithPermissions,
     user: User
   ) {
-    return task.assigneeStatuses.length > 0
-      ? task.assigneeStatuses.map((assigneeStatus) => ({
+    if (task.assigneeStatuses.length === 0) {
+      return [{
         ...task,
-        workspace: TaskService.formatTaskWorkspace(workspace, user),
-        rowKey: TaskService.formatTaskRowId(task.id, assigneeStatus.assignee.id),
-        ...TaskService.formatAssigneeStatus(assigneeStatus, workspace, user),
-        otherAssignees: task.assigneeStatuses
-          .filter(as => as.assignee.id !== assigneeStatus.assignee.id)
-          .map(assigneeStatus => TaskService.formatAssigneeStatus(assigneeStatus, workspace, user))
-      }))
-      : [{
-        ...task,
+        editable: false,
         rowKey: TaskService.formatTaskRowId(task.id),
         status: defaultStatuses[task.workspaceId]
       }]
+    }
+
+    const formattedAssigneeStatuses = task.assigneeStatuses.map(
+      assigneeStatus => TaskService.formatAssigneeStatus(assigneeStatus, workspace, user)
+    )
+
+    return formattedAssigneeStatuses.map((formattedAssigneeStatus, index) => ({
+      ...task,
+      rowKey: TaskService.formatTaskRowId(task.id, formattedAssigneeStatus.assignee.id),
+      ...formattedAssigneeStatus,
+      otherAssignees: formattedAssigneeStatuses.filter((_, otherIndex) => otherIndex !== index)
+    }))
   }
 
   async findRowsInWorkspace(workspace: WorkspaceWithPermissions, user: User) {
@@ -235,9 +239,9 @@ export class TaskService {
     const defaultStatuses = await this.findDefaultStatusInWorkspaces(...workspaceIds)
     const defaultStatusesMap = keyBy(defaultStatuses, 'workspaceId')
 
-    const taskRows = tasks.flatMap(
-      task => TaskService.extractTaskToRows(task, defaultStatusesMap, task.workspace, user)
-    )
+    const taskRows = tasks
+      .flatMap(task => TaskService.extractTaskToRows(task, defaultStatusesMap, task.workspace, user))
+      .map(task => ({ ...task, workspace: TaskService.formatTaskWorkspace(task.workspace, user) }))
 
     return taskRows
   }
