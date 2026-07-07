@@ -187,6 +187,7 @@ export class TaskService {
       return [{
         ...task,
         editable: false,
+        otherAssignees: [],
         rowKey: TaskService.formatTaskRowId(task.id),
         status: defaultStatuses[task.workspaceId]
       }]
@@ -196,21 +197,22 @@ export class TaskService {
       assigneeStatus => TaskService.formatAssigneeStatus(assigneeStatus, workspace, user)
     )
 
-    return formattedAssigneeStatuses.map((formattedAssigneeStatus, index) => ({
-      ...task,
-      rowKey: TaskService.formatTaskRowId(task.id, formattedAssigneeStatus.assignee.id),
-      ...formattedAssigneeStatus,
-      otherAssignees: formattedAssigneeStatuses.filter((_, otherIndex) => otherIndex !== index)
-    }))
+    return formattedAssigneeStatuses
+      .map(({ assigneeId, statusId, taskId, ...fields }, index) => ({
+        ...task,
+        rowKey: TaskService.formatTaskRowId(task.id, fields.assignee.id),
+        ...fields,
+        otherAssignees: formattedAssigneeStatuses.filter((_, otherIndex) => otherIndex !== index)
+      }))
   }
 
   async findRowsInWorkspace(workspace: WorkspaceWithPermissions, user: User) {
     const tasks = await this.findInWorkspace(workspace)
     const [defaultStatus] = await this.findDefaultStatusInWorkspaces(workspace.id)
 
-    const taskRows = tasks.flatMap(
-      task => TaskService.extractTaskToRows(task, { [workspace.id]: defaultStatus }, workspace, user)
-    )
+    const taskRows = tasks
+      .map(task => TaskService.extractTaskToRows(task, { [workspace.id]: defaultStatus }, workspace, user))
+      .flat()
 
     return taskRows
   }
@@ -234,15 +236,16 @@ export class TaskService {
 
   async findPersonalRows(user: User) {
     const tasks = await this.findPersonal(user)
-
+    
     const workspaceIds = uniq(map(tasks, 'workspaceId'))
     const defaultStatuses = await this.findDefaultStatusInWorkspaces(...workspaceIds)
     const defaultStatusesMap = keyBy(defaultStatuses, 'workspaceId')
-
+    
     const taskRows = tasks
-      .flatMap(task => TaskService.extractTaskToRows(task, defaultStatusesMap, task.workspace, user))
-      .map(task => ({ ...task, workspace: TaskService.formatTaskWorkspace(task.workspace, user) }))
-
+    .map(task => TaskService.extractTaskToRows(task, defaultStatusesMap, task.workspace, user))
+    .flat()
+    .map(task => ({ ...task, workspace: TaskService.formatTaskWorkspace(task.workspace, user) }))
+    
     return taskRows
   }
 
