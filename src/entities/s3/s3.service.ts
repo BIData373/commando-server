@@ -4,7 +4,7 @@ import { Injectable } from '@nestjs/common';
 import { NodeHttpHandler } from '@smithy/node-http-handler';
 import { randomUUID } from 'crypto';
 import * as https from 'https';
-import { s3AccessKeyId, s3Bucket, s3EndpointUrl, s3Region, s3RejectUnauthorized, s3SecretAccessKey } from '../../common/consts/env';
+import { s3AccessKeyId, s3Bucket, s3EndpointUrl, s3PublicUrl, s3Region, s3RejectUnauthorized, s3SecretAccessKey } from '../../common/consts/env';
 
 const UPLOAD_TIMEOUT_MS = 15_000;
 const DELETE_TIMEOUT_MS = 5_000;
@@ -106,7 +106,7 @@ export class S3Service {
     }
 
     try {
-      return await getSignedUrl(
+      const signed = await getSignedUrl(
         this.client,
         new GetObjectCommand({
           Bucket: this.bucket,
@@ -117,6 +117,12 @@ export class S3Service {
         }),
         { expiresIn }
       );
+
+      if (s3PublicUrl && s3EndpointUrl) {
+        return signed.replace(s3EndpointUrl, s3PublicUrl);
+      }
+
+      return signed;
     } catch (err) {
       console.error(`[S3] Sign failed for key "${key}"`, err);
       return null;
