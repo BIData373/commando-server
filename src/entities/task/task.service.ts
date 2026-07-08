@@ -21,7 +21,7 @@ export class TaskService {
   static readonly TASK_ROW_ID_SEPARATOR = "_"
 
   static readonly orderBy = {
-    id: 'asc'
+    createdAt: 'desc'
   } satisfies Prisma.TaskOrderByWithRelationInput;
 
   static readonly include = {
