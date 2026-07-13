@@ -26,28 +26,7 @@ export class TaskService {
     createdAt: 'desc'
   } satisfies Prisma.TaskOrderByWithRelationInput;
 
-  static readonly include = {
-    tags: true,
-    source: {
-      where: { deletedAt: null },
-      include: { tags: true }
-    },
-    assigneeStatuses: {
-      where: { assignee: { deletedAt: null } },
-      orderBy: { assigneeId: 'asc' },
-      include: {
-        assignee: {
-          include: { users: true }
-        },
-        status: true
-      }
-    }
-  } satisfies Prisma.TaskInclude;
-
-  constructor(
-    private readonly prisma: PrismaService,
-    private readonly messageRelayService: MessageRelayService
-  ) { }
+  constructor(private readonly prisma: PrismaService) { }
 
   static baseInclude(userId?: number) {
     return {
@@ -216,7 +195,7 @@ export class TaskService {
           }
         })
       },
-      include: TaskService.withWorkspaceInclude(userId)
+      include: TaskService.baseInclude()
     });
 
     if (assignees?.length) {
@@ -339,7 +318,7 @@ export class TaskService {
     const defaultStatusesMap = keyBy(defaultStatuses, 'workspaceId')
 
     const taskRows = tasks
-      .map(task => TaskService.extractTaskToRows(task, defaultStatusesMap, task.workspace, user))
+      .map(task => TaskService.extractTaskToRows(task, defaultStatusesMap[task.workspace.id], task.workspace, user))
       .flat()
       .map(task => ({ ...task, workspace: TaskService.formatTaskWorkspace(task.workspace, user) }))
 
