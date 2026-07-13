@@ -122,8 +122,9 @@ export class TaskService {
 
     if (workspace.chatNotification) {
       const chatMessage = `ההנחיה: ${taskName}\n מעבר להנחיה: ${taskUrl}`
-      await this.messageRelayService.sendChatNotification(
+      await this.messageRelayService.sendNotification(
         recipients,
+        'chat',
         title,
         chatMessage
       )
@@ -136,8 +137,9 @@ export class TaskService {
         vectorUrl: process.env.VECTOR_URL,
         chatUrl: process.env.VITE_CHAT_URL,
       })
-      await this.messageRelayService.sendMailNotification(
+      await this.messageRelayService.sendNotification(
         recipients,
+        'mail',
         title,
         html
       )
