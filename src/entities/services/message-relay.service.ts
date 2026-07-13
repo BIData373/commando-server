@@ -1,58 +1,33 @@
 import { Injectable } from "@nestjs/common";
-import axios from 'axios';
+import axios, { AxiosInstance } from 'axios';
 
 @Injectable()
 export class MessageRelayService {
+    private readonly client: AxiosInstance;
 
-    async sendChatNotification(recipients: string[], title: string, message: string) {
-        const url = process.env.MESSAGE_RELAY_URL!;
-        const token = process.env.MESSAGE_RELAY_TOKEN!;
-
-        try {
-            const response = await axios.post(
-                url,
-                {
-                    provider: 'sendman',
-                    recipients: recipients,
-                    channel: 'chat',
-                    title: title,
-                    message: message
-                },
-                {
-                    headers: {
-                        'static-token': token,
-                        'Content-Type': 'application/json'
-                    }
-                })
-            return response.data;
-        } catch (error) {
-            console.error(`Failed to send chat notification: ${error}`);
-        }
+    constructor() {
+        this.client = axios.create({
+            baseURL: process.env.MESSAGE_RELAY_URL!,
+            headers: {
+                'static-token': process.env.MESSAGE_RELAY_TOKEN!,
+                'Content-Type': 'application/json'
+            }
+        });
     }
 
-    async sendMailNotification(recipients: string[], title: string, message: string) {
-        const url = process.env.MESSAGE_RELAY_URL!;
-        const token = process.env.MESSAGE_RELAY_TOKEN!;
-
+    async sendNotification(recipients: string[], channel: string, title: string, message: string) {
         try {
-            const response = await axios.post(
-                url,
+            const response = await this.client.post('/relay',
                 {
                     provider: 'sendman',
                     recipients: recipients,
-                    channel: 'mail',
+                    channel: channel,
                     title: title,
                     message: message
-                },
-                {
-                    headers: {
-                        'static-token': token,
-                        'Content-Type': 'application/json'
-                    }
                 })
             return response.data;
         } catch (error) {
-            console.error(`Failed to send mail notification: ${error}`);
+            console.error(`Failed to send ${channel} notification: ${error}`);
         }
     }
 }
