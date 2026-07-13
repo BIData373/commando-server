@@ -5,6 +5,8 @@ import { PermissionType, Prisma, Task, User, WorkspaceStatus } from '../../types
 import { WorkspaceWithPermissions } from '../workspace/types/workspace-with-permission.type';
 import { CreateTaskDto } from './dto/request/create-task.dto';
 import { UpdateTaskDto } from './dto/request/update-task.dto';
+import { MessageRelayService } from '../services/message-relay.service';
+import { renderTemplate } from '../../common/functions/template';
 
 type AssigneeStatusInclude = {
   include: { assignee: { include: { users: true } }; status: true };
@@ -42,7 +44,10 @@ export class TaskService {
     }
   } satisfies Prisma.TaskInclude;
 
-  constructor(private readonly prisma: PrismaService) { }
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly messageRelayService: MessageRelayService
+  ) { }
 
   static workspaceWithPermissionsInclude(userId: number) {
     return {
@@ -103,6 +108,39 @@ export class TaskService {
     };
   }
 
+  private async sendTaskCreatedNotifications(
+    workspace: WorkspaceWithPermissions,
+    taskId: number,
+    taskName: string,
+    recipients: string[]
+  ) {
+    const title = `קיבלת הנחיה חדשה מ${workspace.title}`
+    const taskUrl = `${process.env.VECTOR_URL}/personal/task/${taskId}`
+
+    if (workspace.chatNotification) {
+      const chatMessage = `ההנחיה: ${taskName}\n מעבר להנחיה: ${taskUrl}`
+      await this.messageRelayService.sendChatNotification(
+        recipients,
+        title,
+        chatMessage
+      )
+    }
+    if (workspace.mailNotification) {
+      const html = renderTemplate(process.env.NOTIFICATION_TEMPLATE!, {
+        workspaceName: workspace.title,
+        taskName,
+        taskUrl,
+        vectorUrl: process.env.VECTOR_URL,
+        chatUrl: process.env.VITE_CHAT_URL,
+      })
+      await this.messageRelayService.sendMailNotification(
+        recipients,
+        title,
+        html
+      )
+    }
+  }
+
   async findDefaultStatusInWorkspaces(...workspaceIds: number[]) {
     return await this.prisma.workspaceStatus.findMany({
       where: { type: 'NOT_STARTED', workspaceId: { in: workspaceIds } },
@@ -116,7 +154,7 @@ export class TaskService {
   ) {
     const [notStartedStatus] = await this.findDefaultStatusInWorkspaces(workspaceId)
 
-    return await this.prisma.task.create({
+    const createdTask = await this.prisma.task.create({
       data: {
         ...dto,
         createdBy: userId,
@@ -156,6 +194,33 @@ export class TaskService {
       },
       include: TaskService.workspaceWithPermissionsInclude(userId)
     });
+
+    if (assignees?.length) {
+      const users = await this.prisma.user.findMany({
+        where: {
+          assignees: {
+            some: {
+              id: {
+                in: assignees.map(({ id }) => id)
+              }
+            }
+          }
+        },
+        select: {
+          upn: true
+        }
+      })
+      const recipients = users.map(({ upn }) => upn)
+
+      await this.sendTaskCreatedNotifications(
+        createdTask.workspace,
+        createdTask.id,
+        createdTask.title,
+        recipients
+      )
+    }
+
+    return createdTask;
   }
 
   // FIX Dont include assignee users?

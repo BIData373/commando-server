@@ -26,6 +26,19 @@ export class CreateWorkspaceDto extends GetNewWorkspaceUrlNameDto {
   @IsBoolean()
   assigneeStatusEditable?: boolean;
 
+    
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsBoolean()
+  chatNotification?: boolean;
+
+    
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsBoolean()
+  mailNotification?: boolean;
+
+
   @ApiProperty()
   @IdExists('pikud', { filterDeletedAt: true })
   pikudId: number;
