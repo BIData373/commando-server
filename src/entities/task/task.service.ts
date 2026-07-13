@@ -195,7 +195,7 @@ export class TaskService {
           }
         })
       },
-      include: TaskService.baseInclude()
+      include: TaskService.withWorkspaceInclude()
     });
 
     if (assignees?.length) {
