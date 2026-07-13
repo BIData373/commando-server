@@ -160,6 +160,8 @@ COMPLETED COMPLETED
     String url_name 
     String icon "❓"
     Boolean assignee_status_editable 
+    Boolean chat_notification 
+    Boolean mail_notification 
     DateTime created_at 
     Int created_by 
     DateTime updated_at 

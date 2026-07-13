@@ -17,5 +17,11 @@ export class WorkspaceDto extends IdMetaFieldsDto {
   assigneeStatusEditable: boolean;
 
   @ExposeProperty()
+  chatNotification: boolean;
+
+  @ExposeProperty()
+  mailNotification: boolean;
+
+  @ExposeProperty()
   pikudId: number;
 }
