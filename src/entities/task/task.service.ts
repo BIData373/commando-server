@@ -198,7 +198,7 @@ export class TaskService {
           }
         })
       },
-      include: TaskService.baseInclude()
+      include: TaskService.withWorkspaceInclude()
     });
 
     if (assignees?.length) {
@@ -217,23 +217,14 @@ export class TaskService {
         }
       })
       const recipients = users.map(({ upn }) => upn)
-      const workspace = await this.prisma.workspace.findUnique({
-        where: { id: workspaceId },
-        select: {
-          title: true,
-          chatNotification: true,
-          mailNotification: true
-        }
-      })
 
       await this.sendTaskCreatedNotifications(
-        workspace,
+        createdTask.workspace,
         createdTask.id,
         createdTask.title,
         recipients
       )
     }
-
     return createdTask;
   }
 
