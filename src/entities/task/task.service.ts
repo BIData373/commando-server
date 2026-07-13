@@ -194,7 +194,7 @@ export class TaskService {
           }
         })
       },
-      include: TaskService.baseInclude()
+      include: TaskService.withWorkspaceInclude()
     });
 
     if (assignees?.length) {
@@ -221,7 +221,6 @@ export class TaskService {
         recipients
       )
     }
-
     return createdTask;
   }
 
