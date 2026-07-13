@@ -7,6 +7,7 @@ import { GetViewerWorkspaceIdFieldDto } from '../workspace/dto/request/get-works
 import { CreateTaskDto } from './dto/request/create-task.dto';
 import { GetManagerTaskIdDto, GetViewerTaskIdDto } from './dto/request/get-task-id.dto';
 import { UpdateTaskDto } from './dto/request/update-task.dto';
+import { TaskDetailsDto } from './dto/response/task-details.dto';
 import { TaskRowWithWorkspaceDto } from './dto/response/task-row-with-workspace.dto';
 import { TaskRowDto } from './dto/response/task-row.dto';
 import { TaskWithWorkspaceDto } from './dto/response/task-with-workspace.dto';
@@ -75,8 +76,8 @@ export class TaskController {
   @ApiOperation({ operationId: 'getTask' })
   @ApiParam({ name: 'id', type: Number })
   @Get(':id')
-  @ApiOkResponse({ type: TaskWithWorkspaceDto })
-  @TransformPlainToInstance(TaskWithWorkspaceDto)
+  @ApiOkResponse({ type: TaskDetailsDto })
+  @TransformPlainToInstance(TaskDetailsDto)
   async findOne(
     @Param() { id, context: { user } }: GetViewerTaskIdDto
   ) {
