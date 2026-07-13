@@ -3,6 +3,7 @@ import { keyBy, map, uniq } from 'lodash';
 import { renderTemplate } from '../../common/functions/template';
 import { PrismaService } from '../../common/prisma.service';
 import { PermissionType, Prisma, Task, User, WorkspaceStatus } from '../../types/prisma';
+import { MessageRelayService } from '../services/message-relay.service';
 import { WorkspaceWithPermissions } from '../workspace/types/workspace-with-permission.type';
 import { CreateTaskDto } from './dto/request/create-task.dto';
 import { UpdateTaskDto } from './dto/request/update-task.dto';
@@ -25,7 +26,28 @@ export class TaskService {
     createdAt: 'desc'
   } satisfies Prisma.TaskOrderByWithRelationInput;
 
-  constructor(private readonly prisma: PrismaService) { }
+  static readonly include = {
+    tags: true,
+    source: {
+      where: { deletedAt: null },
+      include: { tags: true }
+    },
+    assigneeStatuses: {
+      where: { assignee: { deletedAt: null } },
+      orderBy: { assigneeId: 'asc' },
+      include: {
+        assignee: {
+          include: { users: true }
+        },
+        status: true
+      }
+    }
+  } satisfies Prisma.TaskInclude;
+
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly messageRelayService: MessageRelayService
+  ) { }
 
   static baseInclude(userId?: number) {
     return {
@@ -121,9 +143,8 @@ export class TaskService {
 
     if (workspace.chatNotification) {
       const chatMessage = `ההנחיה: ${taskName}\n מעבר להנחיה: ${taskUrl}`
-      await this.messageRelayService.sendNotification(
+      await this.messageRelayService.sendChatNotification(
         recipients,
-        'chat',
         title,
         chatMessage
       )
@@ -136,9 +157,8 @@ export class TaskService {
         vectorUrl: process.env.VECTOR_URL,
         chatUrl: process.env.VITE_CHAT_URL,
       })
-      await this.messageRelayService.sendNotification(
+      await this.messageRelayService.sendMailNotification(
         recipients,
-        'mail',
         title,
         html
       )
@@ -319,7 +339,7 @@ export class TaskService {
     const defaultStatusesMap = keyBy(defaultStatuses, 'workspaceId')
 
     const taskRows = tasks
-      .map(task => TaskService.extractTaskToRows(task, defaultStatusesMap[task.workspace.id], task.workspace, user))
+      .map(task => TaskService.extractTaskToRows(task, defaultStatusesMap, task.workspace, user))
       .flat()
       .map(task => ({ ...task, workspace: TaskService.formatTaskWorkspace(task.workspace, user) }))
 
