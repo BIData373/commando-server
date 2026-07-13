@@ -4,7 +4,9 @@ model Workspace {
   urlName                String  @unique @map("url_name")
   icon                   String?
   assigneeStatusEditable Boolean @default(false) @map("assignee_status_editable")
-
+  chatNotification       Boolean @default(false) @map("chat_notification")
+  mailNotification       Boolean @default(false) @map("mail_notification")
+  
   // Meta Fields
   createdAt DateTime  @default(now()) @map("created_at")
   createdBy Int       @map("created_by")
