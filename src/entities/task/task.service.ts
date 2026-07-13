@@ -199,7 +199,7 @@ export class TaskService {
           }
         })
       },
-      include: TaskService.withWorkspaceInclude()
+      include: TaskService.withWorkspaceInclude(userId)
     });
 
     if (assignees?.length) {
