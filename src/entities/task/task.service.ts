@@ -6,6 +6,7 @@ import { PermissionType, Prisma, Task, User, WorkspaceStatus } from '../../types
 import { WorkspaceWithPermissions } from '../workspace/types/workspace-with-permission.type';
 import { CreateTaskDto } from './dto/request/create-task.dto';
 import { UpdateTaskDto } from './dto/request/update-task.dto';
+import { MessageRelayService } from '../services/message-relay.service';
 
 type AssigneeStatusInclude = {
   include: { assignee: { include: { users: true } }; status: true };
@@ -25,7 +26,10 @@ export class TaskService {
     createdAt: 'desc'
   } satisfies Prisma.TaskOrderByWithRelationInput;
 
-  constructor(private readonly prisma: PrismaService) { }
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly messageRelayService: MessageRelayService
+  ) { }
 
   static baseInclude(userId?: number) {
     return {
@@ -111,7 +115,7 @@ export class TaskService {
   }
 
   private async sendTaskCreatedNotifications(
-    workspace: WorkspaceWithPermissions,
+    workspace: { title: string; chatNotification: boolean; mailNotification: boolean },
     taskId: number,
     taskName: string,
     recipients: string[]
@@ -232,9 +236,7 @@ export class TaskService {
       where: {
         workspaceId: workspace.id,
         deletedAt: null,
-        source: {
-          draft: false
-        }
+        source: { draft: false }
       },
       include: TaskService.baseInclude(),
       orderBy: TaskService.orderBy
