@@ -3,12 +3,9 @@ import { keyBy, map, uniq } from 'lodash';
 import { renderTemplate } from '../../common/functions/template';
 import { PrismaService } from '../../common/prisma.service';
 import { PermissionType, Prisma, Task, User, WorkspaceStatus } from '../../types/prisma';
-import { MessageRelayService } from '../services/message-relay.service';
 import { WorkspaceWithPermissions } from '../workspace/types/workspace-with-permission.type';
 import { CreateTaskDto } from './dto/request/create-task.dto';
 import { UpdateTaskDto } from './dto/request/update-task.dto';
-import { MessageRelayService } from '../services/message-relay.service';
-import { renderTemplate } from '../../common/functions/template';
 
 type AssigneeStatusInclude = {
   include: { assignee: { include: { users: true } }; status: true };
