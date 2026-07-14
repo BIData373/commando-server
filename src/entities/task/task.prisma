@@ -1,11 +1,12 @@
 model Task {
-  id           Int          @id @default(autoincrement())
+  id           Int              @id @default(autoincrement())
   title        String
-  description  String?      @db.Text
-  flagged      Boolean      @default(false)
-  deadlineType DeadlineType @map("deadline_type")
-  dueDate      DateTime?    @map("due_date")
+  description  String?          @db.Text
+  flagged      Boolean          @default(false)
+  deadlineType DeadlineType     @map("deadline_type")
+  dueDate      DateTime?        @map("due_date")
   notes        String?
+  creationType TaskCreationType @default(HUMAN) @map("creation_type")
 
   // Meta Fields
   createdAt DateTime  @default(now()) @map("created_at")
@@ -33,4 +34,10 @@ enum DeadlineType {
   IMMEDIATE
   DATE
   ROLLING
+}
+
+enum TaskCreationType {
+  HUMAN
+  AI_HUMAN
+  AI
 }

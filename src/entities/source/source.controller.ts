@@ -4,13 +4,14 @@ import { ApiBody, ApiConsumes, ApiCreatedResponse, ApiOkResponse, ApiOperation, 
 import { TransformPlainToInstance } from 'class-transformer';
 import { Request } from 'express';
 import { memoryStorage } from 'multer';
+import { AddUserToContextInterceptor } from '../../common/interceptors/add-user-to-context.interceptor';
 import { GetViewerWorkspaceIdFieldDto } from '../workspace/dto/request/get-workspace-id-field.dto';
+import { AIExtractionCallbackDto } from './dto/request/source-ai-extraction-callback.dto';
 import { CreateSourceDto } from './dto/request/create-source.dto';
 import { GetManagerSourceIdDto, GetViewerSourceIdDto } from './dto/request/get-source-id.dto';
 import { UpdateSourceDto } from './dto/request/update-source.dto';
 import { SourceDto } from './dto/response/source.dto';
 import { SourceService } from './source.service';
-import { AddUserToContextInterceptor } from '../../common/interceptors/add-user-to-context.interceptor';
 
 @Controller('source')
 export class SourceController {
@@ -89,5 +90,16 @@ export class SourceController {
     @Param() { id }: GetManagerSourceIdDto
   ) {
     return await this.sourceService.remove(id, user.id);
+  }
+
+  @ApiOperation({ operationId: 'aiExtractionCallback' })
+  @ApiParam({ name: 'id', type: Number })
+  @ApiBody({ type: AIExtractionCallbackDto })
+  @Post(':id/ai-result')
+  async aiCallback(
+    @Param() { context: { source } }: GetManagerSourceIdDto,
+    @Body() dto: AIExtractionCallbackDto
+  ) {
+    return await this.sourceService.processAiResult(source, dto);
   }
 }

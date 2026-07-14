@@ -16,6 +16,14 @@ ROLLING ROLLING
     
 
 
+        TaskCreationType {
+            HUMAN HUMAN
+AI_HUMAN AI_HUMAN
+AI AI
+        }
+    
+
+
         HistoryAction {
             CREATE CREATE
 UPDATE UPDATE
@@ -95,6 +103,7 @@ COMPLETED COMPLETED
     DateTime date "❓"
     String attachment_key "❓"
     String attachment_name "❓"
+    Boolean draft 
     Int workspace_id 
     DateTime created_at 
     Int created_by 
@@ -124,6 +133,7 @@ COMPLETED COMPLETED
     DeadlineType deadline_type 
     DateTime due_date "❓"
     String notes "❓"
+    TaskCreationType creation_type 
     DateTime created_at 
     Int created_by 
     DateTime updated_at 
@@ -193,6 +203,7 @@ COMPLETED COMPLETED
     "tags" }o--|| workspaces : "workspace"
     "tags" o{--}o "tasks" : ""
     "tasks" |o--|| "DeadlineType" : "enum:deadline_type"
+    "tasks" |o--|| "TaskCreationType" : "enum:creation_type"
     "tasks" }o--|| workspaces : "workspace"
     "tasks" }o--|o sources : "source"
     "tasks_history" |o--|| "HistoryAction" : "enum:action"

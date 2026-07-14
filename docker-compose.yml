@@ -9,3 +9,8 @@ services:
       - POSTGRES_PASSWORD=matzpen-123-mefaked-456
       - POSTGRES_USER=admin
       - POSTGRES_DB=matzpen_mefaked
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - 6379:6379

@@ -1,10 +1,18 @@
 import { Injectable } from '@nestjs/common';
+import { flatMap, intersection, map, uniq } from 'lodash';
+import { aiExtractionTaskName } from '../../common/consts/env';
 import { decodeMulterFilename } from '../../common/functions/string';
 import { PrismaService } from '../../common/prisma.service';
-import { Prisma, Source } from '../../types/prisma';
+import { SocketGateway } from '../../socket/socket.gateway';
+import { SocketEventType } from '../../socket/types/socket-event-type.enum';
+import { TaskRunnerService } from '../../task-runner/task-runner.service';
+import { DeadlineType, Prisma, Source, TaskCreationType } from '../../types/prisma';
 import { S3Service } from '../s3/s3.service';
+import { TaskService } from '../task/task.service';
 import { CreateSourceDto } from './dto/request/create-source.dto';
+import { AIExtractionCallbackDto } from './dto/request/source-ai-extraction-callback.dto';
 import { UpdateSourceDto } from './dto/request/update-source.dto';
+
 
 @Injectable()
 export class SourceService {
@@ -14,18 +22,21 @@ export class SourceService {
 
   constructor(
     private readonly prisma: PrismaService,
-    private readonly s3: S3Service
+    private readonly s3: S3Service,
+    private readonly taskRunner: TaskRunnerService,
+    private readonly socket: SocketGateway,
+    private readonly taskService: TaskService,
   ) { }
 
   async create(
-    { tags, workspaceId, context, ...dto }: CreateSourceDto,
+    { tags, workspaceId, context, aiExtraction, ...dto }: CreateSourceDto,
     userId: number,
     file?: Express.Multer.File
   ) {
     const attachmentKey = file && await this.s3.upload(file, 'sources')
     const attachmentName = file ? decodeMulterFilename(file.originalname) : undefined
 
-    return await this.prisma.source.create({
+    const source = await this.prisma.source.create({
       data: {
         ...dto,
         workspaceId,
@@ -49,6 +60,12 @@ export class SourceService {
       },
       include: SourceService.include
     });
+
+    if (aiExtraction) {
+      this.taskRunner.sendTask(aiExtractionTaskName, [source.id])
+    }
+
+    return source
   }
 
   async findInWorkspace(workspaceId: number): Promise<any[]> {
@@ -119,5 +136,78 @@ export class SourceService {
       data: { deletedAt: new Date(), deletedBy },
       include: SourceService.include
     });
+  }
+
+  async processAiResult(source: Source, dto: AIExtractionCallbackDto) {
+    const workspace = await this.prisma.workspace.findUniqueOrThrow({
+      where: { id: source.workspaceId }
+    })
+
+    if (!dto.success) {
+      this.socket.emitToUrlName(
+        workspace.urlName,
+        SocketEventType.TASK_EXTRACTION_FAILURE,
+        { reason: dto.reason }
+      )
+      return null
+    }
+
+    const assigneeIds = uniq(flatMap(dto.tasks, 'assigneeIds'))
+
+    let validIds: number[] = []
+    if (assigneeIds.length > 0) {
+      const validAssignees = await this.prisma.assignee.findMany({
+        where: {
+          id: { in: assigneeIds },
+          workspaceId: source.workspaceId,
+          deletedAt: null
+        },
+        select: { id: true }
+      })
+      validIds = map(validAssignees, 'id')
+    }
+
+    const [notStartedStatus] = await this.taskService.findDefaultStatusInWorkspaces(source.workspaceId)
+
+    const results = await Promise.allSettled(
+      (dto.tasks ?? []).map(({ title, deadlineType, deadlineDate, assigneeIds: taskAssigneeIds }) => {
+        const validTaskAssigneeIds = intersection(taskAssigneeIds, validIds)
+        return this.prisma.task.create({
+          data: {
+            title,
+            // TODO - what do we do, cause technically it has no default...
+            deadlineType: deadlineType ?? DeadlineType.IMMEDIATE,
+            dueDate: deadlineDate ? new Date(deadlineDate) : undefined,
+            creationType: TaskCreationType.AI,
+            workspaceId: source.workspaceId,
+            sourceId: source.id,
+            createdBy: source.createdBy,
+            updatedBy: source.createdBy,
+            ...(validTaskAssigneeIds.length > 0 && {
+              assigneeStatuses: {
+                create: validTaskAssigneeIds.map(assigneeId => ({
+                  assigneeId,
+                  statusId: notStartedStatus.id
+                }))
+              }
+            })
+          },
+          include: TaskService.include
+        })
+      })
+    )
+    const tasks = flatMap(results, r => r.status === 'fulfilled' ? [r.value] : [])
+
+    this.socket.emitToUrlName(
+      workspace.urlName,
+      SocketEventType.TASK_EXTRACTION_SUCCESS,
+      { sourceId: source.id, tasks }
+    )
+
+    return tasks
+  }
+
+  onModuleInit() {
+    this.taskRunner.sendTask(aiExtractionTaskName, [1])
   }
 }

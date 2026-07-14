@@ -161,7 +161,13 @@ export class TaskService {
   // FIX Dont include assignee users?
   async findInWorkspace(workspace: WorkspaceWithPermissions) {
     return await this.prisma.task.findMany({
-      where: { workspaceId: workspace.id, deletedAt: null },
+      where: {
+        workspaceId: workspace.id,
+        deletedAt: null,
+        source: {
+          draft: false
+        }
+      },
       include: TaskService.include,
       orderBy: TaskService.orderBy
     });
@@ -221,7 +227,10 @@ export class TaskService {
     return await this.prisma.task.findMany({
       where: {
         assigneeStatuses: { some: { assignee: { users: { some: { id: user.id } } } } },
-        deletedAt: null
+        deletedAt: null,
+        source: {
+          draft: false
+        }
       },
       include: TaskService.workspaceWithPermissionsInclude(user.id),
       orderBy: TaskService.orderBy
@@ -236,16 +245,16 @@ export class TaskService {
 
   async findPersonalRows(user: User) {
     const tasks = await this.findPersonal(user)
-    
+
     const workspaceIds = uniq(map(tasks, 'workspaceId'))
     const defaultStatuses = await this.findDefaultStatusInWorkspaces(...workspaceIds)
     const defaultStatusesMap = keyBy(defaultStatuses, 'workspaceId')
-    
+
     const taskRows = tasks
-    .map(task => TaskService.extractTaskToRows(task, defaultStatusesMap, task.workspace, user))
-    .flat()
-    .map(task => ({ ...task, workspace: TaskService.formatTaskWorkspace(task.workspace, user) }))
-    
+      .map(task => TaskService.extractTaskToRows(task, defaultStatusesMap, task.workspace, user))
+      .flat()
+      .map(task => ({ ...task, workspace: TaskService.formatTaskWorkspace(task.workspace, user) }))
+
     return taskRows
   }
 

@@ -4,6 +4,7 @@ model Source {
   date           DateTime?
   attachmentKey  String?   @map("attachment_key")
   attachmentName String?   @map("attachment_name")
+  draft          Boolean   @default(false)
 
   workspaceId Int       @map("workspace_id")
   workspace   Workspace @relation(fields: [workspaceId], references: [id])

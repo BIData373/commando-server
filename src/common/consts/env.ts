@@ -2,8 +2,8 @@ import { config } from "dotenv";
 import path from "node:path";
 
 export const envFilePath = [
-    path.join(__dirname, '../config/common.env'),
-    path.join(__dirname, `../config`, process.env.ENV ?? '', '.env')
+  path.join(__dirname, '../config/common.env'),
+  path.join(__dirname, `../config`, process.env.ENV ?? '', '.env')
 ]
 
 config({ path: envFilePath });
@@ -27,3 +27,13 @@ export const s3PublicUrl = process.env.S3_PUBLIC_URL
 export const s3RejectUnauthorized = process.env.S3_REJECT_UNAUTHORIZED !== 'false'
 
 export const sendForbiddenMessages = process.env.SEND_FORBIDDEN_MESSAGES === 'true'
+
+export const useRedis = JSON.parse(process.env.USE_REDIS ?? 'false')
+export const redisHost = process.env.REDIS_HOST
+export const redisPort = Number(process.env.REDIS_PORT ?? 6379)
+export const redisUsername = process.env.REDIS_USERNAME
+export const redisPassword = process.env.REDIS_PASSWORD
+export const redisSocketPrefix = process.env.REDIS_SOCKET_PREFIX
+
+// TODO - maybe default?
+export const aiExtractionTaskName = process.env.AI_EXTRACTION_TASK_NAME ?? ''

@@ -1,7 +1,7 @@
 import { Exclude, Type } from 'class-transformer';
 import { ExposeProperty } from '../../../../common/decorators/expose-property.decorator';
 import { IdMetaFieldsDto } from '../../../../common/dto/response/id-meta-fields.dto';
-import { DeadlineType } from '../../../../types/prisma';
+import { DeadlineType, TaskCreationType } from '../../../../types/prisma';
 import { SourceDto } from '../../../source/dto/response/source.dto';
 import { TagDto } from '../../../tag/dto/response/tag.dto';
 
@@ -18,6 +18,9 @@ export class TaskFieldsDto extends IdMetaFieldsDto {
 
   @ExposeProperty({ enumName: 'DeadlineType', enum: DeadlineType })
   deadlineType: DeadlineType;
+
+  @ExposeProperty({ enumName: 'TaskCreationType', enum: TaskCreationType })
+  creationType: TaskCreationType;
 
   @ExposeProperty({ type: Date, nullable: true })
   dueDate: Date | null;
