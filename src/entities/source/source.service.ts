@@ -192,7 +192,7 @@ export class SourceService {
               }
             })
           },
-          include: TaskService.include
+          include: TaskService.withWorkspaceInclude(source.createdBy)
         })
       })
     )
