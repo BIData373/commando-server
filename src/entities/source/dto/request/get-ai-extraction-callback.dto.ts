@@ -2,10 +2,10 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsArray, IsBoolean, IsEnum, IsOptional, ValidateIf, ValidateNested } from 'class-validator';
 import { TransformToBoolean } from '../../../../common/decorators/transform-to-boolean.decorator';
-import { ExtractionErrorReason } from '../../types/source-extraction-error-reason.enum';
-import { AIExtractedTaskDto } from './source-ai-extracted-task.dto';
+import { ExtractionErrorReason } from '../../enums/source-extraction-error-reason.enum';
+import { GetAIExtractedTaskDto } from './get-ai-extracted-task.dto';
 
-export class AIExtractionCallbackDto {
+export class GetAIExtractionCallbackDto {
   @ApiProperty()
   @IsBoolean()
   @TransformToBoolean()
@@ -17,11 +17,11 @@ export class AIExtractionCallbackDto {
   @IsOptional()
   reason?: ExtractionErrorReason;
 
-  @ApiPropertyOptional({ type: [AIExtractedTaskDto] })
+  @ApiPropertyOptional({ type: [GetAIExtractedTaskDto] })
   @ValidateIf(o => o.success === true)
   @IsArray()
   @ValidateNested({ each: true })
-  @Type(() => AIExtractedTaskDto)
+  @Type(() => GetAIExtractedTaskDto)
   @IsOptional()
-  tasks?: AIExtractedTaskDto[];
+  tasks?: GetAIExtractedTaskDto[];
 }

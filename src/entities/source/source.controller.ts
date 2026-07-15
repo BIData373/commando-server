@@ -6,8 +6,8 @@ import { Request } from 'express';
 import { memoryStorage } from 'multer';
 import { AddUserToContextInterceptor } from '../../common/interceptors/add-user-to-context.interceptor';
 import { GetViewerWorkspaceIdFieldDto } from '../workspace/dto/request/get-workspace-id-field.dto';
-import { AIExtractionCallbackDto } from './dto/request/source-ai-extraction-callback.dto';
 import { CreateSourceDto } from './dto/request/create-source.dto';
+import { GetAIExtractionCallbackDto } from './dto/request/get-ai-extraction-callback.dto';
 import { GetManagerSourceIdDto, GetViewerSourceIdDto } from './dto/request/get-source-id.dto';
 import { UpdateSourceDto } from './dto/request/update-source.dto';
 import { SourceDto } from './dto/response/source.dto';
@@ -94,11 +94,11 @@ export class SourceController {
 
   @ApiOperation({ operationId: 'aiExtractionCallback' })
   @ApiParam({ name: 'id', type: Number })
-  @ApiBody({ type: AIExtractionCallbackDto })
+  @ApiBody({ type: GetAIExtractionCallbackDto })
   @Post(':id/ai-result')
   async aiCallback(
     @Param() { context: { source } }: GetManagerSourceIdDto,
-    @Body() dto: AIExtractionCallbackDto
+    @Body() dto: GetAIExtractionCallbackDto
   ) {
     return await this.sourceService.processAiResult(source, dto);
   }

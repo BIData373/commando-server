@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { flatMap, intersection, map, uniq } from 'lodash';
-import { aiExtractionTaskName } from '../../common/consts/env';
 import { decodeMulterFilename } from '../../common/functions/string';
 import { PrismaService } from '../../common/prisma.service';
 import { SocketGateway } from '../../socket/socket.gateway';
@@ -10,9 +9,8 @@ import { DeadlineType, Prisma, Source, TaskCreationType } from '../../types/pris
 import { S3Service } from '../s3/s3.service';
 import { TaskService } from '../task/task.service';
 import { CreateSourceDto } from './dto/request/create-source.dto';
-import { AIExtractionCallbackDto } from './dto/request/source-ai-extraction-callback.dto';
+import { GetAIExtractionCallbackDto } from './dto/request/get-ai-extraction-callback.dto';
 import { UpdateSourceDto } from './dto/request/update-source.dto';
-
 
 @Injectable()
 export class SourceService {
@@ -62,7 +60,7 @@ export class SourceService {
     });
 
     if (aiExtraction) {
-      this.taskRunner.sendTask(aiExtractionTaskName, [source.id])
+      this.taskRunner.sendTask('vector.process_document', [source.id])
     }
 
     return source
@@ -138,7 +136,7 @@ export class SourceService {
     });
   }
 
-  async processAiResult(source: Source, dto: AIExtractionCallbackDto) {
+  async processAiResult(source: Source, dto: GetAIExtractionCallbackDto) {
     const workspace = await this.prisma.workspace.findUniqueOrThrow({
       where: { id: source.workspaceId }
     })
@@ -175,7 +173,6 @@ export class SourceService {
         return this.prisma.task.create({
           data: {
             title,
-            // TODO - what do we do, cause technically it has no default...
             deadlineType: deadlineType ?? DeadlineType.IMMEDIATE,
             dueDate: deadlineDate ? new Date(deadlineDate) : undefined,
             creationType: TaskCreationType.AI,
@@ -205,9 +202,5 @@ export class SourceService {
     )
 
     return tasks
-  }
-
-  onModuleInit() {
-    this.taskRunner.sendTask(aiExtractionTaskName, [1])
   }
 }

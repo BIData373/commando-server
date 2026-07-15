@@ -5,7 +5,7 @@ import { IsNotEmptyString } from '../../../../common/decorators/is-not-empty-str
 import { IsPositiveInt } from '../../../../common/decorators/is-positive-int.decorator';
 import { DeadlineType } from '../../../../types/prisma';
 
-export class AIExtractedTaskDto {
+export class GetAIExtractedTaskDto {
   @ApiProperty()
   @IsNotEmptyString()
   title: string;

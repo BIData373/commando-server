@@ -35,5 +35,9 @@ export const redisUsername = process.env.REDIS_USERNAME
 export const redisPassword = process.env.REDIS_PASSWORD
 export const redisSocketPrefix = process.env.REDIS_SOCKET_PREFIX
 
-// TODO - maybe default?
-export const aiExtractionTaskName = process.env.AI_EXTRACTION_TASK_NAME ?? ''
+export const taskRunnerEnabled = process.env.TASK_RUNNER_ENABLED === 'true'
+export const rabbitmqUseSsl = process.env.RABBITMQ_USE_SSL === 'true'
+export const rabbitmqHost = process.env.RABBITMQ_HOST
+export const rabbitmqPort = Number(process.env.RABBITMQ_PORT)
+export const rabbitmqVhost = process.env.RABBITMQ_VHOST ?? '/'
+export const rabbitmqQueue = process.env.RABBITMQ_QUEUE

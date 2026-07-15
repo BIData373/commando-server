@@ -1,22 +1,33 @@
 import { AmqpConnection } from '@golevelup/nestjs-rabbitmq';
-import { Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import { Injectable, Optional } from '@nestjs/common';
+import { InjectPinoLogger, PinoLogger } from 'pino-nestjs';
 import { randomUUID } from 'node:crypto';
+import { rabbitmqQueue, taskRunnerEnabled } from '../common/consts/env';
+import { TaskRegistry } from './interfaces/task-registry.interface';
 
 @Injectable()
 export class TaskRunnerService {
   constructor(
     private readonly amqp: AmqpConnection,
-    private readonly config: ConfigService,
+    @InjectPinoLogger(TaskRunnerService.name) private readonly logger: PinoLogger,
   ) { }
 
-  sendTask(name: string, args: unknown[] = [], kwargs: Record<string, unknown> = {}): void {
+  sendTask<
+    TTaskName extends keyof TaskRegistry,
+    TTaskArgs extends TaskRegistry[TTaskName]['args'],
+    TTaskKwargs extends TaskRegistry[TTaskName]['kwargs']
+  >(name: TTaskName, args?: TTaskArgs, kwargs?: TTaskKwargs): void {
+    if (!taskRunnerEnabled) {
+      this.logger.info(`Task runner disabled — ignoring task "${name}"`);
+      return;
+    }
+
     const id = randomUUID();
 
     const body = Buffer.from(
       JSON.stringify([
-        args,
-        kwargs,
+        args ?? [],
+        kwargs ?? {},
         {
           callbacks: null,
           errbacks: null,
@@ -28,7 +39,7 @@ export class TaskRunnerService {
     );
 
     this.amqp.channel.sendToQueue(
-      this.config.getOrThrow<string>("RABBITMQ_QUEUE"),
+      rabbitmqQueue!,
       body,
       {
         contentType: "application/json",
