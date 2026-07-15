@@ -28,7 +28,7 @@ export class SourceService {
   ) { }
 
   async create(
-    { tags, workspaceId, context, aiExtraction, ...dto }: CreateSourceDto,
+    { tags, workspaceId, context, aiExtraction, draft, ...dto }: CreateSourceDto,
     userId: number,
     file?: Express.Multer.File
   ) {
@@ -41,7 +41,7 @@ export class SourceService {
         workspaceId,
         attachmentKey,
         attachmentName,
-        draft: aiExtraction,
+        draft: aiExtraction || draft,
         extractionStatus: aiExtraction ? ExtractionStatus.PENDING : undefined,
         ...(tags !== undefined && ({
           tags: {
@@ -99,7 +99,7 @@ export class SourceService {
   async update(
     { id, workspaceId, ...source }: Source,
     // TODO - fix
-    { tags, context, deleteAttachment, workspaceId: _, aiExtraction, ...dto }: UpdateSourceDto,
+    { tags, context, deleteAttachment, workspaceId: _, aiExtraction, draft, ...dto }: UpdateSourceDto,
     updatedBy: number,
     file?: Express.Multer.File
   ) {
@@ -130,7 +130,7 @@ export class SourceService {
         attachmentKey,
         attachmentName,
         updatedBy,
-        draft: aiExtraction,
+        draft: aiExtraction || draft,
         ...(tags !== undefined && {
           tags: {
             connectOrCreate: tags.map(name => ({
