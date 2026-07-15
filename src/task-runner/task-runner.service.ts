@@ -1,5 +1,5 @@
 import { AmqpConnection } from '@golevelup/nestjs-rabbitmq';
-import { Injectable } from '@nestjs/common';
+import { Injectable, Optional } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
 import { InjectPinoLogger, PinoLogger } from 'pino-nestjs';
 import { rabbitmqQueue, taskRunnerEnabled } from '../common/consts/env';
@@ -8,7 +8,7 @@ import { TaskRegistry } from './interfaces/task-registry.interface';
 @Injectable()
 export class TaskRunnerService {
   constructor(
-    private readonly amqp: AmqpConnection,
+    @Optional() private readonly amqp: AmqpConnection,
     @InjectPinoLogger(TaskRunnerService.name) private readonly logger: PinoLogger,
   ) { }
 
