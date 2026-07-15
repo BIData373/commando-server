@@ -40,4 +40,10 @@ export class CreateSourceDto extends GetManagerWorkspaceIdFieldDto {
   @IsBoolean()
   @TransformToBoolean()
   aiExtraction?: boolean;
+
+  @ApiPropertyOptional({ default: false })
+  @IsOptional()
+  @IsBoolean()
+  @TransformToBoolean()
+  draft?: boolean;
 }
