@@ -1,27 +1,21 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsArray, IsBoolean, IsEnum, IsOptional, ValidateIf, ValidateNested } from 'class-validator';
-import { TransformToBoolean } from '../../../../common/decorators/transform-to-boolean.decorator';
-import { ExtractionErrorReason } from '../../enums/source-extraction-error-reason.enum';
+import { IsArray, IsEnum, IsOptional, ValidateIf, ValidateNested } from 'class-validator';
+import { ExtractionStatus } from '../../../../types/prisma';
 import { GetAIExtractedTaskDto } from './get-ai-extracted-task.dto';
 
 export class GetAIExtractionCallbackDto {
-  @ApiProperty()
-  @IsBoolean()
-  @TransformToBoolean()
-  success: boolean;
-
-  @ApiPropertyOptional({ enumName: 'ExtractionErrorReason', enum: ExtractionErrorReason })
-  @ValidateIf(o => o.success === false)
-  @IsEnum(ExtractionErrorReason)
+  // TODO - technically this allows all statuses to come through, not just errors
+  @ApiPropertyOptional({ enumName: 'ExtractionStatus', enum: ExtractionStatus })
+  @IsEnum(ExtractionStatus)
   @IsOptional()
-  reason?: ExtractionErrorReason;
+  error?: ExtractionStatus
 
   @ApiPropertyOptional({ type: [GetAIExtractedTaskDto] })
-  @ValidateIf(o => o.success === true)
+  @ValidateIf(o => o.error == null)
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => GetAIExtractedTaskDto)
   @IsOptional()
-  tasks?: GetAIExtractedTaskDto[];
+  tasks?: GetAIExtractedTaskDto[]
 }

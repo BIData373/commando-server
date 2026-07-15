@@ -293,6 +293,20 @@ export class TaskService {
     return taskRows
   }
 
+  async findBySource(sourceId: number, userId?: number) {
+    return await this.prisma.task.findMany({
+      where: { sourceId, deletedAt: null },
+      include: TaskService.baseInclude(userId),
+      orderBy: TaskService.orderBy
+    });
+  }
+
+  async findFormattedBySource(sourceId: number, workspace: WorkspaceWithPermissions, user: User) {
+    const tasks = await this.findBySource(sourceId, user.id)
+
+    return tasks.map(task => TaskService.formatAdditionalTaskFields(task, workspace, user));
+  }
+
   async findPersonal(user: User) {
     return await this.prisma.task.findMany({
       where: {

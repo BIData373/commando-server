@@ -9,8 +9,6 @@ import 'reflect-metadata';
 import { AppModule, openApiRoute } from './app.module';
 import { isDev, port, serverPrefix, ssoEnabled, swaggerEnabled, useRedis } from './common/consts/env';
 import { staticTokenHeader } from './common/consts/headers';
-import { SourceExtractionFailureDto } from './entities/source/dto/response/source-extraction-failure.dto';
-import { SourceExtractionSuccessDto } from './entities/source/dto/response/source-extraction-success.dto';
 import { SocketEventDto } from './socket/dto/socket-event.dto';
 import { RedisAdapter } from './socket/redis.adapter';
 
@@ -53,8 +51,6 @@ async function bootstrap() {
       autoTagControllers: true,
       extraModels: [
         SocketEventDto,
-        SourceExtractionSuccessDto,
-        SourceExtractionFailureDto,
       ]
     });
 

@@ -1,10 +1,11 @@
 model Source {
-  id             Int       @id @default(autoincrement())
-  name           String
-  date           DateTime?
-  attachmentKey  String?   @map("attachment_key")
-  attachmentName String?   @map("attachment_name")
-  draft          Boolean   @default(false)
+  id               Int               @id @default(autoincrement())
+  name             String
+  date             DateTime?
+  attachmentKey    String?           @map("attachment_key")
+  attachmentName   String?           @map("attachment_name")
+  draft            Boolean           @default(false)
+  extractionStatus ExtractionStatus? @map("extraction_status")
 
   workspaceId Int       @map("workspace_id")
   workspace   Workspace @relation(fields: [workspaceId], references: [id])
@@ -22,4 +23,13 @@ model Source {
   tags Tag[] @relation("sources_tags")
 
   @@map("sources")
+}
+
+enum ExtractionStatus {
+  PENDING
+  IN_PROGRESS
+  BACKEND_ERROR
+  AI_SERVICE_ERROR
+  FINISHED_WITH_TASKS
+  FINISHED_WITHOUT_TASKS
 }

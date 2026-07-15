@@ -11,6 +11,7 @@ import { GetAIExtractionCallbackDto } from './dto/request/get-ai-extraction-call
 import { GetManagerSourceIdDto, GetViewerSourceIdDto } from './dto/request/get-source-id.dto';
 import { UpdateSourceDto } from './dto/request/update-source.dto';
 import { SourceDto } from './dto/response/source.dto';
+import { SourceWithTasksDto } from './dto/response/source-with-tasks.dto';
 import { SourceService } from './source.service';
 
 @Controller('source')
@@ -52,12 +53,12 @@ export class SourceController {
   @ApiOperation({ operationId: 'getSource' })
   @ApiParam({ name: 'id', type: Number })
   @Get(':id')
-  @ApiOkResponse({ type: SourceDto })
-  @TransformPlainToInstance(SourceDto)
+  @ApiOkResponse({ type: SourceWithTasksDto })
+  @TransformPlainToInstance(SourceWithTasksDto)
   async findOne(
-    @Param() { id }: GetViewerSourceIdDto
+    @Param() { id, context: { user } }: GetViewerSourceIdDto
   ) {
-    return await this.sourceService.findOne(id);
+    return await this.sourceService.findOne(id, user);
   }
 
   @ApiOperation({ operationId: 'updateSource' })
@@ -92,10 +93,23 @@ export class SourceController {
     return await this.sourceService.remove(id, user.id);
   }
 
+  @ApiOperation({ operationId: 'extractSource' })
+  @ApiParam({ name: 'id', type: Number })
+  @Post(':id/extract')
+  @ApiOkResponse({ type: SourceDto })
+  @TransformPlainToInstance(SourceDto)
+  async extract(
+    @Param() { context: { source } }: GetManagerSourceIdDto,
+  ) {
+    return await this.sourceService.extract(source);
+  }
+
   @ApiOperation({ operationId: 'aiExtractionCallback' })
   @ApiParam({ name: 'id', type: Number })
   @ApiBody({ type: GetAIExtractionCallbackDto })
   @Post(':id/ai-result')
+  @ApiOkResponse({ type: SourceWithTasksDto })
+  @TransformPlainToInstance(SourceWithTasksDto)
   async aiCallback(
     @Param() { context: { source } }: GetManagerSourceIdDto,
     @Body() dto: GetAIExtractionCallbackDto

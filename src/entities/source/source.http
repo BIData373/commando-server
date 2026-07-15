@@ -84,12 +84,23 @@ DELETE {{baseUrl}}/source/{{sourceId}}
 
 ?? status == 200
 
-### AI Result — success
+### Extract source — valid
+POST {{baseUrl}}/source/{{sourceId}}/extract
+...headers
+
+?? status == 201
+
+### Extract source — non-existent id (expect 400)
+POST {{baseUrl}}/source/99999/extract
+...headers
+
+?? status == 400
+
+### AI Result — success with tasks
 POST {{baseUrl}}/source/{{sourceId}}/ai-result
 ...headers
 
 {
-  "success": true,
   "tasks": [
     {
       "title": "Review extracted document",
@@ -108,24 +119,45 @@ POST {{baseUrl}}/source/{{sourceId}}/ai-result
 
 ?? status == 201
 
-### AI Result — failure (EXTRACTION error)
+### AI Result — success without tasks
+POST {{baseUrl}}/source/{{sourceId}}/ai-result
+...headers
+
+{}
+
+?? status == 201
+
+### AI Result — failure (BACKEND_ERROR)
 POST {{baseUrl}}/source/{{sourceId}}/ai-result
 ...headers
 
 {
-  "success": false,
-  "reason": "BACKEND_ERROR"
+  "error": "BACKEND_ERROR"
 }
 
 ?? status == 201
 
-### AI Result — failure (AI_SERVICE error)
+### AI Result — failure (AI_SERVICE_ERROR)
 POST {{baseUrl}}/source/{{sourceId}}/ai-result
 ...headers
 
 {
-  "success": false,
-  "reason": "AI_SERVICE_ERROR"
+  "error": "AI_SERVICE_ERROR"
+}
+
+?? status == 201
+
+
+
+
+
+################
+### AI Result — failure (AI_SERVICE_ERROR)
+POST http://localhost:3000/source/36/ai-result
+Content-Type: application/json
+
+{
+  "error": "AI_SERVICE_ERROR"
 }
 
 ?? status == 201
