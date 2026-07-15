@@ -1,13 +1,12 @@
 import { OnGatewayConnection, OnGatewayDisconnect, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets'
 import { Server, Socket } from 'socket.io'
+import { resolveUser } from '../common/functions/cookie'
 import { PrismaService } from '../common/prisma.service'
 import { viewerTypes } from '../entities/permission/consts/permission-types'
 import { PermissionService } from '../entities/permission/permission.service'
 import { PermissionType } from '../types/prisma'
-import { SocketEventType } from './types/socket-event-type.enum'
-import { ISocketEvent } from './types/socket-event.interface'
-import { resolveUser } from '../common/functions/cookie'
 import { SOCKET_UPN } from './consts/socket-data'
+import { SocketEventType } from './types/socket-event-type.enum'
 
 
 @WebSocketGateway({ cors: { credentials: true, origin: true } })
