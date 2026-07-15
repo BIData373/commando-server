@@ -1,7 +1,7 @@
 import { AmqpConnection } from '@golevelup/nestjs-rabbitmq';
-import { Injectable, Optional } from '@nestjs/common';
-import { InjectPinoLogger, PinoLogger } from 'pino-nestjs';
+import { Injectable } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
+import { InjectPinoLogger, PinoLogger } from 'pino-nestjs';
 import { rabbitmqQueue, taskRunnerEnabled } from '../common/consts/env';
 import { TaskRegistry } from './interfaces/task-registry.interface';
 
