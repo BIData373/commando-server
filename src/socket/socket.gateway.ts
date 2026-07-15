@@ -39,6 +39,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   handleDisconnect(_client: Socket): void { }
 
+  // TODO - handle live updates for personal page via adding the user to multiple rooms
   @SubscribeMessage('join')
   async handleJoin(client: Socket, urlName: string): Promise<void> {
     const workspace = await this.prisma.workspace.findUnique({
