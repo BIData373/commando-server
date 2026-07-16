@@ -1,0 +1,3 @@
+export enum SocketEventType {
+  TASK_EXTRACTION_FINISHED = 'TASK_EXTRACTION_FINISHED',
+}

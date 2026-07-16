@@ -7,8 +7,10 @@ import express, { json, urlencoded } from 'express';
 import { Logger } from 'pino-nestjs';
 import 'reflect-metadata';
 import { AppModule, openApiRoute } from './app.module';
-import { isDev, port, serverPrefix, ssoEnabled, swaggerEnabled } from './common/consts/env';
+import { isDev, port, serverPrefix, ssoEnabled, swaggerEnabled, useRedis } from './common/consts/env';
 import { staticTokenHeader } from './common/consts/headers';
+import { SocketEventDto } from './socket/dto/socket-event.dto';
+import { RedisAdapter } from './socket/redis.adapter';
 
 const server = express()
 
@@ -29,7 +31,6 @@ async function bootstrap() {
   );
 
   app.useLogger(app.get(Logger));
-
   app.setGlobalPrefix(serverPrefix);
 
   if (swaggerEnabled) {
@@ -48,6 +49,9 @@ async function bootstrap() {
 
     const document = SwaggerModule.createDocument(app, config, {
       autoTagControllers: true,
+      extraModels: [
+        SocketEventDto,
+      ]
     });
 
     SwaggerModule.setup(openApiRoute, app, document, {
@@ -59,6 +63,12 @@ async function bootstrap() {
 
   app.use(json({ limit: '10mb' }));
   app.use(urlencoded({ extended: true, limit: '10mb' }));
+
+  if (useRedis) {
+    const redisAdapter = new RedisAdapter(app)
+    await redisAdapter.connect()
+    app.useWebSocketAdapter(redisAdapter)
+  }
 
   useContainer(app.select(AppModule), { fallbackOnErrors: true });
 

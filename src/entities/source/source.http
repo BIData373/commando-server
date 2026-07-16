@@ -17,6 +17,18 @@ attachment< ./sample.pdf
 
 ?? status == 201
 
+### Create Source — with AI extraction
+POST {{baseUrl}}/source
+...headers
+Content-Type: multipart/form-data
+
+name=AI Extracted Source
+workspaceId={{workspaceId}}
+aiExtraction=true
+attachment< ./sample.pdf
+
+?? status == 201
+
 ### Create Source — missing required field (expect 400)
 POST {{baseUrl}}/source
 ...headers
@@ -71,3 +83,66 @@ DELETE {{baseUrl}}/source/{{sourceId}}
 ...headers
 
 ?? status == 200
+
+### Extract source — valid
+POST {{baseUrl}}/source/{{sourceId}}/extract
+...headers
+
+?? status == 201
+
+### Extract source — non-existent id (expect 400)
+POST {{baseUrl}}/source/99999/extract
+...headers
+
+?? status == 400
+
+### AI Result — success with tasks
+POST {{baseUrl}}/source/{{sourceId}}/ai-result
+...headers
+
+{
+  "tasks": [
+    {
+      "title": "Review extracted document",
+      "deadlineType": "DATE",
+      "deadlineDate": "2026-08-01T00:00:00.000Z",
+      "assigneeIds": []
+    },
+    {
+      "title": "Follow up with team",
+      "deadlineType": null,
+      "deadlineDate": null,
+      "assigneeIds": []
+    }
+  ]
+}
+
+?? status == 201
+
+### AI Result — success without tasks
+POST {{baseUrl}}/source/{{sourceId}}/ai-result
+...headers
+
+{}
+
+?? status == 201
+
+### AI Result — failure (BACKEND_ERROR)
+POST {{baseUrl}}/source/{{sourceId}}/ai-result
+...headers
+
+{
+  "error": "BACKEND_ERROR"
+}
+
+?? status == 201
+
+### AI Result — failure (AI_SERVICE_ERROR)
+POST {{baseUrl}}/source/{{sourceId}}/ai-result
+...headers
+
+{
+  "error": "AI_SERVICE_ERROR"
+}
+
+?? status == 201
