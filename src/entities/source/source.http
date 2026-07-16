@@ -146,18 +146,3 @@ POST {{baseUrl}}/source/{{sourceId}}/ai-result
 }
 
 ?? status == 201
-
-
-
-
-
-################
-### AI Result — failure (AI_SERVICE_ERROR)
-POST http://localhost:3000/source/36/ai-result
-Content-Type: application/json
-
-{
-  "error": "AI_SERVICE_ERROR"
-}
-
-?? status == 201

@@ -4,12 +4,21 @@ import { IsArray, IsEnum, IsOptional, ValidateIf, ValidateNested } from 'class-v
 import { ExtractionStatus } from '../../../../types/prisma';
 import { GetAIExtractedTaskDto } from './get-ai-extracted-task.dto';
 
+export const ExtractionStatusErrors = {
+  AI_SERVICE_ERROR: ExtractionStatus.AI_SERVICE_ERROR,
+  BACKEND_ERROR: ExtractionStatus.BACKEND_ERROR,
+} as Partial<Record<keyof typeof ExtractionStatus, ExtractionStatus>>;
+
+export type ExtractionStatusErrorsType = typeof ExtractionStatusErrors[keyof typeof ExtractionStatusErrors];
+
 export class GetAIExtractionCallbackDto {
-  // TODO - technically this allows all statuses to come through, not just errors
-  @ApiPropertyOptional({ enumName: 'ExtractionStatus', enum: ExtractionStatus })
-  @IsEnum(ExtractionStatus)
+  @ApiPropertyOptional({
+    enumName: 'ExtractionErrorStatus',
+    enum: ExtractionStatusErrors
+  })
+  @IsEnum(ExtractionStatusErrors)
   @IsOptional()
-  error?: ExtractionStatus
+  error?: ExtractionStatusErrorsType
 
   @ApiPropertyOptional({ type: [GetAIExtractedTaskDto] })
   @ValidateIf(o => o.error == null)
