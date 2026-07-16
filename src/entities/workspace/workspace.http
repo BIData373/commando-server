@@ -1,5 +1,18 @@
 # @import ../../../global.http
+{{
+    const local = 'http://localhost:3000'
+    const dev = ''
 
+    exports.baseUrl = local
+    exports.headers = {
+        'Content-Type': 'application/json',
+        'static-token': '3650244b-61fc-4f75-95eb-359d7483ff70',
+        'requestusername': 'yael',
+        'is-bi': true
+    }
+
+    exports.workspaceId = 1
+}}
 ### Create Workspace — valid payload
 POST {{baseUrl}}/workspace
 ...headers
@@ -9,7 +22,7 @@ POST {{baseUrl}}/workspace
   "urlName": "test-center",
   "icon": "ops-icon",
   "assigneeStatusEditable": true,
-  "pikudId": 1
+  "pikudId": 19
 }
 
 {{@response
@@ -62,6 +75,13 @@ DELETE {{baseUrl}}/workspace/99999
 
 ### Delete Workspace
 DELETE {{baseUrl}}/workspace/{{workspaceId}}
+...headers
+
+?? status == 200
+
+###
+
+GET {{baseUrl}}/workspace/mine
 ...headers
 
 ?? status == 200

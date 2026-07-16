@@ -10,6 +10,7 @@ import { GetOptionalWorkspaceUrlNameDto } from './dto/request/get-workspace-url-
 import { UpdateWorkspaceDto } from './dto/request/update-workspace.dto';
 import { WorkspaceDto } from './dto/response/workspace.dto';
 import { WorkspaceService } from './workspace.service';
+import { WorkspaceWithPermissionDto } from './dto/response/workspace-with-permission.dto';
 
 @Controller('workspace')
 export class WorkspaceController {
@@ -38,6 +39,16 @@ export class WorkspaceController {
     @Query() { context }: GetOptionalWorkspaceUrlNameDto
   ) {
     return await this.workspaceService.findAll(context?.workspace)
+  }
+
+  @ApiOperation({ operationId: 'getUserWorkspaces' })
+  @Get('mine')
+  @ApiOkResponse({ type: [WorkspaceWithPermissionDto] })
+  @TransformPlainToInstance(WorkspaceWithPermissionDto)
+  async findMine(
+    @Req() { user }: Request,
+  ) {
+    return await this.workspaceService.findUserWorkspaces(user.id)
   }
 
   @ApiOperation({ operationId: 'getWorkspace' })

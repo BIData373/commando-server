@@ -36,6 +36,33 @@ export class WorkspaceService {
       });
   }
 
+  async findUserWorkspaces(userId: number) {
+    const workspaces = await this.prisma.workspace.findMany({
+      where: {
+        deletedAt: null,
+        permissions: {
+          some: {
+            userId
+          },
+        },
+      },
+      include: {
+        permissions: {
+          where: {
+            userId
+          },
+          select: {
+            type: true
+          }
+        }
+      }
+    })
+    return workspaces.map(({ permissions, ...workspace }) => ({
+      ...workspace,
+      permissionType: permissions[0].type
+    }))
+  }
+
   async findOne(id: number) {
     return await this.prisma.workspace.findUnique({
       where: { id, deletedAt: null }
