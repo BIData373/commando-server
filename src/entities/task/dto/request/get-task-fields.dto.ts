@@ -3,7 +3,7 @@ import { Type } from "class-transformer";
 import { IsArray, IsBoolean, IsDate, IsEnum, IsOptional, IsString } from "class-validator";
 import { IsNotEmptyString } from "../../../../common/decorators/is-not-empty-string.decorator";
 import { GetContextDto } from "../../../../common/dto/request/get-context.dto";
-import { DeadlineType } from "../../../../types/prisma";
+import { DeadlineType, TaskCreationType } from "../../../../types/prisma";
 import { IUserContext } from "../../../user/interfaces/user-context.interface";
 
 export class GetTaskFieldsDto extends GetContextDto<IUserContext> {
@@ -41,4 +41,9 @@ export class GetTaskFieldsDto extends GetContextDto<IUserContext> {
   @IsArray()
   @IsNotEmptyString({ each: true })
   tags?: string[]
+
+  @ApiProperty({ enumName: 'TaskCreationType', enum: TaskCreationType, required: false })
+  @IsOptional()
+  @IsEnum(TaskCreationType)
+  creationType?: TaskCreationType;
 }

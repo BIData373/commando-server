@@ -4,13 +4,15 @@ import { ApiBody, ApiConsumes, ApiCreatedResponse, ApiOkResponse, ApiOperation, 
 import { TransformPlainToInstance } from 'class-transformer';
 import { Request } from 'express';
 import { memoryStorage } from 'multer';
+import { AddUserToContextInterceptor } from '../../common/interceptors/add-user-to-context.interceptor';
 import { GetViewerWorkspaceIdFieldDto } from '../workspace/dto/request/get-workspace-id-field.dto';
 import { CreateSourceDto } from './dto/request/create-source.dto';
+import { GetAIExtractionCallbackDto } from './dto/request/get-ai-extraction-callback.dto';
 import { GetManagerSourceIdDto, GetViewerSourceIdDto } from './dto/request/get-source-id.dto';
 import { UpdateSourceDto } from './dto/request/update-source.dto';
 import { SourceDto } from './dto/response/source.dto';
+import { SourceWithTasksDto } from './dto/response/source-with-tasks.dto';
 import { SourceService } from './source.service';
-import { AddUserToContextInterceptor } from '../../common/interceptors/add-user-to-context.interceptor';
 
 @Controller('source')
 export class SourceController {
@@ -51,12 +53,12 @@ export class SourceController {
   @ApiOperation({ operationId: 'getSource' })
   @ApiParam({ name: 'id', type: Number })
   @Get(':id')
-  @ApiOkResponse({ type: SourceDto })
-  @TransformPlainToInstance(SourceDto)
+  @ApiOkResponse({ type: SourceWithTasksDto })
+  @TransformPlainToInstance(SourceWithTasksDto)
   async findOne(
-    @Param() { id }: GetViewerSourceIdDto
+    @Param() { id, context: { user } }: GetViewerSourceIdDto
   ) {
-    return await this.sourceService.findOne(id);
+    return await this.sourceService.findOne(id, user);
   }
 
   @ApiOperation({ operationId: 'updateSource' })
@@ -89,5 +91,29 @@ export class SourceController {
     @Param() { id }: GetManagerSourceIdDto
   ) {
     return await this.sourceService.remove(id, user.id);
+  }
+
+  @ApiOperation({ operationId: 'extractSource' })
+  @ApiParam({ name: 'id', type: Number })
+  @Post(':id/extract')
+  @ApiOkResponse({ type: SourceDto })
+  @TransformPlainToInstance(SourceDto)
+  async extract(
+    @Param() { context: { source } }: GetManagerSourceIdDto,
+  ) {
+    return await this.sourceService.extract(source);
+  }
+
+  @ApiOperation({ operationId: 'aiExtractionCallback' })
+  @ApiParam({ name: 'id', type: Number })
+  @ApiBody({ type: GetAIExtractionCallbackDto })
+  @Post(':id/ai-result')
+  @ApiOkResponse({ type: SourceWithTasksDto })
+  @TransformPlainToInstance(SourceWithTasksDto)
+  async aiCallback(
+    @Param() { context: { source } }: GetManagerSourceIdDto,
+    @Body() dto: GetAIExtractionCallbackDto
+  ) {
+    return await this.sourceService.processAiResult(source, dto);
   }
 }

@@ -23,6 +23,8 @@ import { TaskModule } from './entities/task/task.module';
 import { UserModule } from './entities/user/user.module';
 import { WorkspaceStatusModule } from './entities/workspace-status/workspace-status.module';
 import { WorkspaceModule } from './entities/workspace/workspace.module';
+import { SocketModule } from './socket/socket.module';
+import { TaskRunnerModule } from './task-runner/task-runner.module';
 
 // FIX Move to env
 export const openApiRoute = 'open-api'
@@ -49,6 +51,7 @@ export const openApiRoute = 'open-api'
       },
     }),
     PrismaModule,
+    TaskRunnerModule,
     PikudModule,
     WorkspaceModule,
     TagModule,
@@ -61,6 +64,7 @@ export const openApiRoute = 'open-api'
     PermissionModule,
     MessageModule,
     TaskHistoryModule,
+    SocketModule,
   ],
   providers: [
     BIGuard,

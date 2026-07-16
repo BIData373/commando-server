@@ -1,12 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { keyBy, map, uniq } from 'lodash';
+import { renderTemplate } from '../../common/functions/template';
 import { PrismaService } from '../../common/prisma.service';
 import { PermissionType, Prisma, Task, User, WorkspaceStatus } from '../../types/prisma';
 import { WorkspaceWithPermissions } from '../workspace/types/workspace-with-permission.type';
 import { CreateTaskDto } from './dto/request/create-task.dto';
 import { UpdateTaskDto } from './dto/request/update-task.dto';
 import { MessageRelayService } from '../services/message-relay.service';
-import { renderTemplate } from '../../common/functions/template';
 
 type AssigneeStatusInclude = {
   include: { assignee: { include: { users: true } }; status: true };
@@ -233,7 +233,11 @@ export class TaskService {
   // FIX Dont include assignee users?
   async findInWorkspace(workspace: WorkspaceWithPermissions) {
     return await this.prisma.task.findMany({
-      where: { workspaceId: workspace.id, deletedAt: null },
+      where: {
+        workspaceId: workspace.id,
+        deletedAt: null,
+        source: { draft: false }
+      },
       include: TaskService.baseInclude(),
       orderBy: TaskService.orderBy
     });
@@ -289,11 +293,28 @@ export class TaskService {
     return taskRows
   }
 
+  async findBySource(sourceId: number, userId?: number) {
+    return await this.prisma.task.findMany({
+      where: { sourceId, deletedAt: null },
+      include: TaskService.baseInclude(userId),
+      orderBy: TaskService.orderBy
+    });
+  }
+
+  async findFormattedBySource(sourceId: number, workspace: WorkspaceWithPermissions, user: User) {
+    const tasks = await this.findBySource(sourceId, user.id)
+
+    return tasks.map(task => TaskService.formatAdditionalTaskFields(task, workspace, user));
+  }
+
   async findPersonal(user: User) {
     return await this.prisma.task.findMany({
       where: {
         assigneeStatuses: { some: { assignee: { users: { some: { id: user.id } } } } },
-        deletedAt: null
+        deletedAt: null,
+        source: {
+          draft: false
+        }
       },
       include: TaskService.withWorkspaceInclude(user.id),
       orderBy: TaskService.orderBy
