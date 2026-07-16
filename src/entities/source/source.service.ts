@@ -96,6 +96,12 @@ export class SourceService {
     return { ...source, tasks };
   }
 
+  async findOneAndEmit(id: number, user: User, urlName: string) {
+    const result = await this.findOne(id, user)
+    this.socket.emitToUrlName(urlName, SocketEventType.TASK_EXTRACTION_FINISHED, result)
+    return result
+  }
+
   async update(
     { id, workspaceId, ...source }: Source,
     // TODO - fix
@@ -187,9 +193,7 @@ export class SourceService {
         where: { id: source.id },
         data: { extractionStatus: dto.error }
       })
-      const result = await this.findOne(source.id, user)
-      this.socket.emitToUrlName(workspace.urlName, SocketEventType.TASK_EXTRACTION_FINISHED, result)
-      return result
+      return await this.findOneAndEmit(source.id, user, workspace.urlName)
     }
 
     const assigneeIds = uniq(flatMap(dto.tasks, 'assigneeIds'))
@@ -251,10 +255,6 @@ export class SourceService {
       data: { extractionStatus }
     })
 
-    const result = await this.findOne(source.id, user)
-
-    this.socket.emitToUrlName(workspace.urlName, SocketEventType.TASK_EXTRACTION_FINISHED, result)
-
-    return result
+    return await this.findOneAndEmit(source.id, user, workspace.urlName)
   }
 }
