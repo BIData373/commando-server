@@ -3,10 +3,10 @@ import { keyBy, map, uniq } from 'lodash';
 import { renderTemplate } from '../../common/functions/template';
 import { PrismaService } from '../../common/prisma.service';
 import { PermissionType, Prisma, Task, User, WorkspaceStatus } from '../../types/prisma';
+import { MessageRelayService } from '../services/message-relay.service';
 import { WorkspaceWithPermissions } from '../workspace/types/workspace-with-permission.type';
 import { CreateTaskDto } from './dto/request/create-task.dto';
 import { UpdateTaskDto } from './dto/request/update-task.dto';
-import { MessageRelayService } from '../services/message-relay.service';
 
 type AssigneeStatusInclude = {
   include: { assignee: { include: { users: true } }; status: true };
@@ -41,13 +41,10 @@ export class TaskService {
       assigneeStatuses: {
         where: { assignee: { deletedAt: null } },
         orderBy: { assigneeId: 'asc' },
+        ...(userId && { where: { assignee: { users: { some: { id: userId } } } } }),
         include: {
           assignee: {
-            include: {
-              users: userId
-                ? { where: { id: userId } }
-                : true
-            }
+            include: { users: true }
           },
           status: true
         }
@@ -55,9 +52,9 @@ export class TaskService {
     } satisfies Prisma.TaskInclude
   }
 
-  static withWorkspaceInclude(userId?: number) {
+  static withWorkspaceInclude(userId?: number, filterAssignees: boolean = false) {
     return {
-      ...TaskService.baseInclude(userId),
+      ...TaskService.baseInclude(filterAssignees ? userId : undefined),
       workspace: {
         include: {
           permissions: userId
@@ -316,7 +313,7 @@ export class TaskService {
           draft: false
         }
       },
-      include: TaskService.withWorkspaceInclude(user.id),
+      include: TaskService.withWorkspaceInclude(user.id, true),
       orderBy: TaskService.orderBy
     });
   }
