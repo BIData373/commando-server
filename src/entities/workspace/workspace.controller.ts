@@ -29,7 +29,6 @@ export class WorkspaceController {
     return await this.workspaceService.create(dto, user.id);
   }
 
-  // TODO - list all doesn't work, it forces
   @ApiOperation({ operationId: 'listWorkspaces' })
   @ApiQuery({ name: 'urlName', type: String, required: false })
   @Get()
@@ -37,19 +36,19 @@ export class WorkspaceController {
   @TransformPlainToInstance(WorkspaceWithPermissionDto)
   async findAll(
     @Req() { user }: Request,
-    @Query() { context }: GetOptionalWorkspaceUrlNameDto
+    @Query() { context: { workspace } }: GetOptionalWorkspaceUrlNameDto
   ) {
-    return await this.workspaceService.findAll(user.id, context?.workspace)
+    return await this.workspaceService.findAll(user.id, workspace)
   }
 
-  @ApiOperation({ operationId: 'getUserWorkspaces' })
-  @Get('mine')
+  @ApiOperation({ operationId: 'getPermittedWorkspaces' })
+  @Get('permitted')
   @ApiOkResponse({ type: [WorkspaceWithPermissionDto] })
   @TransformPlainToInstance(WorkspaceWithPermissionDto)
-  async findMine(
+  async findPermitted(
     @Req() { user }: Request,
   ) {
-    return await this.workspaceService.findUserWorkspaces(user.id)
+    return await this.workspaceService.findPermitted(user.id);
   }
 
   @ApiOperation({ operationId: 'getWorkspace' })

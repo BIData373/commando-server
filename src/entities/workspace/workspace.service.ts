@@ -19,6 +19,18 @@ export class WorkspaceService {
     };
   }
 
+  private sortByPermission<T extends { permissions: { type: string }[] }>(workspaces: T[]): T[] {
+    const permissionOrder: Record<string, number> = { MANAGER: 0, VIEWER: 1 };
+
+    return workspaces.sort((a, b) => {
+      const aType = a.permissions[0]?.type;
+      const bType = b.permissions[0]?.type;
+      const aOrder = aType ? permissionOrder[aType] ?? 2 : 2;
+      const bOrder = bType ? permissionOrder[bType] ?? 2 : 2;
+      return bOrder - aOrder;
+    });
+  }
+
   async create({ context, ...dto }: CreateWorkspaceDto, userId: number) {
     return await this.prisma.workspace.create({
       data: {
@@ -35,19 +47,21 @@ export class WorkspaceService {
   }
 
   async findAll(userId: number, workspace?: WorkspaceDto, extraWhere?: Prisma.WorkspaceWhereInput) {
-    return workspace
-      ? [workspace]
-      : await this.prisma.workspace.findMany({
-        where: {
-          deletedAt: null,
-          ...extraWhere
-        },
-        include: this.permissionsInclude(userId)
-      });
+    if (workspace) return [workspace];
+
+    const workspaces = await this.prisma.workspace.findMany({
+      where: {
+        deletedAt: null,
+        ...extraWhere
+      },
+      include: this.permissionsInclude(userId)
+    });
+
+    return this.sortByPermission(workspaces);
   }
 
-  async findUserWorkspaces(userId: number) {
-    return await this.prisma.workspace.findMany({
+  async findPermitted(userId: number) {
+    const workspaces = await this.prisma.workspace.findMany({
       where: {
         deletedAt: null,
         permissions: {
@@ -58,6 +72,8 @@ export class WorkspaceService {
       },
       include: this.permissionsInclude(userId)
     });
+
+    return this.sortByPermission(workspaces);
   }
 
   async findOne(id: number) {

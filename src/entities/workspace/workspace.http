@@ -81,7 +81,7 @@ DELETE {{baseUrl}}/workspace/{{workspaceId}}
 
 ###
 
-GET {{baseUrl}}/workspace/mine
+GET {{baseUrl}}/workspace/permitted
 ...headers
 
 ?? status == 200
