@@ -10,6 +10,15 @@ import { WorkspaceDto } from './dto/response/workspace.dto';
 export class WorkspaceService {
   constructor(private readonly prisma: PrismaService) { }
 
+  private permissionsInclude(userId: number): Prisma.WorkspaceInclude {
+    return {
+      permissions: {
+        where: { userId },
+        select: { type: true }
+      }
+    };
+  }
+
   async create({ context, ...dto }: CreateWorkspaceDto, userId: number) {
     return await this.prisma.workspace.create({
       data: {
@@ -25,19 +34,20 @@ export class WorkspaceService {
     });
   }
 
-  async findAll(workspace?: WorkspaceDto, extraWhere?: Prisma.WorkspaceWhereInput) {
+  async findAll(userId: number, workspace?: WorkspaceDto, extraWhere?: Prisma.WorkspaceWhereInput) {
     return workspace
       ? [workspace]
       : await this.prisma.workspace.findMany({
         where: {
           deletedAt: null,
           ...extraWhere
-        }
+        },
+        include: this.permissionsInclude(userId)
       });
   }
 
   async findUserWorkspaces(userId: number) {
-    const workspaces = await this.prisma.workspace.findMany({
+    return await this.prisma.workspace.findMany({
       where: {
         deletedAt: null,
         permissions: {
@@ -46,21 +56,8 @@ export class WorkspaceService {
           },
         },
       },
-      include: {
-        permissions: {
-          where: {
-            userId
-          },
-          select: {
-            type: true
-          }
-        }
-      }
-    })
-    return workspaces.map(({ permissions, ...workspace }) => ({
-      ...workspace,
-      permissionType: permissions[0].type
-    }))
+      include: this.permissionsInclude(userId)
+    });
   }
 
   async findOne(id: number) {

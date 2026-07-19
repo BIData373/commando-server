@@ -33,12 +33,13 @@ export class WorkspaceController {
   @ApiOperation({ operationId: 'listWorkspaces' })
   @ApiQuery({ name: 'urlName', type: String, required: false })
   @Get()
-  @ApiOkResponse({ type: [WorkspaceDto] })
-  @TransformPlainToInstance(WorkspaceDto)
+  @ApiOkResponse({ type: [WorkspaceWithPermissionDto] })
+  @TransformPlainToInstance(WorkspaceWithPermissionDto)
   async findAll(
+    @Req() { user }: Request,
     @Query() { context }: GetOptionalWorkspaceUrlNameDto
   ) {
-    return await this.workspaceService.findAll(context?.workspace)
+    return await this.workspaceService.findAll(user.id, context?.workspace)
   }
 
   @ApiOperation({ operationId: 'getUserWorkspaces' })
