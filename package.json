@@ -22,7 +22,8 @@
     "migration:deploy": "cross-env-shell ENV=$npm_config_env prisma migrate deploy",
     "migration:reset": "cross-env-shell ENV=$npm_config_env prisma migrate reset",
     "migration:status": "cross-env-shell ENV=$npm_config_env prisma migrate status",
-    "mock:sso": "cross-env-shell ENV=$npm_config_env tsx scripts/mock-sso.ts"
+    "mock:sso": "cross-env-shell ENV=$npm_config_env tsx scripts/mock-sso.ts",
+    "mermaid": "node ./tools/erd-to-mermaid.js"
   },
   "repository": {
     "type": "git",

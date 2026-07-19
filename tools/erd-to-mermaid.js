@@ -4,6 +4,8 @@
 
 const fs = require("fs");
 const path = require("path");
+const zlib = require("zlib");
+const { exec } = require("child_process");
 
 const file = path.join(__dirname, '../ERD.md');
 if (!fs.existsSync(file)) {
@@ -28,7 +30,21 @@ const payload = JSON.stringify({
   mermaid: { theme: "default" },
 });
 
-const encoded = Buffer.from(payload).toString("base64url");
-const url = `https://mermaid.live/edit#base64:${encodeURI(encoded)}`;
+const compressed = zlib.deflateSync(Buffer.from(payload), { level: 9 });
+const encoded = compressed.toString("base64url");
+const url = `https://mermaid.live/edit#pako:${encoded}`;
 
 console.log(url);
+
+const openCommand =
+  process.platform === "win32"
+    ? `start "" "${url}"`
+    : process.platform === "darwin"
+    ? `open "${url}"`
+    : `xdg-open "${url}"`;
+
+exec(openCommand, (error) => {
+  if (error) {
+    console.warn("Could not open the link automatically. Please open it manually");
+  }
+});
