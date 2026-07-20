@@ -22,6 +22,14 @@ type TaskInclude = Prisma.TaskGetPayload<{
 export class TaskService {
   static readonly TASK_ROW_ID_SEPARATOR = "_"
 
+  static readonly commonWhere: Prisma.TaskWhereInput = {
+    deletedAt: null,
+    OR: [
+      { sourceId: null },
+      { source: { draft: false } }
+    ]
+  }
+
   static readonly orderBy = {
     createdAt: 'desc'
   } satisfies Prisma.TaskOrderByWithRelationInput;
@@ -232,8 +240,7 @@ export class TaskService {
     return await this.prisma.task.findMany({
       where: {
         workspaceId: workspace.id,
-        deletedAt: null,
-        source: { draft: false }
+        ...TaskService.commonWhere
       },
       include: TaskService.baseInclude(),
       orderBy: TaskService.orderBy
@@ -308,10 +315,7 @@ export class TaskService {
     return await this.prisma.task.findMany({
       where: {
         assigneeStatuses: { some: { assignee: { users: { some: { id: user.id } } } } },
-        deletedAt: null,
-        source: {
-          draft: false
-        }
+        ...TaskService.commonWhere
       },
       include: TaskService.withWorkspaceInclude(user.id, true),
       orderBy: TaskService.orderBy
