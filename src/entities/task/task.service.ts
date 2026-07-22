@@ -39,7 +39,7 @@ export class TaskService {
     private readonly messageRelayService: MessageRelayService
   ) { }
 
-  static baseInclude(userId?: number) {
+  static baseInclude() {
     return {
       tags: true,
       source: {
@@ -50,7 +50,6 @@ export class TaskService {
         where: {
           assignee: {
             deletedAt: null,
-            ...(userId && { users: { some: { id: userId } } })
           }
         },
         orderBy: { assigneeId: 'asc' },
@@ -62,9 +61,9 @@ export class TaskService {
     } satisfies Prisma.TaskInclude
   }
 
-  static withWorkspaceInclude(userId?: number, filterAssignees: boolean = false) {
+  static withWorkspaceInclude(userId?: number) {
     return {
-      ...TaskService.baseInclude(filterAssignees ? userId : undefined),
+      ...TaskService.baseInclude(),
       workspace: {
         include: {
           permissions: userId
@@ -263,9 +262,10 @@ export class TaskService {
     { assigneeStatuses, ...task }: TTask,
     defaultStatus: WorkspaceStatus,
     workspace: WorkspaceWithPermissions,
-    user: User
+    user: User,
+    onlyUserRows: boolean = false
   ) {
-    if (assigneeStatuses.length === 0) {
+    if (!onlyUserRows && assigneeStatuses.length === 0) {
       return [{
         ...task,
         editable: false,
@@ -279,12 +279,16 @@ export class TaskService {
       assigneeStatus => TaskService.formatAssigneeStatus(assigneeStatus, workspace, user)
     )
 
-    return formattedAssigneeStatuses
-      .map(({ assigneeId, statusId, taskId, ...fields }, index) => ({
+    const assigneeStatusesForRows = onlyUserRows
+      ? formattedAssigneeStatuses.filter(({ assignee }) => assignee.users.some(({ id }) => id === user.id))
+      : formattedAssigneeStatuses
+
+    return assigneeStatusesForRows
+      .map(({ assigneeId, statusId, taskId, ...fields }) => ({
         ...task,
         rowKey: TaskService.formatTaskRowId(task.id, fields.assignee.id),
         ...fields,
-        otherAssignees: formattedAssigneeStatuses.filter((_, otherIndex) => otherIndex !== index)
+        otherAssignees: formattedAssigneeStatuses.filter(current => current.assigneeId !== assigneeId)
       }))
   }
 
@@ -302,7 +306,7 @@ export class TaskService {
   async findBySource(sourceId: number, userId?: number) {
     return await this.prisma.task.findMany({
       where: { sourceId, deletedAt: null },
-      include: TaskService.baseInclude(userId),
+      include: TaskService.baseInclude(),
       orderBy: TaskService.orderBy
     });
   }
@@ -319,7 +323,7 @@ export class TaskService {
         assigneeStatuses: { some: { assignee: { users: { some: { id: user.id } } } } },
         ...TaskService.commonWhere
       },
-      include: TaskService.withWorkspaceInclude(user.id, true),
+      include: TaskService.withWorkspaceInclude(user.id),
       orderBy: TaskService.orderBy
     });
   }
@@ -338,7 +342,7 @@ export class TaskService {
     const defaultStatusesMap = keyBy(defaultStatuses, 'workspaceId')
 
     const taskRows = tasks
-      .map(task => TaskService.extractTaskToRows(task, defaultStatusesMap[task.workspace.id], task.workspace, user))
+      .map(task => TaskService.extractTaskToRows(task, defaultStatusesMap[task.workspace.id], task.workspace, user, true))
       .flat()
       .map(task => ({ ...task, workspace: TaskService.formatTaskWorkspace(task.workspace, user) }))
 
