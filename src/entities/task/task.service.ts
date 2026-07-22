@@ -47,13 +47,15 @@ export class TaskService {
         include: { tags: true }
       },
       assigneeStatuses: {
-        where: { assignee: { deletedAt: null } },
-        orderBy: { assigneeId: 'asc' },
-        ...(userId && { where: { assignee: { users: { some: { id: userId } } } } }),
-        include: {
+        where: {
           assignee: {
-            include: { users: true }
-          },
+            deletedAt: null,
+            ...(userId && { users: { some: { id: userId } } })
+          }
+        },
+        orderBy: { assigneeId: 'asc' },
+        include: {
+          assignee: { include: { users: true } },
           status: true
         }
       }
