@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsBoolean, IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsOptional, IsString, Max, MaxLength } from 'class-validator';
 import { EntityExists } from '../../../../common/decorators/entity-exists.decorator';
 import { IdExists } from '../../../../common/decorators/id-exists.decorator';
 import { IsNotEmptyString } from '../../../../common/decorators/is-not-empty-string.decorator';
@@ -13,6 +13,7 @@ export class CreateWorkspaceDto extends GetNewWorkspaceUrlNameDto {
       where: { title: value, deletedAt: null }
     })
   })
+  @MaxLength(50)
   @IsNotEmptyString()
   title: string;
 
@@ -25,19 +26,16 @@ export class CreateWorkspaceDto extends GetNewWorkspaceUrlNameDto {
   @IsOptional()
   @IsBoolean()
   assigneeStatusEditable?: boolean;
-
     
   @ApiProperty({ required: false })
   @IsOptional()
   @IsBoolean()
   chatNotification?: boolean;
-
     
   @ApiProperty({ required: false })
   @IsOptional()
   @IsBoolean()
   mailNotification?: boolean;
-
 
   @ApiProperty()
   @IdExists('pikud', { filterDeletedAt: true })
