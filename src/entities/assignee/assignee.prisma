@@ -1,7 +1,7 @@
 model Assignee {
-  id    Int     @id @default(autoincrement())
-  name  String
-  color String
+  id       Int     @id @default(autoincrement())
+  name     String
+  color    String
   icon     String?
   iconName String? @map("icon_name")
 
