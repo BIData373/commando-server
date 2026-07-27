@@ -1,7 +1,7 @@
 import { UnauthorizedException } from "@nestjs/common";
 import { JwtPayload, verify } from "jsonwebtoken";
 import { admin } from "../consts/admin";
-import { ssoEnabled, staticToken } from "../consts/env";
+import { ssoClientSecret, ssoEnabled, staticToken } from "../consts/env";
 import { isBiHeader, requestUsernameHeader, staticTokenHeader } from "../consts/headers";
 import { CreateUserDto } from "../../entities/user/dto/request/create-user.dto";
 import { GetUserInfoDto } from "../../entities/user/dto/request/get-user-info.dto";
@@ -11,7 +11,7 @@ export function verifySsoUser(ssoUser: string) {
   try {
     const result = verify(
       ssoUser,
-      process.env.SSO_CLIENT_SECRET!,
+      ssoClientSecret!,
       { algorithms: ['HS256'] }
     ) as JwtPayload
 

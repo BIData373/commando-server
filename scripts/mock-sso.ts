@@ -1,30 +1,32 @@
-import { config } from "dotenv"
 import { sign } from "jsonwebtoken"
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http"
-import path from "node:path"
+import {
+  ssoClientSecret, mockSsoPort,
+  mockUserId,
+  mockUpn,
+  mockName,
+  mockDisplayName,
+  mockIsBI
+} from "../src/common/consts/env"
 
-config({ path: path.join(__dirname, "../config/common.env") })
-config({ path: path.join(__dirname, `../config/${process.env.ENV ?? "local"}/.env`) })
-
-const SECRET = process.env.SSO_CLIENT_SECRET
-if (!SECRET) {
+if (!ssoClientSecret) {
   console.error("SSO_CLIENT_SECRET is not set — exiting")
   process.exit(1)
 }
 
-const PORT = Number(process.env.MOCK_SSO_PORT ?? 4000)
+const PORT = Number(mockSsoPort ?? 4000)
 const PREFIX = '/sso'
 
 const mockUser = {
-  id: Number(process.env.MOCK_USER_ID ?? 1),
-  upn: process.env.MOCK_UPN ?? "s0000000",
-  name: process.env.MOCK_NAME ?? "Admin",
-  displayName: process.env.MOCK_DISPLAY_NAME ?? "Admin",
-  isBI: process.env.MOCK_IS_BI === "true",
+  id: Number(mockUserId ?? 1),
+  upn: mockUpn ?? "s0000000",
+  name: mockName ?? "Admin",
+  displayName: mockDisplayName ?? "Admin",
+  isBI: mockIsBI === "true",
 }
 
 function issueToken(): string {
-  return sign({ user: mockUser }, SECRET!, { algorithm: "HS256", expiresIn: "8h" })
+  return sign({ user: mockUser }, ssoClientSecret!, { algorithm: "HS256", expiresIn: "8h" })
 }
 
 function setCors(req: IncomingMessage, res: ServerResponse) {
