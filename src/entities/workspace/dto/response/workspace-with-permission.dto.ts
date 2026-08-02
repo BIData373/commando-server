@@ -1,4 +1,4 @@
-import { Exclude } from 'class-transformer';
+import { Exclude, Transform } from 'class-transformer';
 import { ExposeProperty } from '../../../../common/decorators/expose-property.decorator';
 import { PermissionType } from '../../../../types/prisma';
 import { WorkspaceDto } from './workspace.dto';
@@ -6,5 +6,6 @@ import { WorkspaceDto } from './workspace.dto';
 @Exclude()
 export class WorkspaceWithPermissionDto extends WorkspaceDto {
   @ExposeProperty({ enumName: 'PermissionType', enum: PermissionType, nullable: true })
+  @Transform(({ obj }) => obj.permissions?.[0]?.type ?? null)
   permissionType: PermissionType | null;
 }
