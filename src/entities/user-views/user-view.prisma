@@ -1,4 +1,4 @@
-model UserViews {
+model UserView {
     id          Int  @id @default(autoincrement())
     userId      Int  @map("user_id")
     workspaceId Int? @map("workspace_id")

@@ -9,7 +9,7 @@ model User {
   permissions Permission[]
   history     TaskHistory[]
   messages    Message[]
-  userViews   UserViews[]
+  userViews   UserView[]
 
   @@map("users")
 }

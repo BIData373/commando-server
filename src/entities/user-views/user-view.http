@@ -1,0 +1,80 @@
+{{
+    const local = 'http://localhost:3000'
+    const dev = ''
+
+    exports.baseUrl = local
+    exports.headers = {
+        'Content-Type': 'application/json',
+        'static-token': '3650244b-61fc-4f75-95eb-359d7483ff70',
+        'requestusername': 'avi',
+        'is-bi': false
+    }
+
+    exports.workspaceId = 3
+}}
+
+### Upsert User View — valid payload
+PATCH {{baseUrl}}/user-views
+...headers
+
+{
+  "workspaceId": {{workspaceId}},
+  "view": {
+    "table": {
+      "sorting": [],
+      "columnFilters": [],
+      "quickFilter": [],
+      "columnVisibility": {
+        "columnOrder": [],
+        "hiddenColumns": []
+      }
+    },
+    "dashboard": {
+      "selectedTab": "load",
+      "displayMode": "overdue"
+    }
+  }
+}
+
+?? status == 200
+
+### Upsert User View — missing required field (expect 400)
+PATCH {{baseUrl}}/user-views
+...headers
+
+{
+  "workspaceId": {{workspaceId}}
+}
+
+?? status == 400
+
+### Get User View
+GET {{baseUrl}}/user-views?workspaceId={{workspaceId}}
+...headers
+
+?? status == 200
+
+### Upsert User View — updated values
+PATCH {{baseUrl}}/user-views
+...headers
+
+{
+  "workspaceId": {{workspaceId}},
+  "view": {
+    "table": {
+      "sorting": [{ "id": "title", "desc": true }],
+      "columnFilters": [{ "id": "status", "value": ["active"] }],
+      "quickFilter": ["overdue", "flagged"],
+      "columnVisibility": {
+        "columnOrder": ["status", "source"],
+        "hiddenColumns": ["description"]
+      }
+    },
+    "dashboard": {
+      "selectedTab": "attention",
+      "displayMode": "approaching"
+    }
+  }
+}
+
+?? status == 200
