@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import axios from 'axios';
 import { isMatch } from 'lodash';
 import * as https from 'node:https';
+import { mirageEnabled, mirageKey, mirageUrl, mirageVersion } from '../../common/consts/env';
 import { formatUpnForEntity } from '../../common/functions/user';
 import { PrismaService } from '../../common/prisma.service';
 import { Prisma } from '../../types/prisma';
@@ -21,13 +22,13 @@ export class UserService {
 
     let usersList: MirageUserDto[] = []
 
-    if (process.env.MIRAGE_ENABLED === 'true') {
-      const { data } = await axios.get<IMirageUser[]>(`${process.env.MIRAGE_URL}/users`, {
+    if (mirageEnabled) {
+      const { data } = await axios.get<IMirageUser[]>(`${mirageUrl}/users`, {
         httpsAgent: new https.Agent({ rejectUnauthorized: false }),
         params: { search: term },
         headers: {
-          'X-Mirage-Key': process.env.MIRAGE_KEY,
-          'X-Mirage-Version': process.env.MIRAGE_VERSION,
+          'X-Mirage-Key': mirageKey,
+          'X-Mirage-Version': mirageVersion,
           'Content-Type': 'application/json'
         }
       })

@@ -2,7 +2,7 @@ import { RabbitMQModule } from '@golevelup/nestjs-rabbitmq';
 import { Global, Module } from '@nestjs/common';
 import { credentials } from 'amqplib';
 import { getCACertificates } from 'node:tls';
-import { rabbitmqHost, rabbitmqPort, rabbitmqUseSsl, rabbitmqVhost, taskRunnerEnabled } from '../common/consts/env';
+import { dbSSLCertData, dbSSLKeyData, rabbitmqHost, rabbitmqPort, rabbitmqUseSsl, rabbitmqVhost, taskRunnerEnabled } from '../common/consts/env';
 import { TaskRunnerService } from './task-runner.service';
 
 @Global()
@@ -16,8 +16,8 @@ import { TaskRunnerService } from './task-runner.service';
           connectionManagerOptions: {
             connectionOptions: {
               ca: getCACertificates("system"),
-              cert: Buffer.from(process.env.DB_SSLCERT_DATA!),
-              key: Buffer.from(process.env.DB_SSLKEY_DATA!),
+              cert: Buffer.from(dbSSLCertData!),
+              key: Buffer.from(dbSSLKeyData!),
               credentials: credentials.external(),
             }
           },

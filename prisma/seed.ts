@@ -1,14 +1,9 @@
 import { PrismaPg } from '@prisma/adapter-pg';
-import { config } from 'dotenv';
-import path from 'node:path';
-import { DeadlineType, HistoryAction, PermissionType, Prisma, PrismaClient, TaskCreationType, WorkspaceStatusType } from '../src/types/prisma';
-import { DEFAULT_STATUSES } from '../src/entities/workspace-status/consts/default-statuses'
+import { databaseUrl, postgresPrismaUrl } from '../src/common/consts/env';
+import { DEFAULT_STATUSES } from '../src/entities/workspace-status/consts/default-statuses';
+import { DeadlineType, HistoryAction, PermissionType, PrismaClient, TaskCreationType, WorkspaceStatusType } from '../src/types/prisma';
 
-if (process.env.ENV) {
-  config({ path: path.join('./config', process.env.ENV, '.env') });
-}
-
-const connectionString = process.env.POSTGRES_PRISMA_URL ?? process.env.DATABASE_URL
+const connectionString = postgresPrismaUrl ?? databaseUrl
 const adapter = new PrismaPg({ connectionString })
 const prisma = new PrismaClient({ adapter });
 
