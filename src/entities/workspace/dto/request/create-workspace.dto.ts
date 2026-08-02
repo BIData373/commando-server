@@ -4,6 +4,7 @@ import { EntityExists } from '../../../../common/decorators/entity-exists.decora
 import { IdExists } from '../../../../common/decorators/id-exists.decorator';
 import { IsNotEmptyString } from '../../../../common/decorators/is-not-empty-string.decorator';
 import { GetNewWorkspaceUrlNameDto } from './get-workspace-url-name.dto';
+import { WORKSPACE_TITLE_MAX_LENGTH } from '../../consts/workspace-max-length';
 
 export class CreateWorkspaceDto extends GetNewWorkspaceUrlNameDto {
   @ApiProperty()
@@ -13,7 +14,7 @@ export class CreateWorkspaceDto extends GetNewWorkspaceUrlNameDto {
       where: { title: value, deletedAt: null }
     })
   })
-  @MaxLength(50)
+  @MaxLength(WORKSPACE_TITLE_MAX_LENGTH)
   @IsNotEmptyString()
   title: string;
 
