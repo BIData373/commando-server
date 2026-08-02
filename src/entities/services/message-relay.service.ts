@@ -1,18 +1,23 @@
 import { Injectable } from "@nestjs/common";
 import axios, { AxiosInstance } from 'axios';
+import { messageRelayToken, messageRelayUrl, notificationsEnabled } from "../../common/consts/env";
 
 @Injectable()
 export class MessageRelayService {
     private readonly client: AxiosInstance;
 
     constructor() {
-        this.client = axios.create({
-            baseURL: process.env.MESSAGE_RELAY_URL!,
-            headers: {
-                'static-token': process.env.MESSAGE_RELAY_TOKEN!,
-                'Content-Type': 'application/json'
-            }
-        });
+        if (notificationsEnabled) {
+            this.client = axios.create({
+                baseURL: messageRelayUrl!,
+                headers: {
+                    'static-token': messageRelayToken!,
+                    'Content-Type': 'application/json'
+                }
+            });
+        }
+
+        console.log(`Notifications are ${notificationsEnabled ? 'ON' : 'OFF'}`)
     }
 
     async sendNotification(recipients: string[], channel: string, title: string, message: string) {
@@ -25,6 +30,7 @@ export class MessageRelayService {
                     title: title,
                     message: message
                 })
+
             return response.data;
         } catch (error) {
             console.error(`Failed to send ${channel} notification: ${error}`);

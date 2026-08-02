@@ -7,6 +7,7 @@ import { MessageRelayService } from '../services/message-relay.service';
 import { WorkspaceWithPermissions } from '../workspace/types/workspace-with-permission.type';
 import { CreateTaskDto } from './dto/request/create-task.dto';
 import { UpdateTaskDto } from './dto/request/update-task.dto';
+import { notificationTemplate, vectorUrl, chatUrl } from '../../common/consts/env';
 
 type AssigneeStatusInclude = {
   include: { assignee: { include: { users: true } }; status: true };
@@ -127,7 +128,7 @@ export class TaskService {
     recipients: string[]
   ) {
     const title = `קיבלת הנחיה חדשה מ${workspace.title}`
-    const taskUrl = `${process.env.VECTOR_URL}/personal/task/${taskId}`
+    const taskUrl = `${vectorUrl}/personal/task/${taskId}`
 
     if (workspace.chatNotification) {
       const chatMessage = `ההנחיה: ${taskName}\n מעבר להנחיה: ${taskUrl}`
@@ -139,12 +140,12 @@ export class TaskService {
       )
     }
     if (workspace.mailNotification) {
-      const html = renderTemplate(process.env.NOTIFICATION_TEMPLATE!, {
+      const html = renderTemplate(notificationTemplate!, {
         workspaceName: workspace.title,
         taskName,
         taskUrl,
-        vectorUrl: process.env.VECTOR_URL,
-        chatUrl: process.env.VITE_CHAT_URL,
+        vectorUrl: vectorUrl,
+        chatUrl: chatUrl,
       })
       await this.messageRelayService.sendNotification(
         recipients,
