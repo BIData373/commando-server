@@ -1,17 +1,14 @@
 {{
-    const local = 'http://localhost:3000/api'
-    const dev = ''
+    const local = 'http://localhost:3000';
+    const dev = 'https://commando-server.vercel.app';
 
-    exports.baseUrl = local
+    exports.baseUrl = local;
     exports.headers = {
         'Content-Type': 'application/json',
         'static-token': '3650244b-61fc-4f75-95eb-359d7483ff70',
         // 'requestusername': 's9336069',
-        'is-bi': true
-    }
+        // 'is-bi': true
+    };
 
-    exports.workspaceId = 1
+    exports.workspaceId = 1;
 }}
-
-GET {{baseUrl}}/assignee?workspaceId={{workspaceId}}
-{{headers}}
