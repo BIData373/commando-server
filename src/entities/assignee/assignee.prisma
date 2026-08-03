@@ -16,6 +16,8 @@ model Assignee {
   deletedAt DateTime? @map("deleted_at")
   deletedBy Int?      @map("deleted_by")
 
+  workspaceTaskArchives WorkspaceTaskArchives[]
+  userTaskArchives UserTaskArchives[]
   users        User[]               @relation("assignee_users")
   taskStatuses AssigneeTaskStatus[]
 

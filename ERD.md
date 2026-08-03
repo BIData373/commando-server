@@ -176,6 +176,15 @@ COMPLETED COMPLETED
     }
   
 
+  "user_task_archives" {
+    Int id "🗝️"
+    Int user_id 
+    Int task_id 
+    Int assignee_id "❓"
+    DateTime created_at 
+    }
+  
+
   "workspaces" {
     Int id "🗝️"
     String title 
@@ -202,6 +211,14 @@ COMPLETED COMPLETED
     Int workspace_id 
     }
   
+
+  "workspace_task_archives" {
+    Int id "🗝️"
+    Int task_id 
+    Int assignee_id "❓"
+    DateTime created_at 
+    }
+  
     "assignees" }o--|| workspaces : "workspace"
     "assignees" o{--}o "users" : ""
     "assignee_task_statuses" }o--|| tasks : "task"
@@ -225,7 +242,12 @@ COMPLETED COMPLETED
     "tasks_history" }o--|| tasks : "task"
     "tasks_history" }o--|| workspaces : "workspace"
     "tasks_history" }o--|| users : "user"
+    "user_task_archives" }o--|| tasks : "task"
+    "user_task_archives" }o--|| users : "user"
+    "user_task_archives" }o--|o assignees : "assignee"
     "workspaces" }o--|| pikuds : "pikud"
     "workspace_statuses" |o--|| "WorkspaceStatusType" : "enum:status_type"
     "workspace_statuses" }o--|| workspaces : "workspace"
+    "workspace_task_archives" }o--|| tasks : "task"
+    "workspace_task_archives" }o--|o assignees : "assignee"
 ```

@@ -3,11 +3,10 @@ import { ApiProperty } from "@nestjs/swagger";
 import { IdExists } from "../../../../common/decorators/id-exists.decorator";
 import { IsIdPermitted } from "../../../../common/decorators/is-permitted-id.decorator";
 import { GetContextDto } from "../../../../common/dto/request/get-context.dto";
-import { IContext } from "../../../../common/interfaces/context.interface";
 import { PermissionType } from "../../../../types/prisma";
 import { allowedTypes } from "../../../permission/consts/permission-types";
 import { IUserContext } from "../../../user/interfaces/user-context.interface";
-import { IWorkspaceContext, IWorkspaceWithPermissionContext } from "../../interfaces/workspace-context.interface";
+import { IWorkspaceWithPermissionContext } from "../../interfaces/workspace-context.interface";
 
 export class GetWorkspaceIdFieldDto {
   @ApiProperty()
