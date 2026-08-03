@@ -7,5 +7,6 @@ export class ColumnFilterDto {
     id: string;
 
     @ApiProperty()
-    value: unknown;
+    @IsString()
+    value: string;
 }

@@ -1,17 +1,4 @@
-{{
-    const local = 'http://localhost:3000'
-    const dev = ''
-
-    exports.baseUrl = local
-    exports.headers = {
-        'Content-Type': 'application/json',
-        'static-token': '3650244b-61fc-4f75-95eb-359d7483ff70',
-        'requestusername': 'avi',
-        'is-bi': false
-    }
-
-    exports.workspaceId = 3
-}}
+# @import ../../../global.http
 
 ### Upsert User View — valid payload
 PATCH {{baseUrl}}/user-views
