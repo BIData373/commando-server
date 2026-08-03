@@ -397,7 +397,7 @@ export class TaskService {
         }
       },
       include: {
-        ...TaskService.withWorkspaceInclude(user.id, true),
+        ...TaskService.withWorkspaceInclude(user.id),
         userTaskArchives: true,
       },
       orderBy: TaskService.orderBy

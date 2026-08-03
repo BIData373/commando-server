@@ -21,7 +21,7 @@ export class UserTaskArchivesService {
       },
       include: {
         task: {
-          include: { ...TaskService.withWorkspaceInclude(user.id, true) },
+          include: { ...TaskService.withWorkspaceInclude(user.id) },
         },
       },
     })
