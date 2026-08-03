@@ -6,9 +6,9 @@ import { QuickFilter } from "../../enum/quick-filter";
 export class UserViewDashboardDto {
     @ApiProperty({ enum: DistributionTab, enumName: "DistributionTab" })
     @IsEnum(DistributionTab)
-    selectedTab: DistributionTab;
+    distributionTab: DistributionTab;
 
     @ApiProperty({ enum: QuickFilter, enumName: "QuickFilter" })
     @IsEnum(QuickFilter)
-    displayMode: QuickFilter;
+    focusedInstructionsTab: QuickFilter;
 }
