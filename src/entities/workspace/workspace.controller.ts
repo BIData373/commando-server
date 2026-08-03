@@ -10,6 +10,7 @@ import { GetOptionalWorkspaceUrlNameDto } from './dto/request/get-workspace-url-
 import { UpdateWorkspaceDto } from './dto/request/update-workspace.dto';
 import { WorkspaceDto } from './dto/response/workspace.dto';
 import { WorkspaceService } from './workspace.service';
+import { WorkspaceWithPermissionDto } from './dto/response/workspace-with-permission.dto';
 
 @Controller('workspace')
 export class WorkspaceController {
@@ -28,16 +29,26 @@ export class WorkspaceController {
     return await this.workspaceService.create(dto, user.id);
   }
 
-  // TODO - list all doesn't work, it forces
   @ApiOperation({ operationId: 'listWorkspaces' })
   @ApiQuery({ name: 'urlName', type: String, required: false })
   @Get()
-  @ApiOkResponse({ type: [WorkspaceDto] })
-  @TransformPlainToInstance(WorkspaceDto)
+  @ApiOkResponse({ type: [WorkspaceWithPermissionDto] })
+  @TransformPlainToInstance(WorkspaceWithPermissionDto)
   async findAll(
-    @Query() { context }: GetOptionalWorkspaceUrlNameDto
+    @Req() { user }: Request,
+    @Query() { context: { workspace } }: GetOptionalWorkspaceUrlNameDto
   ) {
-    return await this.workspaceService.findAll(context?.workspace)
+    return await this.workspaceService.findAll(user.id, workspace)
+  }
+
+  @ApiOperation({ operationId: 'getPermittedWorkspaces' })
+  @Get('permitted')
+  @ApiOkResponse({ type: [WorkspaceWithPermissionDto] })
+  @TransformPlainToInstance(WorkspaceWithPermissionDto)
+  async findPermitted(
+    @Req() { user }: Request,
+  ) {
+    return await this.workspaceService.findPermitted(user.id);
   }
 
   @ApiOperation({ operationId: 'getWorkspace' })

@@ -7,6 +7,7 @@ import { MessageRelayService } from '../services/message-relay.service';
 import { WorkspaceWithPermissions } from '../workspace/types/workspace-with-permission.type';
 import { CreateTaskDto } from './dto/request/create-task.dto';
 import { UpdateTaskDto } from './dto/request/update-task.dto';
+import { notificationTemplate, vectorUrl, chatUrl } from '../../common/consts/env';
 
 type AssigneeStatusInclude = {
   include: { assignee: { include: { users: true } }; status: true };
@@ -61,7 +62,7 @@ export class TaskService {
     private readonly messageRelayService: MessageRelayService
   ) { }
 
-  static baseInclude(userId?: number) {
+  static baseInclude() {
     return {
       tags: true,
       source: {
@@ -69,22 +70,23 @@ export class TaskService {
         include: { tags: true }
       },
       assigneeStatuses: {
-        where: { assignee: { deletedAt: null } },
-        orderBy: { assigneeId: 'asc' },
-        ...(userId && { where: { assignee: { users: { some: { id: userId } } } } }),
-        include: {
+        where: {
           assignee: {
-            include: { users: true }
-          },
+            deletedAt: null,
+          }
+        },
+        orderBy: { assigneeId: 'asc' },
+        include: {
+          assignee: { include: { users: true } },
           status: true
         }
       }
     } satisfies Prisma.TaskInclude
   }
 
-  static withWorkspaceInclude(userId?: number, filterAssignees: boolean = false) {
+  static withWorkspaceInclude(userId?: number) {
     return {
-      ...TaskService.baseInclude(filterAssignees ? userId : undefined),
+      ...TaskService.baseInclude(),
       workspace: {
         include: {
           permissions: userId
@@ -148,7 +150,7 @@ export class TaskService {
     recipients: string[]
   ) {
     const title = `קיבלת הנחיה חדשה מ${workspace.title}`
-    const taskUrl = `${process.env.VECTOR_URL}/personal/task/${taskId}`
+    const taskUrl = `${vectorUrl}/personal/task/${taskId}`
 
     if (workspace.chatNotification) {
       const chatMessage = `ההנחיה: ${taskName}\n מעבר להנחיה: ${taskUrl}`
@@ -160,12 +162,12 @@ export class TaskService {
       )
     }
     if (workspace.mailNotification) {
-      const html = renderTemplate(process.env.NOTIFICATION_TEMPLATE!, {
+      const html = renderTemplate(notificationTemplate!, {
         workspaceName: workspace.title,
         taskName,
         taskUrl,
-        vectorUrl: process.env.VECTOR_URL,
-        chatUrl: process.env.VITE_CHAT_URL,
+        vectorUrl: vectorUrl,
+        chatUrl: chatUrl,
       })
       await this.messageRelayService.sendNotification(
         recipients,
@@ -289,9 +291,10 @@ export class TaskService {
     { assigneeStatuses, ...task }: TTask,
     defaultStatus: WorkspaceStatus,
     workspace: WorkspaceWithPermissions,
-    user: User
+    user: User,
+    onlyUserRows: boolean = false
   ) {
-    if (assigneeStatuses.length === 0) {
+    if (!onlyUserRows && assigneeStatuses.length === 0) {
       return [{
         ...task,
         editable: false,
@@ -305,12 +308,16 @@ export class TaskService {
       assigneeStatus => TaskService.formatAssigneeStatus(assigneeStatus, workspace, user)
     )
 
-    return formattedAssigneeStatuses
-      .map(({ assigneeId, statusId, taskId, ...fields }, index) => ({
+    const assigneeStatusesForRows = onlyUserRows
+      ? formattedAssigneeStatuses.filter(({ assignee }) => assignee.users.some(({ id }) => id === user.id))
+      : formattedAssigneeStatuses
+
+    return assigneeStatusesForRows
+      .map(({ assigneeId, statusId, taskId, ...fields }) => ({
         ...task,
         rowKey: TaskService.formatTaskRowId(task.id, fields.assignee.id),
         ...fields,
-        otherAssignees: formattedAssigneeStatuses.filter((_, otherIndex) => otherIndex !== index)
+        otherAssignees: formattedAssigneeStatuses.filter(current => current.assigneeId !== assigneeId)
       }))
   }
 
@@ -363,7 +370,7 @@ export class TaskService {
         }
       },
       include: {
-        ...TaskService.baseInclude(userId),
+        ...TaskService.baseInclude(),
         workspaceTaskArchives: true,
       },
       orderBy: TaskService.orderBy
