@@ -1,11 +1,16 @@
 import { Exclude, Type } from "class-transformer";
 import { ExposeProperty } from "../../../../common/decorators/expose-property.decorator";
-import { ViewDto } from "./view.dto";
+import { UserViewDashboardDto } from "../request/user-view-dashboard.dto";
+import { UserViewTableDto } from "../request/user-view-table.dto";
 
 @Exclude()
 export class UserViewDto {
+    
+    @ExposeProperty({ type: UserViewTableDto })
+    @Type(() => UserViewTableDto)
+    table: UserViewTableDto;
 
-    @ExposeProperty({ type: ViewDto })
-    @Type(() => ViewDto)
-    view: ViewDto;
+    @ExposeProperty({ type: UserViewDashboardDto })
+    @Type(() => UserViewDashboardDto)
+    dashboard: UserViewDashboardDto;
 }

@@ -15,23 +15,26 @@ export class UserViewService {
     });
 
     if (existing) {
-      return await this.prisma.userView.update({
+      const result = await this.prisma.userView.update({
         where: { id: existing.id },
         data: { view: dto.view },
         select: { view: true },
       });
+      return result.view;
     }
 
-    return await this.prisma.userView.create({
+    const result = await this.prisma.userView.create({
       data: { userId, workspaceId, view: dto.view },
       select: { view: true },
     });
+    return result.view;
   }
 
   async findOne(userId: number, workspaceId?: number | null) {
-    return await this.prisma.userView.findFirst({
+    const result = await this.prisma.userView.findFirst({
       where: { userId, workspaceId: workspaceId ?? null },
       select: { view: true },
     });
+    return result?.view;
   }
 }
