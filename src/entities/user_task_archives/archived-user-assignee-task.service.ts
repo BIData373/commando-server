@@ -5,7 +5,7 @@ import { TaskService, TaskWithWorkspaceInclude } from '../task/task.service';
 import { keyBy, map, uniq } from 'lodash';
 
 @Injectable()
-export class UserTaskArchivesService {
+export class ArchivedUserAssigneeTaskService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly taskService: TaskService
@@ -34,8 +34,9 @@ export class UserTaskArchivesService {
     return arhivedTasks.flatMap(({ task, createdAt }) =>
       TaskService.extractTaskToRows(task, defaultStatusesMap[task.workspace.id], task.workspace, user)
         .map((row) => ({
-          task: { ...row, workspace: TaskService.formatTaskWorkspace(row.workspace, user) },
-          createdAt,
+          ...row,
+          workspace: TaskService.formatTaskWorkspace(row.workspace, user),
+          archivedAt: createdAt,
         }))
     )
   }

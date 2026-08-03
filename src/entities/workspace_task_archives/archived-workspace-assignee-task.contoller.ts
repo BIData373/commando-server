@@ -2,19 +2,19 @@ import { Controller, Get, Param, Patch, Query } from '@nestjs/common';
 import { ApiOkResponse, ApiOperation, ApiParam } from '@nestjs/swagger';
 import { TransformPlainToInstance } from 'class-transformer';
 import { GetViewerWorkspaceIdFieldDto } from '../workspace/dto/request/get-workspace-id-field.dto';
-import { WorkspaceTaskArchive } from './dto/response/workspace-task-archive.dto';
-import { WorkspaceTaskArchivesService } from './workspace_task_archives.service';
+import { TaskRowWithWorkspaceDto } from '../task/dto/response/task-row-with-workspace.dto';
+import { ArchivedWorkspaceAssigneeService } from './archived-workspace-assignee-task.service';
 import { GetManagerArchiveTaskIdDto } from '../user_task_archives/dto/request/get-task-id.dto';
-import { GetAssiggneeIdDto } from '../user_task_archives/dto/request/get-assignee-id.dto';
+import { GetOptionalAssiggneeIdDto } from '../user_task_archives/dto/request/get-assignee-id.dto';
 
-@Controller('workspace-task-archives')
-export class WorkspaceTaskArchivesController {
-  constructor(private readonly workspaceTaskArchivesService: WorkspaceTaskArchivesService) { }
+@Controller('archived-workspace-assignee-task')
+export class ArchivedWorkspaceAssigneeController {
+  constructor(private readonly workspaceTaskArchivesService: ArchivedWorkspaceAssigneeService) { }
 
   @ApiOperation({ operationId: 'listWorkspaceArchivedTasks' })
   @Get()
-  @ApiOkResponse({ type: [WorkspaceTaskArchive] })
-  @TransformPlainToInstance(WorkspaceTaskArchive)
+  @ApiOkResponse({ type: [TaskRowWithWorkspaceDto] })
+  @TransformPlainToInstance(TaskRowWithWorkspaceDto)
   async findWorkspaceTasks(
     @Query() { context: { workspace, user } }: GetViewerWorkspaceIdFieldDto
   ) {
@@ -24,11 +24,9 @@ export class WorkspaceTaskArchivesController {
   @ApiOperation({ operationId: 'toggleWorkspaceTaskArchive' })
   @ApiParam({ name: 'id', type: Number })
   @Patch(':id')
-  @ApiOkResponse({ type: [WorkspaceTaskArchive] })
-  @TransformPlainToInstance(WorkspaceTaskArchive)
   async toggleWorkspace(
     @Param() { context: { task } }: GetManagerArchiveTaskIdDto,
-    @Query() { assigneeId } : GetAssiggneeIdDto
+    @Query() { assigneeId }: GetOptionalAssiggneeIdDto
   ) {
     return await this.workspaceTaskArchivesService.toggle(task.id, assigneeId)
   }

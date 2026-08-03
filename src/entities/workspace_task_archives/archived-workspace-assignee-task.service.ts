@@ -5,7 +5,7 @@ import { WorkspaceWithPermissions } from '../workspace/types/workspace-with-perm
 import { TaskService } from '../task/task.service';
 
 @Injectable()
-export class WorkspaceTaskArchivesService {
+export class ArchivedWorkspaceAssigneeService {
   constructor(
     private readonly prismaService: PrismaService,
     private readonly tasksService: TaskService
@@ -30,9 +30,10 @@ export class WorkspaceTaskArchivesService {
 
     return archivedTasks.flatMap(({ task, createdAt }) =>
       TaskService.extractTaskToRows(task, defaultStatus, workspace, user)
-       .map((row) => ({
-          task: { ...row, workspace: TaskService.formatTaskWorkspace(row.workspace, user) },
-          createdAt,
+        .map((row) => ({
+          ...row,
+          workspace: TaskService.formatTaskWorkspace(row.workspace, user),
+          archivedAt: createdAt,
         }))
     )
   }
