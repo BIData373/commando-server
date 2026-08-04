@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsString } from "class-validator";
+import { IsArray, IsString } from "class-validator";
 
 export class ColumnFilterDto {
     @ApiProperty()
@@ -7,6 +7,7 @@ export class ColumnFilterDto {
     id: string;
 
     @ApiProperty()
-    @IsString()
-    value: string;
+    @IsArray()
+    @IsString({ each: true })
+    value: string[];
 }
