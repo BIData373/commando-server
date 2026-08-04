@@ -21,12 +21,12 @@ import { TagModule } from './entities/tag/tag.module';
 import { TaskHistoryModule } from './entities/task-history/task-history.module';
 import { TaskModule } from './entities/task/task.module';
 import { UserModule } from './entities/user/user.module';
-import { ArchivedUserAssigneeTaskModule } from './entities/user_task_archives/archived-user-assignee-task.module';
+import { ArchivedUserAssigneeTaskModule } from './entities/archived-user-assignee-task/archived-user-assignee-task.module';
 import { WorkspaceStatusModule } from './entities/workspace-status/workspace-status.module';
 import { WorkspaceModule } from './entities/workspace/workspace.module';
 import { SocketModule } from './socket/socket.module';
 import { TaskRunnerModule } from './task-runner/task-runner.module';
-import { ArchivedWorkspaceAssigneeModule } from './entities/workspace_task_archives/archived-workspace-assignee-task.module';
+import { ArchivedWorkspaceAssigneeModule } from './entities/archived-workspace-assignee-task/archived-workspace-assignee-task.module';
 
 // FIX Move to env
 export const openApiRoute = 'open-api'

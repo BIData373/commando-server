@@ -8,9 +8,4 @@ export class TaskRowWithWorkspaceDto extends TaskRowDto {
     @ExposeProperty({ type: WorkspaceWithPermissionDto })
     @Type(() => WorkspaceWithPermissionDto)
     workspace: WorkspaceWithPermissionDto
-
-    @Transform(({ value }) => value ?? null)
-    @ExposeProperty({ type: Date })
-    @Type(() => Date)
-    archivedAt: Date | null
 }

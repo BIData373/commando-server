@@ -1,6 +1,15 @@
 import { defineConfig } from "prisma/config";
-import { databaseUrl, useSSL } from './src/common/consts/env';
-import { addIdentityPath } from './src/common/functions/ssl';
+import { config } from "dotenv";
+import path from "node:path";
+
+const env = process.env.ENV ?? '';
+const cwd = process.cwd();
+
+config({ path: path.join(cwd, 'config/common.env') });
+config({ path: path.join(cwd, 'config', env, '.env') });
+
+const databaseUrl = process.env.DATABASE_URL!;
+const useSSL = process.env.DB_USE_SSL === 'true';
 
 export default defineConfig({
   schema: "src/entities/",
@@ -9,6 +18,8 @@ export default defineConfig({
     seed: "tsx prisma/seed.ts"
   },
   datasource: {
-    url: useSSL ? addIdentityPath(databaseUrl) : databaseUrl
+    url: useSSL
+      ? await import('./src/common/functions/ssl').then(m => m.addIdentityPath(databaseUrl))
+      : databaseUrl
   },
 });

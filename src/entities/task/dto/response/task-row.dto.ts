@@ -1,5 +1,5 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { Exclude, Expose, Type } from 'class-transformer';
+import { Exclude, Expose, Transform, Type } from 'class-transformer';
 import { ExposeProperty } from '../../../../common/decorators/expose-property.decorator';
 import { AssigneeDto } from '../../../assignee/dto/response/assignee.dto';
 import { WorkspaceStatusDto } from '../../../workspace-status/dto/response/workspace-status.dto';
@@ -26,4 +26,9 @@ export class TaskRowDto extends TaskFieldsDto {
     @ExposeProperty({ type: [AssigneeStatusDto] })
     @Type(() => AssigneeStatusDto)
     otherAssignees: AssigneeStatusDto[]
+
+    @Transform(({ value }) => value ?? null)
+    @ExposeProperty({ type: Date })
+    @Type(() => Date)
+    archivedAt: Date | null
 }

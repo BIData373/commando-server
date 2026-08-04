@@ -13,6 +13,7 @@ import { TaskRowDto } from './dto/response/task-row.dto';
 import { TaskWithWorkspaceDto } from './dto/response/task-with-workspace.dto';
 import { TaskDto } from './dto/response/task.dto';
 import { TaskService } from './task.service';
+import { GetFilterIsArchived } from '../user/dto/request/get-filter-is-arcived.dto';
 
 @Controller('task')
 export class TaskController {
@@ -48,9 +49,10 @@ export class TaskController {
   @ApiOkResponse({ type: [TaskRowDto] })
   @TransformPlainToInstance(TaskRowDto)
   async findRowsInWorkspace(
-    @Query() { context: { workspace, user } }: GetViewerWorkspaceIdFieldDto
+    @Query() { context: { workspace, user } }: GetViewerWorkspaceIdFieldDto,
+    @Query() { isArchived }: GetFilterIsArchived
   ) {
-    return await this.taskService.findRowsInWorkspace(workspace, user);
+    return await this.taskService.findRowsInWorkspace(workspace, user, isArchived);
   }
 
   @ApiOperation({ operationId: 'listPersonalTasks' })
@@ -58,9 +60,10 @@ export class TaskController {
   @ApiOkResponse({ type: [TaskWithWorkspaceDto] })
   @TransformPlainToInstance(TaskWithWorkspaceDto)
   async findPersonal(
-    @Req() { user }: Request
+    @Req() { user }: Request,
+    @Query() { isArchived }: GetFilterIsArchived
   ) {
-    return await this.taskService.findPersonalFormatted(user);
+    return await this.taskService.findPersonalFormatted(user, isArchived);
   }
 
   @ApiOperation({ operationId: 'listPersonalTaskRows' })
@@ -68,9 +71,10 @@ export class TaskController {
   @ApiOkResponse({ type: [TaskRowWithWorkspaceDto] })
   @TransformPlainToInstance(TaskRowWithWorkspaceDto)
   async findPersonalRows(
-    @Req() { user }: Request
+    @Req() { user }: Request,
+    @Query() { isArchived }: GetFilterIsArchived
   ) {
-    return await this.taskService.findPersonalRows(user);
+    return await this.taskService.findPersonalRows(user, isArchived);
   }
 
   @ApiOperation({ operationId: 'getTask' })
