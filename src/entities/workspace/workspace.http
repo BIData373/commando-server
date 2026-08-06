@@ -1,18 +1,5 @@
 # @import ../../../global.http
-{{
-    const local = 'http://localhost:3000'
-    const dev = ''
 
-    exports.baseUrl = local
-    exports.headers = {
-        'Content-Type': 'application/json',
-        'static-token': '3650244b-61fc-4f75-95eb-359d7483ff70',
-        'requestusername': 'yael',
-        'is-bi': true
-    }
-
-    exports.workspaceId = 1
-}}
 ### Create Workspace — valid payload
 POST {{baseUrl}}/workspace
 ...headers
@@ -46,6 +33,11 @@ GET {{baseUrl}}/workspace
 ...headers
 
 ?? status == 200
+### Get all permitted workspaces
+GET {{baseUrl}}/workspace/permitted
+...headers
+
+?? status == 200
 
 ### Get Workspace by id
 GET {{baseUrl}}/workspace/{{workspaceId}}
@@ -58,11 +50,11 @@ PATCH {{baseUrl}}/workspace/{{workspaceId}}
 ...headers
 
 {
-  "title": "Operations Center Updated",
+  "title": "Operations Center 11111111111111111111111111111111",
   "urlName": "hativa432",
   "icon": "icon.png",
   "assigneeStatusEditable": true,
-  "pikudId": 4
+  "pikudId": 5
 }
 
 ?? status == 200
