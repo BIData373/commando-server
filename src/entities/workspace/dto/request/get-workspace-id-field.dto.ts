@@ -70,12 +70,6 @@ export function GetPermittedWorkspaceIdFieldDto(type: PermissionType) {
       contextField: 'workspace'
     })
     workspaceId: number
-
-    @ApiProperty({ type: Boolean, required: false, nullable: true })
-    @IsOptional()
-    @IsBoolean()
-    @TransformToBoolean()
-    isArchived?: boolean
   }
 
   return GetWorkspaceIdDto

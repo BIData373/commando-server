@@ -44,12 +44,13 @@ export class TaskController {
   }
 
   @ApiOperation({ operationId: 'listTaskRows' })
-  @ApiQuery({ type: GetViewerWorkspaceIdFieldDto })
+  @ApiQuery({ type: GetViewerWorkspaceIdFieldDto && GetFilterIsArchived })
   @Get('rows')
   @ApiOkResponse({ type: [TaskRowDto] })
   @TransformPlainToInstance(TaskRowDto)
   async findRowsInWorkspace(
-    @Query() { isArchived, context: { workspace, user } }: GetViewerWorkspaceIdFieldDto,
+    @Query() { context: { workspace, user } }: GetViewerWorkspaceIdFieldDto,
+    @Query() { isArchived }: GetFilterIsArchived
   ) {
     return await this.taskService.findRowsInWorkspace(workspace, user, isArchived);
   }
