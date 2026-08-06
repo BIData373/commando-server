@@ -49,13 +49,13 @@ export class TaskController {
   @ApiOkResponse({ type: [TaskRowDto] })
   @TransformPlainToInstance(TaskRowDto)
   async findRowsInWorkspace(
-    @Query() { context: { workspace, user } }: GetViewerWorkspaceIdFieldDto,
-    @Query() { isArchived }: GetFilterIsArchived
+    @Query() { isArchived, context: { workspace, user } }: GetViewerWorkspaceIdFieldDto,
   ) {
     return await this.taskService.findRowsInWorkspace(workspace, user, isArchived);
   }
 
   @ApiOperation({ operationId: 'listPersonalTasks' })
+  @ApiQuery({ type: GetFilterIsArchived })
   @Get('personal')
   @ApiOkResponse({ type: [TaskWithWorkspaceDto] })
   @TransformPlainToInstance(TaskWithWorkspaceDto)
@@ -67,6 +67,7 @@ export class TaskController {
   }
 
   @ApiOperation({ operationId: 'listPersonalTaskRows' })
+  @ApiQuery({ type: GetFilterIsArchived })
   @Get('personal/rows')
   @ApiOkResponse({ type: [TaskRowWithWorkspaceDto] })
   @TransformPlainToInstance(TaskRowWithWorkspaceDto)
