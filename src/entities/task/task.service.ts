@@ -303,7 +303,7 @@ export class TaskService {
       ? formattedAssigneeStatuses.filter(({ assignee }) => assignee.users.some(({ id }) => id === user.id))
       : formattedAssigneeStatuses
 
-    const rows = assigneeStatusesForRows
+    return assigneeStatusesForRows
       .map(({ assigneeId, statusId, taskId, ...fields }) => ({
         ...task,
         rowKey: TaskService.formatTaskRowId(task.id, fields.assignee.id),
