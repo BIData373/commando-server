@@ -412,14 +412,6 @@ export class TaskService {
     return filteredTasks.map(({ archiveMap, ...task }) => TaskService.formatAdditionalTaskFields(task, task.workspace, user));
   }
 
-
-  async formatWorkspaceRows(tasks: TaskInclude[], workspace: WorkspaceWithPermissions, user: User) {
-    const [defaultStatus] = await this.findDefaultStatusInWorkspaces(workspace.id)
-    return tasks
-      .map(task => TaskService.extractTaskToRows(task, defaultStatus, workspace, user))
-      .flat()
-  }
-
   async findPersonalRows(user: User, isArchived?: boolean) {
     const tasks = await this.findPersonal(user, isArchived)
     const filteredTasks = TaskService.filterByArchiveStatus(
