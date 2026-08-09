@@ -281,7 +281,8 @@ export class TaskService {
     defaultStatus: WorkspaceStatus,
     workspace: WorkspaceWithPermissions,
     user: User,
-    onlyUserRows: boolean = false
+    onlyUserRows: boolean = false,
+    archiveMap?: Map<number | null, Date>
   ) {
     if (!onlyUserRows && assigneeStatuses.length === 0) {
       return [{
@@ -302,7 +303,7 @@ export class TaskService {
       ? formattedAssigneeStatuses.filter(({ assignee }) => assignee.users.some(({ id }) => id === user.id))
       : formattedAssigneeStatuses
 
-    return assigneeStatusesForRows
+    const rows = assigneeStatusesForRows
       .map(({ assigneeId, statusId, taskId, ...fields }) => ({
         ...task,
         rowKey: TaskService.formatTaskRowId(task.id, fields.assignee.id),
@@ -310,6 +311,13 @@ export class TaskService {
         ...fields,
         otherAssignees: formattedAssigneeStatuses.filter(current => current.assigneeId !== assigneeId)
       }))
+
+    if (!archiveMap) return rows
+
+    return rows.map(row => ({
+      ...row,
+      archivedAt: archiveMap.get(row.assigneeId) ?? null
+    }))
   }
 
   static filterByArchiveStatus<T extends TaskInclude>(
@@ -342,14 +350,9 @@ export class TaskService {
       isArchived
     )
 
-    return filteredTasks.map(({ archiveMap, ...task }) => {
-      const rows = TaskService.extractTaskToRows(task, defaultStatus, workspace, user)
-      if (!isArchived) return rows
-      return rows.map(row => ({
-        ...row,
-        archivedAt: archiveMap.get(row.assigneeId) ?? null
-      }))
-    }).flat()
+    return filteredTasks.map(({ archiveMap, ...task }) =>
+      TaskService.extractTaskToRows(task, defaultStatus, workspace, user, false, isArchived ? archiveMap : undefined)
+    ).flat()
   }
 
   async findBySource(sourceId: number, isArchived?: boolean) {
@@ -429,14 +432,9 @@ export class TaskService {
     const defaultStatuses = await this.findDefaultStatusInWorkspaces(...workspaceIds)
     const defaultStatusesMap = keyBy(defaultStatuses, 'workspaceId')
 
-    return filteredTasks.map(({ archiveMap, ...task }) => {
-      const rows = TaskService.extractTaskToRows(task, defaultStatusesMap[task.workspace.id], task.workspace, user)
-      if (!isArchived) return rows
-      return rows.map(row => ({
-        ...row,
-        archivedAt: archiveMap.get(row.assigneeId) ?? null
-      }))
-    }).flat()
+    return filteredTasks.map(({ archiveMap, ...task }) =>
+      TaskService.extractTaskToRows(task, defaultStatusesMap[task.workspace.id], task.workspace, user, false, isArchived ? archiveMap : undefined)
+    ).flat()
   }
 
   async findOne(id: number, user: User) {
