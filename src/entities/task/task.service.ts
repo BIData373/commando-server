@@ -309,15 +309,9 @@ export class TaskService {
         rowKey: TaskService.formatTaskRowId(task.id, fields.assignee.id),
         assigneeId,
         ...fields,
-        otherAssignees: formattedAssigneeStatuses.filter(current => current.assigneeId !== assigneeId)
+        otherAssignees: formattedAssigneeStatuses.filter(current => current.assigneeId !== assigneeId),
+        archivedAt: archiveMap?.get(assigneeId) ?? null
       }))
-
-    if (!archiveMap) return rows
-
-    return rows.map(row => ({
-      ...row,
-      archivedAt: archiveMap.get(row.assigneeId) ?? null
-    }))
   }
 
   static filterByArchiveStatus<T extends TaskInclude>(
