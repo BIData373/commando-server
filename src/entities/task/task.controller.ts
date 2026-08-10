@@ -2,7 +2,7 @@ import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req, UseInter
 import { ApiBody, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { TransformPlainToInstance } from 'class-transformer';
 import { Request } from 'express';
-import { AddDtosToContext } from '../../common/interceptors/add-dtos-to-context.interceptor';
+import { CopyDtosInRequest } from '../../common/interceptors/copy-dtos-in-request.interceptor';
 import { GetViewerWorkspaceIdFieldDto } from '../workspace/dto/request/get-workspace-id-field.dto';
 import { CreateTaskDto } from './dto/request/create-task.dto';
 import { GetManagerTaskIdDto, GetViewerTaskIdDto } from './dto/request/get-task-id.dto';
@@ -89,7 +89,7 @@ export class TaskController {
   @ApiParam({ name: 'id', type: Number })
   @ApiBody({ type: UpdateTaskDto })
   @UseInterceptors(
-    AddDtosToContext({ from: 'params', to: 'body', dto: GetManagerTaskIdDto, field: 'task' })
+    CopyDtosInRequest<UpdateTaskDto, GetManagerTaskIdDto>({ from: 'params.id', to: 'body.context.task', dto: GetManagerTaskIdDto })
   )
   @Patch(':id')
   @ApiOkResponse({ type: TaskWithWorkspaceDto })

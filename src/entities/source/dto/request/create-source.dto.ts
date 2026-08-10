@@ -1,9 +1,10 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
-import { IsArray, IsBoolean, IsDate, IsOptional } from 'class-validator';
+import { IsArray, IsBoolean, IsDate, IsOptional, ValidateNested } from 'class-validator';
 import { IsNotEmptyString } from '../../../../common/decorators/is-not-empty-string.decorator';
 import { TransformToBoolean } from '../../../../common/decorators/transform-to-boolean.decorator';
 import { GetManagerWorkspaceIdFieldDto } from '../../../workspace/dto/request/get-workspace-id-field.dto';
+import { CreateSourceTaskDto } from './create-source-task.dto';
 
 export class CreateSourceDto extends GetManagerWorkspaceIdFieldDto {
   @ApiProperty()
@@ -46,4 +47,11 @@ export class CreateSourceDto extends GetManagerWorkspaceIdFieldDto {
   @IsBoolean()
   @TransformToBoolean()
   draft?: boolean;
+
+  @ApiPropertyOptional({ type: [CreateSourceTaskDto] })
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => CreateSourceTaskDto)
+  tasks?: CreateSourceTaskDto[];
 }
