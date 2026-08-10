@@ -4,7 +4,7 @@ import { ApiBody, ApiConsumes, ApiCreatedResponse, ApiOkResponse, ApiOperation, 
 import { TransformPlainToInstance } from 'class-transformer';
 import { Request } from 'express';
 import { memoryStorage } from 'multer';
-import { AddDtosToContext } from '../../common/interceptors/add-dtos-to-context.interceptor';
+import { CopyDtosInRequest } from '../../common/interceptors/copy-dtos-in-request.interceptor';
 import { AddUserToContextInterceptor } from '../../common/interceptors/add-user-to-context.interceptor';
 import { GetManagerWorkspaceIdDto } from '../workspace/dto/request/get-workspace-id.dto';
 import { GetViewerWorkspaceIdFieldDto } from '../workspace/dto/request/get-workspace-id-field.dto';
@@ -29,12 +29,10 @@ export class SourceController {
       limits: { fileSize: 30 * 1024 * 1024 }
     }),
     AddUserToContextInterceptor,
-    AddDtosToContext<CreateSourceDto>({
-      from: 'body',
-      sourceField: 'workspaceId',
-      to: ['body', 'body.tasks.assignees'],
-      dto: GetManagerWorkspaceIdDto,
-      field: 'workspace'
+    CopyDtosInRequest<CreateSourceDto, CreateSourceDto>({
+      from: 'body.workspaceId',
+      to: ['body.context.workspace', 'body.tasks.assignees.context.workspace'],
+      dto: GetManagerWorkspaceIdDto
     })
   )
   @Post()

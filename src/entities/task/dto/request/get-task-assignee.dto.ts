@@ -9,9 +9,6 @@ import { IWorkspaceContext } from "../../../workspace/interfaces/workspace-conte
 
 export class GetTaskAssigneeDto extends GetContextDto<IWorkspaceContext> {
   @ApiProperty()
-  // Only runs when context.workspace was pre-populated for us (e.g. by
-  // SourceController.create's AddDtosToContext interceptor). Absent that,
-  // this is a no-op and the @IdExists check below still applies.
   @EntityExists('assignee', {
     validateIf: ({ obj }) => !!obj.context?.workspace,
     findArgs: ({ value, obj }) => ({

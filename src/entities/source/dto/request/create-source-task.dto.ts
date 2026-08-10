@@ -1,4 +1,4 @@
-import { ApiPropertyOptional, ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsArray, IsBoolean, IsDate, IsEnum, IsOptional, IsString, ValidateNested } from 'class-validator';
 import { IsNotEmptyString } from '../../../../common/decorators/is-not-empty-string.decorator';
@@ -32,9 +32,6 @@ export class CreateSourceTaskDto {
   @TransformToBoolean()
   flagged?: boolean;
 
-  // context.workspace is populated on each assignee directly by SourceController.create's
-  // AddDtosToContext interceptor (to: 'body.tasks.assignees') — see GetTaskAssigneeDto.id
-  // for the actual workspace-scoping check.
   @ApiPropertyOptional({ type: [GetTaskAssigneeDto] })
   @IsOptional()
   @IsArray()
