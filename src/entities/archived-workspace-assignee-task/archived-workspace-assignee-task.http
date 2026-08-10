@@ -1,0 +1,15 @@
+# @import ../../../global.http
+
+PATCH {{baseUrl}}/archived-workspace-assignee-task/1?assigneeId=5
+...headers
+requestusername: s111111
+is-bi: false
+
+?? status == 403
+
+PATCH {{baseUrl}}/archived-workspace-assignee-task/1?assigneeId=5
+...headers
+requestusername: yael
+is-bi: false
+
+?? status == 2xx
