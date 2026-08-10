@@ -1,7 +1,7 @@
 model User {
-  id   Int    @id @default(autoincrement())
-  upn  String @unique
-  
+  id  Int    @id @default(autoincrement())
+  upn String @unique
+
   /// [UserInfo]
   info Json?
 
@@ -9,6 +9,7 @@ model User {
   permissions Permission[]
   history     TaskHistory[]
   messages    Message[]
+  userViews   UserView[]
 
   @@map("users")
 }

@@ -1,5 +1,5 @@
 import { FORBIDDEN_MESSAGE } from "@nestjs/core/guards";
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty, PartialType } from "@nestjs/swagger";
 import { IdExists } from "../../../../common/decorators/id-exists.decorator";
 import { IsIdPermitted } from "../../../../common/decorators/is-permitted-id.decorator";
 import { GetContextDto } from "../../../../common/dto/request/get-context.dto";
@@ -74,4 +74,6 @@ export function GetPermittedWorkspaceIdFieldDto(type: PermissionType) {
 }
 
 export class GetViewerWorkspaceIdFieldDto extends GetPermittedWorkspaceIdFieldDto(PermissionType.VIEWER) { }
+
+export class GetOptionalViewerWorkspaceIdFieldDto extends PartialType(GetViewerWorkspaceIdFieldDto) { }
 export class GetManagerWorkspaceIdFieldDto extends GetPermittedWorkspaceIdFieldDto(PermissionType.MANAGER) { }
