@@ -3,7 +3,7 @@ import { ClassConstructor } from "class-transformer";
 import type { Request } from "express";
 import { addDtosToContext, DtoToAdd } from "../functions/transform";
 
-export function AddDtosToContext(...dtosToAdd: DtoToAdd<ClassConstructor<Object>>[]) {
+export function AddDtosToContext<TTarget = unknown>(...dtosToAdd: DtoToAdd<ClassConstructor<Object>, TTarget>[]) {
   class AddDtosToContextInterceptor implements NestInterceptor {
     intercept(context: ExecutionContext, next: CallHandler) {
       let request = context.switchToHttp().getRequest<Request>()

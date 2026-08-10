@@ -4,7 +4,9 @@ import { ApiBody, ApiConsumes, ApiCreatedResponse, ApiOkResponse, ApiOperation, 
 import { TransformPlainToInstance } from 'class-transformer';
 import { Request } from 'express';
 import { memoryStorage } from 'multer';
+import { AddDtosToContext } from '../../common/interceptors/add-dtos-to-context.interceptor';
 import { AddUserToContextInterceptor } from '../../common/interceptors/add-user-to-context.interceptor';
+import { GetManagerWorkspaceIdDto } from '../workspace/dto/request/get-workspace-id.dto';
 import { GetViewerWorkspaceIdFieldDto } from '../workspace/dto/request/get-workspace-id-field.dto';
 import { CreateSourceDto } from './dto/request/create-source.dto';
 import { GetAIExtractionCallbackDto } from './dto/request/get-ai-extraction-callback.dto';
@@ -26,7 +28,14 @@ export class SourceController {
       storage: memoryStorage(),
       limits: { fileSize: 30 * 1024 * 1024 }
     }),
-    AddUserToContextInterceptor
+    AddUserToContextInterceptor,
+    AddDtosToContext<CreateSourceDto>({
+      from: 'body',
+      sourceField: 'workspaceId',
+      to: ['body', 'body.tasks.assignees'],
+      dto: GetManagerWorkspaceIdDto,
+      field: 'workspace'
+    })
   )
   @Post()
   @ApiCreatedResponse({ type: SourceDto })
