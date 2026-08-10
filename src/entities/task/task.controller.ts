@@ -89,7 +89,7 @@ export class TaskController {
   @ApiParam({ name: 'id', type: Number })
   @ApiBody({ type: UpdateTaskDto })
   @UseInterceptors(
-    CopyDtosInRequest<UpdateTaskDto>({ from: 'params', to: 'body.context.task', dto: GetManagerTaskIdDto })
+    CopyDtosInRequest<UpdateTaskDto, GetManagerTaskIdDto>({ from: 'params.id', to: 'body.context.task', dto: GetManagerTaskIdDto })
   )
   @Patch(':id')
   @ApiOkResponse({ type: TaskWithWorkspaceDto })

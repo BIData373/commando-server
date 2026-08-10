@@ -65,8 +65,8 @@ export class WorkspaceController {
   @ApiOperation({ operationId: 'updateWorkspace' })
   @ApiParam({ name: 'id', type: Number })
   @ApiBody({ type: UpdateWorkspaceDto })
-  @UseInterceptors(CopyDtosInRequest<UpdateWorkspaceDto>({
-    from: 'params', to: 'body.context.workspace', dto: GetManagerWorkspaceIdDto
+  @UseInterceptors(CopyDtosInRequest<UpdateWorkspaceDto, GetManagerWorkspaceIdDto>({
+    from: 'params.id', to: 'body.context.workspace', dto: GetManagerWorkspaceIdDto
   }))
   @Patch(':id')
   @ApiOkResponse({ type: WorkspaceDto })
