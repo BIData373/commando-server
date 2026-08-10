@@ -11,6 +11,8 @@ import { AddUserToContextInterceptor } from './common/interceptors/add-user-to-c
 import { CookieMiddleware } from './common/middleware/cookie.middleware';
 import { WritableQueryMiddleware } from './common/middleware/writable-query.middleware';
 import { PrismaModule } from './common/prisma.module';
+import { ArchivedUserAssigneeTaskModule } from './entities/archived-user-assignee-task/archived-user-assignee-task.module';
+import { ArchivedWorkspaceAssigneeModule } from './entities/archived-workspace-assignee-task/archived-workspace-assignee-task.module';
 import { AssigneeTaskStatusModule } from './entities/assignee-task-status/assignee-task-status.module';
 import { AssigneeModule } from './entities/assignee/assignee.module';
 import { MessageModule } from './entities/message/message.module';
@@ -20,13 +22,12 @@ import { SourceModule } from './entities/source/source.module';
 import { TagModule } from './entities/tag/tag.module';
 import { TaskHistoryModule } from './entities/task-history/task-history.module';
 import { TaskModule } from './entities/task/task.module';
+import { UserViewModule } from './entities/user-views/user-view.module';
 import { UserModule } from './entities/user/user.module';
-import { ArchivedUserAssigneeTaskModule } from './entities/archived-user-assignee-task/archived-user-assignee-task.module';
 import { WorkspaceStatusModule } from './entities/workspace-status/workspace-status.module';
 import { WorkspaceModule } from './entities/workspace/workspace.module';
 import { SocketModule } from './socket/socket.module';
 import { TaskRunnerModule } from './task-runner/task-runner.module';
-import { ArchivedWorkspaceAssigneeModule } from './entities/archived-workspace-assignee-task/archived-workspace-assignee-task.module';
 
 // FIX Move to env
 export const openApiRoute = 'open-api'
@@ -69,6 +70,7 @@ export const openApiRoute = 'open-api'
     SocketModule,
     ArchivedUserAssigneeTaskModule,
     ArchivedWorkspaceAssigneeModule,
+    UserViewModule,
   ],
   providers: [
     BIGuard,

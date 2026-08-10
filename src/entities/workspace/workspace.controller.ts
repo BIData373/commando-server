@@ -3,7 +3,7 @@ import { ApiBody, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiParam, Api
 import { TransformPlainToInstance } from 'class-transformer';
 import { Request } from 'express';
 import { BIGuard } from '../../common/guards/bi.guard';
-import { AddDtosToContext } from '../../common/interceptors/add-dtos-to-context.interceptor';
+import { CopyDtosInRequest } from '../../common/interceptors/copy-dtos-in-request.interceptor';
 import { CreateWorkspaceDto } from './dto/request/create-workspace.dto';
 import { GetManagerWorkspaceIdDto, GetWorkspaceIdDto } from './dto/request/get-workspace-id.dto';
 import { GetOptionalWorkspaceUrlNameDto } from './dto/request/get-workspace-url-name.dto';
@@ -65,8 +65,8 @@ export class WorkspaceController {
   @ApiOperation({ operationId: 'updateWorkspace' })
   @ApiParam({ name: 'id', type: Number })
   @ApiBody({ type: UpdateWorkspaceDto })
-  @UseInterceptors(AddDtosToContext({
-    from: 'params', to: 'body', dto: GetManagerWorkspaceIdDto, field: 'workspace'
+  @UseInterceptors(CopyDtosInRequest<UpdateWorkspaceDto, GetManagerWorkspaceIdDto>({
+    from: 'params.id', to: 'body.context.workspace', dto: GetManagerWorkspaceIdDto
   }))
   @Patch(':id')
   @ApiOkResponse({ type: WorkspaceDto })

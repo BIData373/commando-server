@@ -193,6 +193,14 @@ COMPLETED COMPLETED
     }
   
 
+  "user_views" {
+    Int id "🗝️"
+    Int user_id 
+    Int workspace_id "❓"
+    Json view 
+    }
+  
+
   "workspaces" {
     Int id "🗝️"
     String title 
@@ -247,6 +255,8 @@ COMPLETED COMPLETED
     "tasks_history" }o--|| tasks : "task"
     "tasks_history" }o--|| workspaces : "workspace"
     "tasks_history" }o--|| users : "user"
+    "user_views" }o--|| users : "user"
+    "user_views" }o--|o workspaces : "workspace"
     "workspaces" }o--|| pikuds : "pikud"
     "workspace_statuses" |o--|| "WorkspaceStatusType" : "enum:status_type"
     "workspace_statuses" }o--|| workspaces : "workspace"
