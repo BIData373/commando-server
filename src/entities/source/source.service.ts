@@ -71,7 +71,7 @@ export class SourceService {
 
   async findInWorkspace(workspaceId: number): Promise<Prisma.SourceGetPayload<{ include: typeof SourceService.include }>[]> {
     return await this.prisma.source.findMany({
-      where: { workspaceId, deletedAt: null },
+      where: { workspaceId, deletedAt: null, draft: false },
       include: SourceService.include
     });
   }
