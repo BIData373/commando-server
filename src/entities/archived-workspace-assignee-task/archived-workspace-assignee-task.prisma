@@ -1,4 +1,4 @@
-model ArchivedWorkspaceTaskAssignee  {
+model ArchivedWorkspaceAssigneeTask  {
     id     Int @id @default(autoincrement())
     taskId Int @map("task_id")
     assigneeId Int? @map("assignee_id")

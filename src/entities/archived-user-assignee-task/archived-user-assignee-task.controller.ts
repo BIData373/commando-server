@@ -1,8 +1,9 @@
-import { Controller, Param, Patch, Query } from '@nestjs/common';
-import { ApiOperation, ApiParam } from '@nestjs/swagger';
+import { Controller, HttpCode, Param, Patch, Query } from '@nestjs/common';
+import { ApiNoContentResponse, ApiOperation, ApiParam, ApiQuery } from '@nestjs/swagger';
+import { HttpStatusCode } from 'axios';
+import { GetAssignedAssigneeIdFieldDto } from '../assignee/dto/request/get-assignee-id-field.dto';
+import { GetViewerTaskIdDto } from '../task/dto/request/get-task-id.dto';
 import { ArchivedUserAssigneeTaskService } from './archived-user-assignee-task.service';
-import { GetOptionalAssiggneeIdDto } from './dto/request/get-assignee-id.dto';
-import { GetTaskArchiveTaskIdDto } from './dto/request/get-task-id.dto';
 
 @Controller('archived-user-assignee-task')
 export class ArchivedUserAssigneeTaskController {
@@ -11,12 +12,13 @@ export class ArchivedUserAssigneeTaskController {
   @ApiOperation({ operationId: 'toggleUserTaskArchive' })
   @ApiParam({ name: 'id', type: Number })
   @Patch(':id')
+  @HttpCode(HttpStatusCode.NoContent)
+  @ApiNoContentResponse()
   async togglePersonal(
-    @Param() { context: { task, user } }: GetTaskArchiveTaskIdDto,
-    @Query() { assigneeId }: GetOptionalAssiggneeIdDto
+    // FIX Make task dto for this route more specific - allow getting task only if its in your personal space with the given assignee
+    @Param() { context: { task, user } }: GetViewerTaskIdDto,
+    @Query() { assigneeId }: GetAssignedAssigneeIdFieldDto
   ) {
     return await this.userTaskArchivesService.toggle(task.id, user.id, assigneeId);
   }
-
-
 }

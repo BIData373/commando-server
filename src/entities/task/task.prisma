@@ -22,7 +22,7 @@ model Task {
   sourceId Int?    @map("source_id")
   source   Source? @relation(fields: [sourceId], references: [id])
 
-  archivedWorkspaceTaskAssignee ArchivedWorkspaceTaskAssignee[]
+  archivedWorkspaceAssigneeTask ArchivedWorkspaceAssigneeTask[]
   archivedUserAssigneeTask ArchivedUserAssigneeTask[]
   tags             Tag[]                @relation("tasks_tags")
   assigneeStatuses AssigneeTaskStatus[]

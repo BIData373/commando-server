@@ -243,7 +243,7 @@ export class TaskService {
   static workspaceArchiveWhere(isArchived?: boolean): Prisma.TaskWhereInput {
     return {
       ...(!isArchived && {
-        archivedWorkspaceTaskAssignee: {
+        archivedWorkspaceAssigneeTask: {
           none: { assigneeId: null }
         }
       })
@@ -260,7 +260,7 @@ export class TaskService {
       },
       include: {
         ...TaskService.baseInclude(),
-        archivedWorkspaceTaskAssignee: true
+        archivedWorkspaceAssigneeTask: true
       },
       orderBy: TaskService.orderBy
     });
@@ -340,12 +340,19 @@ export class TaskService {
 
     const filteredTasks = TaskService.filterByArchiveStatus(
       tasks,
-      t => t.archivedWorkspaceTaskAssignee.map(a => [a.assigneeId, a.createdAt]),
+      t => t.archivedWorkspaceAssigneeTask.map(a => [a.assigneeId, a.createdAt]),
       isArchived
     )
 
     return filteredTasks.map(({ archiveMap, ...task }) =>
-      TaskService.extractTaskToRows(task, defaultStatus, workspace, user, false, isArchived ? archiveMap : undefined)
+      TaskService.extractTaskToRows(
+        task,
+        defaultStatus,
+        workspace,
+        user,
+        false,
+        isArchived ? archiveMap : undefined
+      )
     ).flat()
   }
 
@@ -357,7 +364,7 @@ export class TaskService {
       },
       include: {
         ...TaskService.baseInclude(),
-        archivedWorkspaceTaskAssignee: true
+        archivedWorkspaceAssigneeTask: true
       },
       orderBy: TaskService.orderBy
     });
@@ -367,7 +374,7 @@ export class TaskService {
     const tasks = await this.findBySource(sourceId, isArchived)
     const filteredTasks = TaskService.filterByArchiveStatus(
       tasks,
-      t => t.archivedWorkspaceTaskAssignee.map(a => [a.assigneeId, a.createdAt]),
+      t => t.archivedWorkspaceAssigneeTask.map(a => [a.assigneeId, a.createdAt]),
       isArchived
     )
 
@@ -403,6 +410,7 @@ export class TaskService {
       t => t.archivedUserAssigneeTask.map(a => [a.assigneeId, a.createdAt]),
       isArchived
     )
+
     return filteredTasks.map(({ archiveMap, ...task }) => TaskService.formatAdditionalTaskFields(task, task.workspace, user));
   }
 
@@ -419,7 +427,14 @@ export class TaskService {
     const defaultStatusesMap = keyBy(defaultStatuses, 'workspaceId')
 
     return filteredTasks.map(({ archiveMap, ...task }) =>
-      TaskService.extractTaskToRows(task, defaultStatusesMap[task.workspace.id], task.workspace, user, false, isArchived ? archiveMap : undefined)
+      TaskService.extractTaskToRows(
+        task,
+        defaultStatusesMap[task.workspace.id],
+        task.workspace,
+        user,
+        false,
+        isArchived ? archiveMap : undefined
+      )
     ).flat()
   }
 

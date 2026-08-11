@@ -4,8 +4,8 @@ import path from "node:path";
 export const env = process.env.ENV ?? ''
 
 export const envFilePath = [
-  path.join(__dirname, '../config/common.env'),
-  path.join(__dirname, `../config`, env, '.env')
+  path.join(process.cwd(), 'config/common.env'),
+  path.join(process.cwd(), `config`, env, '.env')
 ]
 
 config({ path: envFilePath });

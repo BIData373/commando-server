@@ -5,5 +5,6 @@ import { ArchivedWorkspaceAssigneeController } from './archived-workspace-assign
 @Module({
   controllers: [ArchivedWorkspaceAssigneeController],
   providers: [ArchivedWorkspaceAssigneeService],
+  exports: [ArchivedWorkspaceAssigneeService],
 })
 export class ArchivedWorkspaceAssigneeModule { }

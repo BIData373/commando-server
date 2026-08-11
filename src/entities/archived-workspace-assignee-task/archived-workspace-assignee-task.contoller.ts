@@ -1,11 +1,9 @@
-import { Controller, Get, Param, Patch, Query } from '@nestjs/common';
-import { ApiOkResponse, ApiOperation, ApiParam } from '@nestjs/swagger';
-import { TransformPlainToInstance } from 'class-transformer';
-import { GetViewerWorkspaceIdFieldDto } from '../workspace/dto/request/get-workspace-id-field.dto';
-import { TaskRowWithWorkspaceDto } from '../task/dto/response/task-row-with-workspace.dto';
+import { Controller, HttpCode, Param, Patch, Query } from '@nestjs/common';
+import { ApiNoContentResponse, ApiOperation, ApiParam } from '@nestjs/swagger';
+import { HttpStatusCode } from 'axios';
+import { GetOptionalManagerAssigneeIdFieldDto } from '../assignee/dto/request/get-assignee-id-field.dto';
+import { GetManagerTaskIdDto } from '../task/dto/request/get-task-id.dto';
 import { ArchivedWorkspaceAssigneeService } from './archived-workspace-assignee-task.service';
-import { GetManagerArchiveTaskIdDto } from '../archived-user-assignee-task/dto/request/get-task-id.dto';
-import { GetOptionalAssiggneeIdDto } from '../archived-user-assignee-task/dto/request/get-assignee-id.dto';
 
 @Controller('archived-workspace-assignee-task')
 export class ArchivedWorkspaceAssigneeController {
@@ -14,9 +12,11 @@ export class ArchivedWorkspaceAssigneeController {
   @ApiOperation({ operationId: 'toggleWorkspaceTaskArchive' })
   @ApiParam({ name: 'id', type: Number })
   @Patch(':id')
+  @HttpCode(HttpStatusCode.NoContent)
+  @ApiNoContentResponse()
   async toggleWorkspace(
-    @Param() { context: { task } }: GetManagerArchiveTaskIdDto,
-    @Query() { assigneeId }: GetOptionalAssiggneeIdDto
+    @Param() { context: { task } }: GetManagerTaskIdDto,
+    @Query() { assigneeId }: GetOptionalManagerAssigneeIdFieldDto
   ) {
     return await this.workspaceTaskArchivesService.toggle(task.id, assigneeId)
   }
