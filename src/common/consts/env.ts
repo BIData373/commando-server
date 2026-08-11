@@ -2,10 +2,9 @@ import { config } from "dotenv";
 import path from "node:path";
 
 export const env = process.env.ENV ?? ''
-
 export const envFilePath = [
-  path.join(__dirname, '../config/common.env'),
-  path.join(__dirname, `../config`, env, '.env')
+  path.join(process.cwd(), 'config/common.env'),
+  path.join(process.cwd(), `config`, env, '.env')
 ]
 
 config({ path: envFilePath });
@@ -66,6 +65,7 @@ export const dbUseSSL = process.env.DB_USE_SSL
 
 export const messageRelayUrl = process.env.MESSAGE_RELAY_URL
 export const messageRelayToken = process.env.MESSAGE_RELAY_TOKEN
+export const biChatChannelName = process.env.BI_CHAT_CHANNEL_NAME
 
 export const notificationTemplate = process.env.NOTIFICATION_TEMPLATE
 export const vectorUrl = process.env.VECTOR_URL

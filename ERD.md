@@ -44,6 +44,14 @@ DELETE DELETE
     
 
 
+        workspace_request_status {
+            PENDING PENDING
+APPROVED APPROVED
+REJECTED REJECTED
+        }
+    
+
+
         WorkspaceStatusType {
             NOT_STARTED NOT_STARTED
 IN_PROGRESS IN_PROGRESS
@@ -194,6 +202,20 @@ COMPLETED COMPLETED
     }
   
 
+  "workspace_requests" {
+    Int id "🗝️"
+    Json details 
+    WorkspaceRequestStatus status 
+    String decline_message "❓"
+    DateTime created_at 
+    Int created_by 
+    DateTime updated_at 
+    Int updated_by 
+    DateTime deleted_at "❓"
+    Int deleted_by "❓"
+    }
+  
+
   "workspace_statuses" {
     Int id "🗝️"
     String name 
@@ -226,6 +248,7 @@ COMPLETED COMPLETED
     "tasks_history" }o--|| workspaces : "workspace"
     "tasks_history" }o--|| users : "user"
     "workspaces" }o--|| pikuds : "pikud"
+    "workspace_requests" |o--|| "WorkspaceRequestStatus" : "enum:status"
     "workspace_statuses" |o--|| "WorkspaceStatusType" : "enum:status_type"
     "workspace_statuses" }o--|| workspaces : "workspace"
 ```

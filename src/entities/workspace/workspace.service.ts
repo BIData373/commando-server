@@ -8,7 +8,9 @@ import { WorkspaceDto } from './dto/response/workspace.dto';
 
 @Injectable()
 export class WorkspaceService {
-  constructor(private readonly prisma: PrismaService) { }
+  constructor(
+    private readonly prisma: PrismaService
+  ) { }
 
   private permissionsInclude(userId: number): Prisma.WorkspaceInclude {
     return {
@@ -40,8 +42,11 @@ export class WorkspaceService {
         workspaceStatuses: {
           createMany: {
             data: DEFAULT_STATUSES
-          }
+          },
+        
+
         }
+        
       }
     });
   }

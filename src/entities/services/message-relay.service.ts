@@ -20,13 +20,13 @@ export class MessageRelayService {
         console.log(`Notifications are ${notificationsEnabled ? 'ON' : 'OFF'}`)
     }
 
-    async sendNotification(recipients: string[], channel: string, title: string, message: string) {
+    async sendNotification(recipients: string[], title: string, message: string, channel?: string) {
         try {
             const response = await this.client.post('/relay',
                 {
                     provider: 'sendman',
                     recipients: recipients,
-                    channel: channel,
+                    channel: channel!,
                     title: title,
                     message: message
                 })
