@@ -40,6 +40,20 @@ export class TaskService {
     private readonly messageRelayService: MessageRelayService
   ) { }
 
+  static readonly includeMessage: Prisma.TaskInclude = {
+    messages: {
+      orderBy: {
+        ...TaskService.orderBy,
+      },
+      take: 1,
+    },
+    _count: {
+      select: {
+        messages: true,
+      },
+    },
+  }
+
   static baseInclude() {
     return {
       tags: true,
@@ -47,6 +61,7 @@ export class TaskService {
         where: { deletedAt: null },
         include: { tags: true }
       },
+      ...TaskService.includeMessage,
       assigneeStatuses: {
         where: {
           assignee: {
@@ -297,6 +312,8 @@ export class TaskService {
     const tasks = await this.findInWorkspace(workspace)
     const [defaultStatus] = await this.findDefaultStatusInWorkspaces(workspace.id)
 
+    console.log('taskLastMessage: ', tasks[0].messages)
+    console.log('messagesCount: ', tasks[0]._count)
     const taskRows = tasks
       .map(task => TaskService.extractTaskToRows(task, defaultStatus, workspace, user))
       .flat()
