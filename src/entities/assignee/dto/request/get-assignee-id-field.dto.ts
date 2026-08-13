@@ -1,12 +1,16 @@
 import { FORBIDDEN_MESSAGE } from "@nestjs/core/guards";
 import { ApiProperty, PartialType } from "@nestjs/swagger";
+import { merge } from "lodash";
 import { IdExists } from "../../../../common/decorators/id-exists.decorator";
-import { IsIdPermitted } from "../../../../common/decorators/is-permitted-id.decorator";
+import { IIsIdPermittedOptions, IsIdPermitted } from "../../../../common/decorators/is-permitted-id.decorator";
 import { GetContextDto } from "../../../../common/dto/request/get-context.dto";
+import { IContext } from "../../../../common/interfaces/context.interface";
 import { PermissionType } from "../../../../types/prisma";
+import { ITaskContext } from "../../../task/interfaces/task.interface";
 import { IUserContext } from "../../../user/interfaces/user-context.interface";
+import { IAssigneeId } from "../../interfaces/assignee-id.interface";
 
-export class GetAssignedAssigneeIdFieldDto extends GetContextDto<IUserContext> {
+export class GetAssignedAssigneeIdFieldDto extends GetContextDto<IUserContext & ITaskContext> {
     @ApiProperty()
     @IdExists('assignee', {
         message: FORBIDDEN_MESSAGE,
@@ -15,12 +19,8 @@ export class GetAssignedAssigneeIdFieldDto extends GetContextDto<IUserContext> {
             where: {
                 id: value,
                 deletedAt: null,
-                assignees: {
-                    some: {
-                        deletedAt: null,
-                        users: { some: { id: obj.context.user.id } }
-                    }
-                }
+                users: { some: { id: obj.context.user.id } },
+                workspace: { tasks: { some: { id: obj.context.task.id } } }
             }
         })
     })
@@ -30,12 +30,19 @@ export class GetAssignedAssigneeIdFieldDto extends GetContextDto<IUserContext> {
 
 export class GetOptionalAssignedAssigneeIdFieldDto extends PartialType(GetAssignedAssigneeIdFieldDto) { }
 
-export function GetPermittedAssigneeIdFieldDto(type: PermissionType) {
-    class GetAssigneeIdFieldDto extends GetContextDto<IUserContext> {
+export function GetPermittedAssigneeIdFieldDto<TContext extends object = {}>(
+    type: PermissionType,
+    { workspaceFindArgs, ...options }: IIsIdPermittedOptions<"assigneeId", "assignee", IAssigneeId & IContext<IUserContext & TContext>> = {}
+) {
+    class GetAssigneeIdFieldDto extends GetContextDto<IUserContext & TContext> {
         @ApiProperty()
         @IsIdPermitted('assignee', type, {
             filterDeletedAt: true,
-            workspaceFindArgs: ({ value }) => ({ assignees: { some: { id: value } } })
+            workspaceFindArgs: ({ value, obj }) => merge(
+                { assignees: { some: { id: value } } },
+                workspaceFindArgs?.({ value, obj })
+            ),
+            ...options
         })
         assigneeId: number
     }
@@ -45,4 +52,10 @@ export function GetPermittedAssigneeIdFieldDto(type: PermissionType) {
 
 export class GetViewerAssigneeIdFieldDto extends GetPermittedAssigneeIdFieldDto(PermissionType.VIEWER) { }
 export class GetManagerAssigneeIdFieldDto extends GetPermittedAssigneeIdFieldDto(PermissionType.MANAGER) { }
-export class GetOptionalManagerAssigneeIdFieldDto extends PartialType(GetManagerAssigneeIdFieldDto) { }
+
+export class GetManagerTaskAssigneeIdFieldDto extends GetPermittedAssigneeIdFieldDto<ITaskContext>(PermissionType.MANAGER, {
+    workspaceFindArgs: ({ obj }) => ({
+        tasks: { some: { id: obj.context.task.id, deletedAt: null } }
+    })
+}) { }
+export class GetOptionalManagerTaskAssigneeIdFieldDto extends PartialType(GetManagerTaskAssigneeIdFieldDto) { }
