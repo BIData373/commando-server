@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req, UseInterceptors } from '@nestjs/common';
-import { ApiBody, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery } from '@nestjs/swagger';
+import { ApiBody, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, IntersectionType } from '@nestjs/swagger';
 import { TransformPlainToInstance } from 'class-transformer';
 import { Request } from 'express';
 import { CopyDtosInRequest } from '../../common/interceptors/copy-dtos-in-request.interceptor';
@@ -14,6 +14,8 @@ import { TaskWithWorkspaceDto } from './dto/response/task-with-workspace.dto';
 import { TaskDto } from './dto/response/task.dto';
 import { TaskService } from './task.service';
 import { GetFilterIsArchived } from '../user/dto/request/get-filter-is-arcived.dto';
+
+class ListTaskRowsQueryDto extends IntersectionType(GetViewerWorkspaceIdFieldDto, GetFilterIsArchived) { }
 
 @Controller('task')
 export class TaskController {
@@ -44,7 +46,7 @@ export class TaskController {
   }
 
   @ApiOperation({ operationId: 'listTaskRows' })
-  @ApiQuery({ type: GetViewerWorkspaceIdFieldDto && GetFilterIsArchived })
+  @ApiQuery({ type: ListTaskRowsQueryDto })
   @Get('rows')
   @ApiOkResponse({ type: [TaskRowDto] })
   @TransformPlainToInstance(TaskRowDto)

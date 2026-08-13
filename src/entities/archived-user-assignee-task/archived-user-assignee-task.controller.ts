@@ -1,5 +1,5 @@
 import { Controller, HttpCode, Param, Patch, Query, UseInterceptors } from '@nestjs/common';
-import { ApiNoContentResponse, ApiOperation, ApiParam, ApiQuery } from '@nestjs/swagger';
+import { ApiNoContentResponse, ApiOperation, ApiParam } from '@nestjs/swagger';
 import { HttpStatusCode } from 'axios';
 import { CopyDtosInRequest } from '../../common/interceptors/copy-dtos-in-request.interceptor';
 import { GetAssignedAssigneeIdFieldDto } from '../assignee/dto/request/get-assignee-id-field.dto';
@@ -12,7 +12,6 @@ export class ArchivedUserAssigneeTaskController {
 
   @ApiOperation({ operationId: 'toggleUserTaskArchive' })
   @ApiParam({ name: 'id', type: Number })
-  @ApiQuery({ type: GetAssignedAssigneeIdFieldDto })
   @UseInterceptors(
     CopyDtosInRequest<GetAssignedAssigneeIdFieldDto, GetViewerTaskIdDto>({ from: 'params.id', to: 'query.context.task', dto: GetViewerTaskIdDto })
   )
