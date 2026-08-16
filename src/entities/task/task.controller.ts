@@ -1,11 +1,12 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req, UseInterceptors } from '@nestjs/common';
-import { ApiBody, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, IntersectionType } from '@nestjs/swagger';
+import { ApiBody, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { TransformPlainToInstance } from 'class-transformer';
 import { Request } from 'express';
 import { CopyDtosInRequest } from '../../common/interceptors/copy-dtos-in-request.interceptor';
 import { GetViewerWorkspaceIdFieldDto } from '../workspace/dto/request/get-workspace-id-field.dto';
 import { CreateTaskDto } from './dto/request/create-task.dto';
 import { GetManagerTaskIdDto, GetViewerTaskIdDto } from './dto/request/get-task-id.dto';
+import { ListTaskRowsQueryDto } from './dto/request/list-task-rows.dto';
 import { UpdateTaskDto } from './dto/request/update-task.dto';
 import { TaskDetailsDto } from './dto/response/task-details.dto';
 import { TaskRowWithWorkspaceDto } from './dto/response/task-row-with-workspace.dto';
@@ -14,8 +15,6 @@ import { TaskWithWorkspaceDto } from './dto/response/task-with-workspace.dto';
 import { TaskDto } from './dto/response/task.dto';
 import { TaskService } from './task.service';
 import { GetFilterIsArchived } from '../user/dto/request/get-filter-is-arcived.dto';
-
-class ListTaskRowsQueryDto extends IntersectionType(GetViewerWorkspaceIdFieldDto, GetFilterIsArchived) { }
 
 @Controller('task')
 export class TaskController {
