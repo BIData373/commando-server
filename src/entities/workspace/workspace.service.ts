@@ -29,7 +29,7 @@ export class WorkspaceService {
       const bType = b.permissions[0]?.type;
       const aOrder = aType ? permissionOrder[aType] ?? 2 : 2;
       const bOrder = bType ? permissionOrder[bType] ?? 2 : 2;
-      return bOrder - aOrder;
+      return aOrder - bOrder;
     });
   }
 

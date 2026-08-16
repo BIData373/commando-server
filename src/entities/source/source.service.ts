@@ -28,12 +28,19 @@ export class SourceService {
   ) { }
 
   async create(
-    { tags, workspaceId, context, aiExtraction, draft, ...dto }: CreateSourceDto,
+    { tags, tasks, workspaceId, context, aiExtraction, draft, ...dto }: CreateSourceDto,
     userId: number,
     file?: Express.Multer.File
   ) {
     const attachmentKey = file && await this.s3.upload(file, 'sources')
     const attachmentName = file ? decodeMulterFilename(file.originalname) : undefined
+
+    let notStartedStatusId: number | undefined
+
+    if (tasks?.length) {
+      const [notStartedStatus] = await this.taskService.findDefaultStatusInWorkspaces(workspaceId)
+      notStartedStatusId = notStartedStatus.id
+    }
 
     const source = await this.prisma.source.create({
       data: {
@@ -56,6 +63,26 @@ export class SourceService {
             }))
           }
         })),
+        ...(tasks !== undefined && ({
+          tasks: {
+            create: tasks.map(({ assignees, ...taskDto }) => ({
+              ...taskDto,
+              workspaceId,
+              creationType: TaskCreationType.HUMAN,
+              createdBy: userId,
+              updatedBy: userId,
+              ...(assignees?.length && {
+                assigneeStatuses: {
+                  create: assignees.map(({ id, description }) => ({
+                    assigneeId: id,
+                    description,
+                    statusId: notStartedStatusId!
+                  }))
+                }
+              })
+            }))
+          }
+        })),
         createdBy: userId,
         updatedBy: userId
       },
@@ -71,7 +98,7 @@ export class SourceService {
 
   async findInWorkspace(workspaceId: number): Promise<Prisma.SourceGetPayload<{ include: typeof SourceService.include }>[]> {
     return await this.prisma.source.findMany({
-      where: { workspaceId, deletedAt: null },
+      where: { workspaceId, deletedAt: null, draft: false },
       include: SourceService.include
     });
   }
@@ -105,7 +132,7 @@ export class SourceService {
   async update(
     { id, workspaceId, ...source }: Source,
     // TODO - fix
-    { tags, context, deleteAttachment, workspaceId: _, aiExtraction, draft, ...dto }: UpdateSourceDto,
+    { tags, tasks, context, deleteAttachment, workspaceId: _, aiExtraction, draft, ...dto }: UpdateSourceDto,
     updatedBy: number,
     file?: Express.Multer.File
   ) {

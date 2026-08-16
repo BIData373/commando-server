@@ -2,10 +2,11 @@ import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req, UseInter
 import { ApiBody, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { TransformPlainToInstance } from 'class-transformer';
 import { Request } from 'express';
-import { AddDtosToContext } from '../../common/interceptors/add-dtos-to-context.interceptor';
+import { CopyDtosInRequest } from '../../common/interceptors/copy-dtos-in-request.interceptor';
 import { GetViewerWorkspaceIdFieldDto } from '../workspace/dto/request/get-workspace-id-field.dto';
 import { CreateTaskDto } from './dto/request/create-task.dto';
 import { GetManagerTaskIdDto, GetViewerTaskIdDto } from './dto/request/get-task-id.dto';
+import { ListTaskRowsQueryDto } from './dto/request/list-task-rows.dto';
 import { UpdateTaskDto } from './dto/request/update-task.dto';
 import { TaskDetailsDto } from './dto/response/task-details.dto';
 import { TaskRowWithWorkspaceDto } from './dto/response/task-row-with-workspace.dto';
@@ -13,6 +14,7 @@ import { TaskRowDto } from './dto/response/task-row.dto';
 import { TaskWithWorkspaceDto } from './dto/response/task-with-workspace.dto';
 import { TaskDto } from './dto/response/task.dto';
 import { TaskService } from './task.service';
+import { GetFilterIsArchived } from '../user/dto/request/get-filter-is-arcived.dto';
 
 @Controller('task')
 export class TaskController {
@@ -43,34 +45,39 @@ export class TaskController {
   }
 
   @ApiOperation({ operationId: 'listTaskRows' })
-  @ApiQuery({ type: GetViewerWorkspaceIdFieldDto })
+  @ApiQuery({ type: ListTaskRowsQueryDto })
   @Get('rows')
   @ApiOkResponse({ type: [TaskRowDto] })
   @TransformPlainToInstance(TaskRowDto)
   async findRowsInWorkspace(
-    @Query() { context: { workspace, user } }: GetViewerWorkspaceIdFieldDto
+    @Query() { context: { workspace, user } }: GetViewerWorkspaceIdFieldDto,
+    @Query() { isArchived }: GetFilterIsArchived
   ) {
-    return await this.taskService.findRowsInWorkspace(workspace, user);
+    return await this.taskService.findRowsInWorkspace(workspace, user, isArchived);
   }
 
   @ApiOperation({ operationId: 'listPersonalTasks' })
+  @ApiQuery({ type: GetFilterIsArchived })
   @Get('personal')
   @ApiOkResponse({ type: [TaskWithWorkspaceDto] })
   @TransformPlainToInstance(TaskWithWorkspaceDto)
   async findPersonal(
-    @Req() { user }: Request
+    @Req() { user }: Request,
+    @Query() { isArchived }: GetFilterIsArchived
   ) {
-    return await this.taskService.findPersonalFormatted(user);
+    return await this.taskService.findPersonalFormatted(user, isArchived);
   }
 
   @ApiOperation({ operationId: 'listPersonalTaskRows' })
+  @ApiQuery({ type: GetFilterIsArchived })
   @Get('personal/rows')
   @ApiOkResponse({ type: [TaskRowWithWorkspaceDto] })
   @TransformPlainToInstance(TaskRowWithWorkspaceDto)
   async findPersonalRows(
-    @Req() { user }: Request
+    @Req() { user }: Request,
+    @Query() { isArchived }: GetFilterIsArchived
   ) {
-    return await this.taskService.findPersonalRows(user);
+    return await this.taskService.findPersonalRows(user, isArchived);
   }
 
   @ApiOperation({ operationId: 'getTask' })
@@ -89,7 +96,7 @@ export class TaskController {
   @ApiParam({ name: 'id', type: Number })
   @ApiBody({ type: UpdateTaskDto })
   @UseInterceptors(
-    AddDtosToContext({ from: 'params', to: 'body', dto: GetManagerTaskIdDto, field: 'task' })
+    CopyDtosInRequest<UpdateTaskDto, GetManagerTaskIdDto>({ from: 'params.id', to: 'body.context.task', dto: GetManagerTaskIdDto })
   )
   @Patch(':id')
   @ApiOkResponse({ type: TaskWithWorkspaceDto })

@@ -17,6 +17,20 @@ attachment< ./sample.pdf
 
 ?? status == 201
 
+### Create Source — with embedded tasks
+POST {{baseUrl}}/source
+...headers
+Content-Type: multipart/form-data
+
+name=Radio With Tasks
+workspaceId={{workspaceId}}
+tasks[0][title]=Review notes
+tasks[0][deadlineType]=DATE
+tasks[1][title]=Follow up
+tasks[1][deadlineType]=ROLLING
+
+?? status == 201
+
 ### Create Source — with AI extraction
 POST {{baseUrl}}/source
 ...headers
@@ -38,17 +52,39 @@ workspaceId={{workspaceId}}
 
 ?? status == 400
 
+### Create Source — insufficient permission (expect 403)
+POST {{baseUrl}}/source
+...headers
+is-bi: false
+Content-Type: multipart/form-data
+
+name=Radio
+workspaceId={{workspaceId}}
+
+?? status == 403
+
 ### Get all Sources in workspace
 GET {{baseUrl}}/source?workspaceId={{workspaceId}}
 ...headers
 
 ?? status == 200
 
+{{@response
+  exports.sourceId = response.parsedBody[0].id;
+}}
+
 ### Get Source by id
 GET {{baseUrl}}/source/{{sourceId}}
 ...headers
 
 ?? status == 200
+
+### Get Source by id — insufficient permission (expect 403)
+GET {{baseUrl}}/source/{{sourceId}}
+...headers
+is-bi: false
+
+?? status == 403
 
 ### Update Source — with new attachment
 PATCH {{baseUrl}}/source/{{sourceId}}
@@ -71,6 +107,30 @@ PATCH {{baseUrl}}/source/{{sourceId}}
 }
 
 ?? status == 200
+
+### Update Source — insufficient permission (expect 403)
+PATCH {{baseUrl}}/source/{{sourceId}}
+...headers
+is-bi: false
+Content-Type: multipart/form-data
+
+name=Radio Updated
+
+?? status == 403
+
+### Extract source — insufficient permission (expect 403)
+POST {{baseUrl}}/source/{{sourceId}}/extract
+...headers
+is-bi: false
+
+?? status == 403
+
+### Delete Source — insufficient permission (expect 403)
+DELETE {{baseUrl}}/source/{{sourceId}}
+...headers
+is-bi: false
+
+?? status == 403
 
 ### Delete Source — non-existent id (expect 400)
 DELETE {{baseUrl}}/source/99999
