@@ -1,5 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { ArrayUnique, IsArray, IsNotEmpty, IsString } from "class-validator";
+import { ArrayUnique, IsArray } from "class-validator";
+import { IsNotEmptyString } from "../../../../common/decorators/is-not-empty-string.decorator";
 import { CreateWorkspaceDto } from "../../../workspace/dto/request/create-workspace.dto";
 
 export class CreateWorkspaceRequestDto extends CreateWorkspaceDto {
@@ -9,7 +10,6 @@ export class CreateWorkspaceRequestDto extends CreateWorkspaceDto {
     })
     @IsArray()
     @ArrayUnique()
-    @IsNotEmpty()
-    @IsString({ each: true })
+    @IsNotEmptyString({ each: true })
     managers: string[];
 }

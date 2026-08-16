@@ -1,12 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { UpdateWorkspaceRequestDto } from './dto/request/update-workspace-request.dto';
 import { CreateWorkspaceRequestDto } from './dto/request/create-workspace-request.dto';
-import { biChatChannelName, chatUrl } from '../../common/consts/env';
+import { biChatChannelName, chatUrl, projectChatUrl } from '../../common/consts/env';
 import { PrismaService } from '../../common/prisma.service';
 import { PermissionType, Prisma, User, WorkspaceRequest, WorkspaceRequestStatus } from '../../types/prisma';
 import { PermissionService } from '../permission/permission.service';
-import { UpsertPermissionDto } from '../permission/dto/request/upsert-permission.dto';
 import { MessageRelayService } from '../services/message-relay.service';
+import { UserService } from '../user/user.service';
 import { CreateWorkspaceDto } from '../workspace/dto/request/create-workspace.dto';
 import { WorkspaceService } from '../workspace/workspace.service';
 
@@ -27,9 +27,6 @@ export class WorkspaceRequestsService {
     return { ...workspaceRequest, ...details };
   }
 
-  static getProjectChatUrl() {
-    return new URL(`/channel/${process.env.VITE_CHAT_CHANNEL!}`, process.env.VITE_CHAT_CHANNEL!).href;
-  }
 
 
   async create(
@@ -47,21 +44,21 @@ export class WorkspaceRequestsService {
     const response = WorkspaceRequestsService.formatWorkspaceRequest(workspaceRequest);
 
     const createdByUrl = new URL(`/direct/${encodeURIComponent(user.upn)}`, chatUrl!).href;
-    let titleMessage = `בקשה לפתיחת סביבה חדשה נקלטה`
-    let bodyMessage = `מספר בקשה: *${response.id}*
+    const chatTitleMessage = `בקשה לפתיחת סביבה חדשה נקלטה`
+    const chatBodyMessage = `מספר בקשה: *${response.id}*
 הבקשה נשלחה על ידי: *[${user.upn}](${createdByUrl}) - ${user.info?.name ?? 'חסר שם'}*
 שם סביבה: *${response.title}*`
 
-    await this.messageRelayService.sendNotification([biChatChannelName!], titleMessage, bodyMessage, process.env.BI_CHAT_CHANNEL_NAME);
-    titleMessage = `בקשה חדשה לפתיחת סביבה במערכת: ווקטור`
-    bodyMessage = `מספר בקשה: *${response.id}*
+    await this.messageRelayService.sendNotification([biChatChannelName!], chatTitleMessage, chatBodyMessage, process.env.BI_CHAT_CHANNEL_NAME);
+    const managerTitleMessage = `בקשה חדשה לפתיחת סביבה במערכת: ווקטור`
+    const managerBodyMessage = `מספר בקשה: *${response.id}*
 הבקשה נשלחה על ידי: *[${user.upn}](${createdByUrl}) - ${user.info?.name ?? 'חסר שם'}*
 שם סביבה: *${response.title}*
 נא לשים לב כי הסביבה תהיה זמינה רק* לאחר אישור של מנהלי המערכת*
-לפרטים נוספים לפנות בקבוצה בצא'ט המבצעי)(${WorkspaceRequestsService.getProjectChatUrl()}) *681-7980*
+לפרטים נוספים לפנות בקבוצה בצא'ט המבצעי)(${projectChatUrl}) *681-7980*
     `
 
-    await this.messageRelayService.sendNotification([user.upn], titleMessage, bodyMessage);
+    await this.messageRelayService.sendNotification([user.upn], managerTitleMessage, managerBodyMessage);
     return response;
   }
 
@@ -86,17 +83,23 @@ export class WorkspaceRequestsService {
     return WorkspaceRequestsService.formatWorkspaceRequest(workspaceRequest);
   }
 
-  private async approve({ details }: WorkspaceRequest, userId: number) {
+  private static async approve(
+    tx: Prisma.TransactionClient,
+    { details }: WorkspaceRequest,
+    userId: number
+  ) {
     const { managers, ...workspaceDetails } = details;
 
-    const workspace = await this.workspaceService.create(workspaceDetails as CreateWorkspaceDto, userId);
+    const workspace = await WorkspaceService.createTx(tx, workspaceDetails as CreateWorkspaceDto, userId);
 
     for (const upn of managers) {
-      await this.permissionService.upsert({
-        upn,
-        workspaceId: workspace.id,
-        type: PermissionType.MANAGER
-      } as UpsertPermissionDto);
+      const user = await UserService.upsertTx(tx, { upn });
+
+      await tx.permission.upsert({
+        where: { userId_workspaceId: { userId: user.id, workspaceId: workspace.id } },
+        create: { userId: user.id, workspaceId: workspace.id, type: PermissionType.MANAGER },
+        update: { type: PermissionType.MANAGER }
+      });
     }
 
     return workspace;
@@ -119,23 +122,24 @@ export class WorkspaceRequestsService {
       status !== WorkspaceRequestStatus.PENDING
     );
 
-    if (isDecided && status === WorkspaceRequestStatus.APPROVED) {
-      await this.approve(current, updatedBy);
-    }
-
     const isRejected = (status ?? current.status) === WorkspaceRequestStatus.REJECTED;
 
-    const workspaceRequest = await this.prisma.workspaceRequest.update({
-      where: { id },
-      data: {
-        ...(status && { status }),
-        ...(isRejected && declineMessage !== undefined && { declineMessage }),
-        ...(Object.keys(details).length > 0 && {
-          details: { ...current.details, ...details }
-        }),
-        updatedBy,
-
+    const workspaceRequest = await this.prisma.$transaction(async tx => {
+      if (isDecided && status === WorkspaceRequestStatus.APPROVED) {
+        await WorkspaceRequestsService.approve(tx, current, updatedBy);
       }
+
+      return await tx.workspaceRequest.update({
+        where: { id },
+        data: {
+          ...(status && { status }),
+          ...(isRejected && declineMessage !== undefined && { declineMessage }),
+          ...(Object.keys(details).length > 0 && {
+            details: { ...current.details, ...details }
+          }),
+          updatedBy
+        }
+      });
     });
 
     if (isDecided) {

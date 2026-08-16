@@ -26,7 +26,7 @@ export class MessageRelayService {
                 {
                     provider: 'sendman',
                     recipients: recipients,
-                    channel: channel!,
+                    channel: channel,
                     title: title,
                     message: message
                 })
