@@ -10,7 +10,6 @@ POST {{baseUrl}}/task
   "flagged": false,
   "deadlineType": "hard",
   "dueDate": "2026-04-01T12:00:00.000Z",
-  "notes": "Initial notes",
   "workspaceId": {{workspaceId}},
   "sourceId": {{sourceId}},
   "assignees": [{ "id": {{assigneeId}} }],
@@ -70,7 +69,6 @@ PATCH {{baseUrl}}/task/{{13}}
 {
   "title": "Secure the perimeter — updated",
   "flagged": true,
-  "notes": "Updated notes",
   "assignees": [
     { "id": {{25}}, "description": "1" },
     { "id": {{23}}, "description": "2" }

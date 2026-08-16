@@ -1,6 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsArray, IsBoolean, IsDate, IsEnum, IsOptional, IsString, ValidateNested } from 'class-validator';
+import { IsArray, IsBoolean, IsDate, IsEnum, IsOptional, ValidateNested } from 'class-validator';
 import { IsNotEmptyString } from '../../../../common/decorators/is-not-empty-string.decorator';
 import { TransformToBoolean } from '../../../../common/decorators/transform-to-boolean.decorator';
 import { DeadlineType } from '../../../../types/prisma';
@@ -20,11 +20,6 @@ export class CreateSourceTaskDto {
   @IsDate()
   @Type(() => Date)
   dueDate?: Date;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsString()
-  notes?: string;
 
   @ApiPropertyOptional()
   @IsOptional()

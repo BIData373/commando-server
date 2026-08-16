@@ -161,7 +161,6 @@ COMPLETED COMPLETED
     Boolean flagged 
     DeadlineType deadline_type 
     DateTime due_date "❓"
-    String notes "❓"
     TaskCreationType creation_type 
     DateTime created_at 
     Int created_by 

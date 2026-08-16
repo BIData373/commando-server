@@ -5,7 +5,6 @@ model Task {
   flagged      Boolean          @default(false)
   deadlineType DeadlineType     @map("deadline_type")
   dueDate      DateTime?        @map("due_date")
-  notes        String?
   creationType TaskCreationType @default(HUMAN) @map("creation_type")
 
   // Meta Fields
