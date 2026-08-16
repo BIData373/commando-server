@@ -50,6 +50,23 @@ IN_PROGRESS IN_PROGRESS
 COMPLETED COMPLETED
         }
     
+  "archived_user_assignee_task" {
+    Int id "🗝️"
+    Int user_id 
+    Int task_id 
+    Int assignee_id "❓"
+    DateTime created_at 
+    }
+  
+
+  "archived_workspace_assignee_task" {
+    Int id "🗝️"
+    Int task_id 
+    Int assignee_id "❓"
+    DateTime created_at 
+    }
+  
+
   "assignees" {
     Int id "🗝️"
     String name 
@@ -210,6 +227,11 @@ COMPLETED COMPLETED
     Int workspace_id 
     }
   
+    "archived_user_assignee_task" }o--|| tasks : "task"
+    "archived_user_assignee_task" }o--|| users : "user"
+    "archived_user_assignee_task" }o--|o assignees : "assignee"
+    "archived_workspace_assignee_task" }o--|| tasks : "task"
+    "archived_workspace_assignee_task" }o--|o assignees : "assignee"
     "assignees" }o--|| workspaces : "workspace"
     "assignees" o{--}o "users" : ""
     "assignee_task_statuses" }o--|| tasks : "task"
