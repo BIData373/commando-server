@@ -29,12 +29,16 @@ export class WorkspaceService {
       const bType = b.permissions[0]?.type;
       const aOrder = aType ? permissionOrder[aType] ?? 2 : 2;
       const bOrder = bType ? permissionOrder[bType] ?? 2 : 2;
-      return bOrder - aOrder;
+      return aOrder - bOrder;
     });
   }
 
-  async create({ context, ...dto }: CreateWorkspaceDto, userId: number) {
-    return await this.prisma.workspace.create({
+  static async createTx(
+    tx: Prisma.TransactionClient,
+    { context, ...dto }: CreateWorkspaceDto,
+    userId: number
+  ) {
+    return await tx.workspace.create({
       data: {
         ...dto,
         createdBy: userId,
@@ -42,13 +46,14 @@ export class WorkspaceService {
         workspaceStatuses: {
           createMany: {
             data: DEFAULT_STATUSES
-          },
-        
-
+          }
         }
-        
       }
     });
+  }
+
+  async create(dto: CreateWorkspaceDto, userId: number) {
+    return await WorkspaceService.createTx(this.prisma, dto, userId);
   }
 
   async findAll(userId: number, workspace?: WorkspaceDto, extraWhere?: Prisma.WorkspaceWhereInput) {

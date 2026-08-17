@@ -6,7 +6,7 @@ model Workspace {
   assigneeStatusEditable Boolean @default(false) @map("assignee_status_editable")
   chatNotification       Boolean @default(false) @map("chat_notification")
   mailNotification       Boolean @default(false) @map("mail_notification")
-  
+
   // Meta Fields
   createdAt DateTime  @default(now()) @map("created_at")
   createdBy Int       @map("created_by")
@@ -25,6 +25,7 @@ model Workspace {
   tasksHistory      TaskHistory[]
   sources           Source[]
   assignees         Assignee[]
+  userViews         UserView[]
 
   @@map("workspaces")
 }
