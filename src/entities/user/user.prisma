@@ -5,6 +5,7 @@ model User {
   /// [UserInfo]
   info Json?
 
+  archivedUserAssigneeTask ArchivedUserAssigneeTask[]
   assignees   Assignee[]    @relation("assignee_users")
   permissions Permission[]
   history     TaskHistory[]

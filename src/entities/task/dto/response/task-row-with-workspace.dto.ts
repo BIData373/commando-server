@@ -1,4 +1,4 @@
-import { Exclude, Type } from "class-transformer";
+import { Exclude, Transform, Type } from "class-transformer";
 import { ExposeProperty } from "../../../../common/decorators/expose-property.decorator";
 import { WorkspaceWithPermissionDto } from "../../../workspace/dto/response/workspace-with-permission.dto";
 import { TaskRowDto } from "./task-row.dto";

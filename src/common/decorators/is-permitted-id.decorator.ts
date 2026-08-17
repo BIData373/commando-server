@@ -8,7 +8,7 @@ import { Models } from "../types/models.type";
 import { IEntityExistsValidationOptions } from "./entity-exists.decorator";
 import { IdExists } from "./id-exists.decorator";
 
-interface IIsIdPermittedOptions<
+export interface IIsIdPermittedOptions<
     TDtoField extends keyof TDto,
     TModel extends Models,
     TDto extends Record<TDtoField, number> & IContext<IUserContext>

@@ -14,7 +14,6 @@ import { UpsertUserViewDto } from './dto/request/upsert-user-view.dto';
 import { UserViewDto } from './dto/response/user-view.dto';
 import { UserViewService } from './user-view.service';
 
-
 @Controller('user-views')
 export class UserViewController {
     constructor(
