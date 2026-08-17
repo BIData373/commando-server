@@ -5,6 +5,7 @@ import { DeadlineType, TaskCreationType } from '../../../../types/prisma';
 import { SourceDto } from '../../../source/dto/response/source.dto';
 import { TagDto } from '../../../tag/dto/response/tag.dto';
 import { MessageDto } from '../../../message/dto/response/message.dto';
+import { TaskPayload } from '../../types/tasks-payload.type';
 
 @Exclude()
 export class TaskFieldsDto extends IdMetaFieldsDto {
@@ -26,9 +27,6 @@ export class TaskFieldsDto extends IdMetaFieldsDto {
   @ExposeProperty({ type: Date, nullable: true })
   dueDate: Date | null;
 
-  @ExposeProperty({ type: String, nullable: true })
-  notes: string | null;
-
   @ExposeProperty()
   workspaceId: number;
 
@@ -41,11 +39,14 @@ export class TaskFieldsDto extends IdMetaFieldsDto {
   tags: TagDto[];
 
 
-  @ExposeProperty({ type: MessageDto, required: false })
+  @ExposeProperty({ type: MessageDto })
   @Type(() => MessageDto)
-  message: MessageDto;
+  lastMessage: MessageDto;
 
   @ExposeProperty()
-  // @Transform(({ obj }: { obj: MessagesPayload }) => obj..taskStatuses)
-  messagesCount: number
+  @Transform(({ obj }: { obj: TaskPayload }) => {
+    const count = obj._count.messages
+    return count >= 2 ? count : undefined
+  })
+  messageCount: number
 }

@@ -16,7 +16,7 @@ type AssigneeStatusInclude = {
 type AssigneeStatusEntity = Prisma.AssigneeTaskStatusGetPayload<AssigneeStatusInclude>
 
 type TaskInclude = Prisma.TaskGetPayload<{
-  include: { assigneeStatuses: AssigneeStatusInclude, source: true, tags: true }
+  include: { assigneeStatuses: AssigneeStatusInclude, source: true, tags: true, messages: true }
 }>
 
 @Injectable()
@@ -40,16 +40,14 @@ export class TaskService {
     private readonly messageRelayService: MessageRelayService
   ) { }
 
-  static readonly includeMessage: Prisma.TaskInclude = {
-    messages: {
-      orderBy: {
-        ...TaskService.orderBy,
-      },
-      take: 1,
-    },
+  static readonly includeMessageCount: Prisma.TaskInclude = {
     _count: {
       select: {
-        messages: true,
+        messages: {
+          where: {
+            deletedAt: null
+          },
+        },
       },
     },
   }
@@ -61,7 +59,16 @@ export class TaskService {
         where: { deletedAt: null },
         include: { tags: true }
       },
-      ...TaskService.includeMessage,
+      messages: {
+        include: {
+          user: true,
+        },
+        orderBy: {
+          ...TaskService.orderBy,
+        },
+        take: 1,
+      },
+      ...TaskService.includeMessageCount,
       assigneeStatuses: {
         where: {
           assignee: {
@@ -123,7 +130,7 @@ export class TaskService {
   }
 
   static formatAdditionalTaskFields(
-    { assigneeStatuses, ...rest }: TaskInclude,
+    { assigneeStatuses, messages, ...rest }: TaskInclude,
     workspace: WorkspaceWithPermissions,
     user: User,
   ) {
@@ -133,6 +140,7 @@ export class TaskService {
         TaskService.formatAssigneeStatus(assigneeStatus, workspace, user)
       ),
       workspace: TaskService.formatTaskWorkspace(workspace, user),
+      lastMessage: messages[0]
     };
   }
 
@@ -275,7 +283,7 @@ export class TaskService {
   }
 
   static extractTaskToRows<TTask extends TaskInclude>(
-    { assigneeStatuses, ...task }: TTask,
+    { assigneeStatuses, messages, ...task }: TTask,
     defaultStatus: WorkspaceStatus,
     workspace: WorkspaceWithPermissions,
     user: User,
@@ -287,7 +295,8 @@ export class TaskService {
         editable: false,
         otherAssignees: [],
         rowKey: TaskService.formatTaskRowId(task.id),
-        status: defaultStatus
+        status: defaultStatus,
+        lastMessage: messages[0]
       }]
     }
 
@@ -304,7 +313,8 @@ export class TaskService {
         ...task,
         rowKey: TaskService.formatTaskRowId(task.id, fields.assignee.id),
         ...fields,
-        otherAssignees: formattedAssigneeStatuses.filter(current => current.assigneeId !== assigneeId)
+        otherAssignees: formattedAssigneeStatuses.filter(current => current.assigneeId !== assigneeId),
+        lastMessage: messages[0]
       }))
   }
 
@@ -312,8 +322,6 @@ export class TaskService {
     const tasks = await this.findInWorkspace(workspace)
     const [defaultStatus] = await this.findDefaultStatusInWorkspaces(workspace.id)
 
-    console.log('taskLastMessage: ', tasks[0].messages)
-    console.log('messagesCount: ', tasks[0]._count)
     const taskRows = tasks
       .map(task => TaskService.extractTaskToRows(task, defaultStatus, workspace, user))
       .flat()
