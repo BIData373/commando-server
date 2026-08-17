@@ -10,7 +10,7 @@ export function GetPermittedMessageIdDto(type: PermissionType) {
     class GetMessageIdDto extends GetContextDto<IUserContext> {
         @IsIdPermitted('message', type, {
             filterDeletedAt: true,
-            workspaceFindArgs: ({ value }) => ({ tasks: { some: { messages: { some: { id: value } } } } })
+            workspaceFindArgs: ({ value }) => ({ tasks: { some: { deletedAt: null, messages: { some: { id: value } } } } })
         })
         id: number
     }
@@ -30,7 +30,7 @@ export class GetManagerOrOwnerMessageIdDto extends GetContextDto<IUserContext> {
                 id: value,
                 deletedAt: null,
                 OR: [
-                    { task: { workspace: { permissions: { some: { userId: obj.context.user.id, type: { in: managerTypes } } } } } },
+                    { task: { deletedAt: null, workspace: { permissions: { some: { userId: obj.context.user.id, type: { in: managerTypes } } } } } },
                     { userId: obj.context.user.id }
                 ]
             }

@@ -64,9 +64,7 @@ export class TaskService {
         include: {
           user: true,
         },
-        orderBy: {
-          ...TaskService.orderBy,
-        },
+        orderBy: TaskService.orderBy,
         take: 1,
       },
       ...TaskService.includeMessageCount,
@@ -332,7 +330,7 @@ export class TaskService {
         assigneeId,
         ...fields,
         otherAssignees: formattedAssigneeStatuses.filter(current => current.assigneeId !== assigneeId),
-        lastMessage: messages[0]
+        lastMessage: messages[0],
         archivedAt: archiveMap?.get(assigneeId) ?? null
       }))
   }
