@@ -1,5 +1,18 @@
 # @import ../../../global.http
 
+{{
+  // The approve flow creates a REAL workspace, and workspace title/urlName are
+  // unique per the `failIfExists` validators. Suffixing with a run id keeps this
+  // file re-runnable — approval cannot be undone through the API.
+  const runId = Date.now();
+
+  exports.approveTitle = `סביבה לאישור ${runId}`;
+  exports.approveUrlName = `approve-flow-${runId}`;
+  exports.patchTitle = `סביבה מעודכנת ${runId}`;
+  exports.patchUrlName = `patched-url-${runId}`;
+  exports.managerUpn = 's9336069';
+}}
+
 ### Create Workspace Request — valid payload
 POST {{baseUrl}}/workspace-requests
 ...headers
@@ -17,7 +30,10 @@ POST {{baseUrl}}/workspace-requests
 
 ?? status == 201
 
-### Create Workspace Request — title already taken (expect 400)
+### Create Workspace Request — duplicate request title is allowed (expect 201)
+# `title`/`urlName` are validated with EntityExists('workspace', { failIfExists }),
+# which queries the WORKSPACE table — not workspace_requests. Two PENDING requests
+# may therefore share a title. The real collision is covered in the approve flow below.
 POST {{baseUrl}}/workspace-requests
 ...headers
 
@@ -28,7 +44,11 @@ POST {{baseUrl}}/workspace-requests
   "managers": ["s9336069"]
 }
 
-?? status == 400
+{{@response
+  exports.duplicateTitleRequestId = response.parsedBody.id;
+}}
+
+?? status == 201
 
 ### Create Workspace Request — missing managers (expect 400)
 POST {{baseUrl}}/workspace-requests
@@ -42,8 +62,92 @@ POST {{baseUrl}}/workspace-requests
 
 ?? status == 400
 
+### Create Workspace Request — managers is not an array (expect 400)
+POST {{baseUrl}}/workspace-requests
+...headers
+
+{
+  "title": "מנהלים לא מערך",
+  "urlName": "managers-not-array",
+  "pikudId": 1,
+  "managers": "s9336069"
+}
+
+?? status == 400
+
+### Create Workspace Request — duplicate managers (expect 400 from @ArrayUnique)
+POST {{baseUrl}}/workspace-requests
+...headers
+
+{
+  "title": "מנהלים כפולים",
+  "urlName": "duplicate-managers",
+  "pikudId": 1,
+  "managers": ["s9336069", "s9336069"]
+}
+
+?? status == 400
+
+### Create Workspace Request — urlName contains whitespace (expect 400)
+POST {{baseUrl}}/workspace-requests
+...headers
+
+{
+  "title": "שם כתובת עם רווח",
+  "urlName": "has whitespace",
+  "pikudId": 1,
+  "managers": ["s9336069"]
+}
+
+?? status == 400
+
+### Create Workspace Request — title over 50 chars (expect 400)
+POST {{baseUrl}}/workspace-requests
+...headers
+
+{
+  "title": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "urlName": "title-too-long",
+  "pikudId": 1,
+  "managers": ["s9336069"]
+}
+
+?? status == 400
+
+### Create Workspace Request — urlName over 50 chars (expect 400)
+POST {{baseUrl}}/workspace-requests
+...headers
+
+{
+  "title": "שם כתובת ארוך",
+  "urlName": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "pikudId": 1,
+  "managers": ["s9336069"]
+}
+
+?? status == 400
+
+### Create Workspace Request — non-existent pikudId (expect 400 from @IdExists)
+POST {{baseUrl}}/workspace-requests
+...headers
+
+{
+  "title": "פיקוד לא קיים",
+  "urlName": "missing-pikud",
+  "pikudId": 999999,
+  "managers": ["s9336069"]
+}
+
+?? status == 400
+
 ### Get all Workspace Requests
 GET {{baseUrl}}/workspace-requests
+...headers
+
+?? status == 200
+
+### Get all permitted workspaces
+GET {{baseUrl}}/workspace/permitted
 ...headers
 
 ?? status == 200
@@ -59,6 +163,37 @@ GET {{baseUrl}}/workspace-requests/9999
 ...headers
 
 ?? status == 400
+
+### Update Workspace Request — invalid status enum (expect 400)
+PATCH {{baseUrl}}/workspace-requests/{{workspaceRequestId}}
+...headers
+
+{
+  "status": "MAYBE"
+}
+
+?? status == 400
+
+### Update Workspace Request — details only, no status (merges into details JSON)
+PATCH {{baseUrl}}/workspace-requests/{{workspaceRequestId}}
+...headers
+
+{
+  "title": "{{patchTitle}}",
+  "urlName": "{{patchUrlName}}"
+}
+
+?? status == 200
+
+### Update Workspace Request — status stays PENDING, no decision notification
+PATCH {{baseUrl}}/workspace-requests/{{workspaceRequestId}}
+...headers
+
+{
+  "status": "PENDING"
+}
+
+?? status == 200
 
 ### Update Workspace Request — reject without a decline message (expect 400)
 PATCH {{baseUrl}}/workspace-requests/{{workspaceRequestId}}
@@ -81,6 +216,17 @@ PATCH {{baseUrl}}/workspace-requests/{{workspaceRequestId}}
 
 ?? status == 200
 
+### Update Workspace Request — re-reject is not a new decision (expect 200, no notification)
+PATCH {{baseUrl}}/workspace-requests/{{workspaceRequestId}}
+...headers
+
+{
+  "status": "REJECTED",
+  "declineMessage": "סיבה מעודכנת"
+}
+
+?? status == 200
+
 ### Delete Workspace Request — non-existent id (expect 400)
 DELETE {{baseUrl}}/workspace-requests/9999
 ...headers
@@ -98,3 +244,117 @@ DELETE {{baseUrl}}/workspace-requests/{{workspaceRequestId}}
 ...headers
 
 ?? status == 400
+
+### Get Workspace Request — soft deleted id (expect 400)
+GET {{baseUrl}}/workspace-requests/{{workspaceRequestId}}
+...headers
+
+?? status == 400
+
+### Cleanup — delete the duplicate-title request
+DELETE {{baseUrl}}/workspace-requests/{{duplicateTitleRequestId}}
+...headers
+
+?? status == 200
+
+# ─────────────────────────────────────────────────────────────
+# Approve flow — creates a real Workspace + MANAGER permissions
+# ─────────────────────────────────────────────────────────────
+
+### Approve flow — create the request to approve
+POST {{baseUrl}}/workspace-requests
+...headers
+
+{
+  "title": "{{approveTitle}}",
+  "urlName": "{{approveUrlName}}",
+  "pikudId": 1,
+  "icon": "ops-icon",
+  "managers": ["{{managerUpn}}"]
+}
+
+{{@response
+  exports.approveRequestId = response.parsedBody.id;
+}}
+
+?? status == 201
+
+### Approve the request — upserts the workspace, users and MANAGER permissions in one transaction
+PATCH {{baseUrl}}/workspace-requests/1
+...headers
+
+{
+  "status": "APPROVED"
+}
+
+?? status == 200
+
+### Approved request — declineMessage is ignored while status is APPROVED
+PATCH {{baseUrl}}/workspace-requests/{{approveRequestId}}
+...headers
+
+{
+  "declineMessage": "לא אמור להישמר"
+}
+
+?? status == 200
+
+### Re-approve the same request — not a new decision, no second workspace (expect 200)
+PATCH {{baseUrl}}/workspace-requests/{{approveRequestId}}
+...headers
+
+{
+  "status": "APPROVED"
+}
+
+?? status == 200
+
+### Create Workspace Request — title now belongs to a real workspace (expect 400)
+POST {{baseUrl}}/workspace-requests
+...headers
+
+{
+  "title": "{{approveTitle}}",
+  "urlName": "title-taken-by-workspace",
+  "pikudId": 1,
+  "managers": ["{{managerUpn}}"]
+}
+
+?? status == 400
+
+### Create Workspace Request — urlName now belongs to a real workspace (expect 400)
+POST {{baseUrl}}/workspace-requests
+...headers
+
+{
+  "title": "שם כתובת תפוס {{approveUrlName}}",
+  "urlName": "{{approveUrlName}}",
+  "pikudId": 1,
+  "managers": ["{{managerUpn}}"]
+}
+
+?? status == 400
+
+### Approve flow cleanup — find the workspace the approval created
+GET {{baseUrl}}/workspace?urlName={{approveUrlName}}
+...headers
+
+{{@response
+  exports.approvedWorkspaceId = response.parsedBody[0].id;
+}}
+
+?? status == 200
+
+### Approve flow cleanup — delete the created workspace
+# Requires MANAGER on that workspace or a BI user. The approval granted MANAGER to
+# `managerUpn`, so this passes when the caller is that user or has `is-bi`.
+DELETE {{baseUrl}}/workspace/{{approvedWorkspaceId}}
+...headers
+
+?? status == 200
+
+### Approve flow cleanup — delete the approved request
+DELETE {{baseUrl}}/workspace-requests/{{approveRequestId}}
+...headers
+
+?? status == 200
