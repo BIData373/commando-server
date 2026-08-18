@@ -453,7 +453,7 @@ export class TaskService {
         defaultStatusesMap[task.workspace.id],
         task.workspace,
         user,
-        false,
+        true,
         isArchived ? archiveMap : undefined
       )
     ).flat()
