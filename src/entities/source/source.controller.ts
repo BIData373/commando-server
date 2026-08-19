@@ -31,7 +31,7 @@ export class SourceController {
     AddUserToContextInterceptor,
     CopyDtosInRequest<CreateSourceDto, CreateSourceDto>({
       from: 'body.workspaceId',
-      to: ['body.context.workspace', 'body.tasks.assignees.context.workspace'],
+      to: 'body.tasks[].assignees[].context.workspaceId',
       dto: GetManagerWorkspaceIdDto
     })
   )

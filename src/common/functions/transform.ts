@@ -5,10 +5,10 @@ import { ValidationError } from "class-validator";
 import type { Request } from "express";
 import { get } from "lodash";
 import { sendForbiddenMessages } from "../consts/env";
-import { Path } from "../types/path.type";
+import { Path, WritePath } from "../types/path.type";
 
 export type RequestTarget = 'body' | 'params' | 'query' | 'user'
-type ToTarget<TTarget> = RequestTarget | `${RequestTarget}.${Path<TTarget>}`
+type ToTarget<TTarget> = RequestTarget | `${RequestTarget}.${WritePath<TTarget>}`
 type FromTarget<TSource> = RequestTarget | `${RequestTarget}.${Path<TSource>}`
 
 export type DtoToAdd<TDto, TTarget = unknown, TSource = unknown> = {
@@ -17,7 +17,17 @@ export type DtoToAdd<TDto, TTarget = unknown, TSource = unknown> = {
   dto: TDto | TDto[]
 }
 
-function copyFields(target: unknown, segments: string[], instances: object[]): void {
+type PathSegment = { name: string; isArray: boolean }
+
+function parseSegments(rawSegments: string[]): PathSegment[] {
+  return rawSegments.map(segment => (
+    segment.endsWith('[]')
+      ? { name: segment.slice(0, -2), isArray: true }
+      : { name: segment, isArray: false }
+  ))
+}
+
+function copyFields(target: unknown, segments: PathSegment[], instances: object[]): void {
   if (target == null || typeof target !== 'object' || segments.length === 0) return
 
   if (Array.isArray(target)) {
@@ -25,17 +35,22 @@ function copyFields(target: unknown, segments: string[], instances: object[]): v
     return
   }
 
-  const [head, ...rest] = segments
+  const [{ name: head, isArray }, ...rest] = segments
   const record = target as Record<string, unknown>
 
   if (rest.length > 0) {
-    copyFields(record[head] ??= {}, rest, instances)
-    return
+    if (record[head] === undefined && !isArray) {
+      record[head] = {}
+    }
+
+    copyFields(record[head], rest, instances)
   }
 
-  record[head] = {
-    ...(record[head] as object ?? {}),
-    ...Object.assign({}, ...instances)
+  else {
+    record[head] = {
+      ...(record[head] as object ?? {}),
+      ...Object.assign({}, ...instances)
+    }
   }
 }
 
@@ -59,11 +74,11 @@ export async function copyDtosInRequest<TTarget = unknown, TSource = unknown>(
       .map(currentDto => plainToInstance(currentDto, source))
 
     toTargets.forEach(target => {
-      const [toKey, ...pathSegments] = (target as string).split('.') as [RequestTarget, ...string[]]
+      const [toKey, ...rawSegments] = (target as string).split('.')
 
-      if (!request[toKey]) return
-
-      copyFields(request[toKey], pathSegments, instances)
+      if (!request[toKey as RequestTarget]) {
+        copyFields(request[toKey as RequestTarget], parseSegments(rawSegments), instances)
+      }
     })
   })
 }
