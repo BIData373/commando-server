@@ -6,9 +6,13 @@ import { UpdateMessageDto } from './dto/request/update-message.dto';
 
 @Injectable()
 export class MessageService {
-  static readonly include: Prisma.MessageInclude = {
+  static readonly include = {
     user: true
-  }
+  } satisfies Prisma.MessageInclude;
+
+  static readonly orderBy = {
+    createdAt: 'desc'
+  } satisfies Prisma.MessageOrderByWithRelationInput;
 
   constructor(private readonly prisma: PrismaService) { }
 
@@ -27,7 +31,8 @@ export class MessageService {
   async findInTask(taskId: number) {
     return await this.prisma.message.findMany({
       where: { taskId, deletedAt: null },
-      include: MessageService.include
+      include: MessageService.include,
+      orderBy: MessageService.orderBy
     });
   }
 
