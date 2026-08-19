@@ -1,0 +1,100 @@
+# @import ../../../global.http
+
+### Create Workspace Request — valid payload
+POST {{baseUrl}}/workspace-requests
+...headers
+
+{
+  "title": "בקשה חדשה",
+  "urlName": "new-request",
+  "pikudId": 1,
+  "managers": ["s9336069"]
+}
+
+{{@response
+  exports.workspaceRequestId = response.parsedBody.id;
+}}
+
+?? status == 201
+
+### Create Workspace Request — title already taken (expect 400)
+POST {{baseUrl}}/workspace-requests
+...headers
+
+{
+  "title": "בקשה חדשה",
+  "urlName": "another-url-name",
+  "pikudId": 1,
+  "managers": ["s9336069"]
+}
+
+?? status == 400
+
+### Create Workspace Request — missing managers (expect 400)
+POST {{baseUrl}}/workspace-requests
+...headers
+
+{
+  "title": "בקשה ללא מנהלים",
+  "urlName": "no-managers",
+  "pikudId": 1
+}
+
+?? status == 400
+
+### Get all Workspace Requests
+GET {{baseUrl}}/workspace-requests
+...headers
+
+?? status == 200
+
+### Get Workspace Request by id
+GET {{baseUrl}}/workspace-requests/{{workspaceRequestId}}
+...headers
+
+?? status == 200
+
+### Get Workspace Request — non-existent id (expect 400 from @IdExists)
+GET {{baseUrl}}/workspace-requests/9999
+...headers
+
+?? status == 400
+
+### Update Workspace Request — reject without a decline message (expect 400)
+PATCH {{baseUrl}}/workspace-requests/{{workspaceRequestId}}
+...headers
+
+{
+  "status": "REJECTED"
+}
+
+?? status == 400
+
+### Update Workspace Request — reject with a decline message
+PATCH {{baseUrl}}/workspace-requests/{{workspaceRequestId}}
+...headers
+
+{
+  "status": "REJECTED",
+  "declineMessage": "שם הסביבה אינו תקין"
+}
+
+?? status == 200
+
+### Delete Workspace Request — non-existent id (expect 400)
+DELETE {{baseUrl}}/workspace-requests/9999
+...headers
+
+?? status == 400
+
+### Delete Workspace Request — soft delete
+DELETE {{baseUrl}}/workspace-requests/{{workspaceRequestId}}
+...headers
+
+?? status == 200
+
+### Delete Workspace Request — already deleted (expect 400)
+DELETE {{baseUrl}}/workspace-requests/{{workspaceRequestId}}
+...headers
+
+?? status == 400

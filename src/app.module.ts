@@ -28,6 +28,7 @@ import { WorkspaceStatusModule } from './entities/workspace-status/workspace-sta
 import { WorkspaceModule } from './entities/workspace/workspace.module';
 import { SocketModule } from './socket/socket.module';
 import { TaskRunnerModule } from './task-runner/task-runner.module';
+import { WorkspaceRequestsModule } from './entities/workspace-requests/workspace-requests.module';
 
 // FIX Move to env
 export const openApiRoute = 'open-api'
@@ -57,6 +58,7 @@ export const openApiRoute = 'open-api'
     TaskRunnerModule,
     PikudModule,
     WorkspaceModule,
+    WorkspaceRequestsModule,
     TagModule,
     SourceModule,
     TaskModule,

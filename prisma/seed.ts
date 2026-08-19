@@ -12,6 +12,10 @@ async function main() {
 
   console.time('* DB Clean Up')
   // Cleanup in reverse FK dependency order
+  await prisma.archivedUserAssigneeTask.deleteMany();
+  await prisma.archivedWorkspaceAssigneeTask.deleteMany();
+  await prisma.userView.deleteMany();
+  await prisma.workspaceRequest.deleteMany();
   await prisma.taskHistory.deleteMany();
   await prisma.message.deleteMany();
   await prisma.assigneeTaskStatus.deleteMany();

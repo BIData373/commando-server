@@ -8,7 +8,9 @@ import { WorkspaceDto } from './dto/response/workspace.dto';
 
 @Injectable()
 export class WorkspaceService {
-  constructor(private readonly prisma: PrismaService) { }
+  constructor(
+    private readonly prisma: PrismaService
+  ) { }
 
   private permissionsInclude(userId: number): Prisma.WorkspaceInclude {
     return {
@@ -31,8 +33,12 @@ export class WorkspaceService {
     });
   }
 
-  async create({ context, ...dto }: CreateWorkspaceDto, userId: number) {
-    return await this.prisma.workspace.create({
+  static async createTx(
+    tx: Prisma.TransactionClient,
+    { context, ...dto }: CreateWorkspaceDto,
+    userId: number
+  ) {
+    return await tx.workspace.create({
       data: {
         ...dto,
         createdBy: userId,
@@ -44,6 +50,10 @@ export class WorkspaceService {
         }
       }
     });
+  }
+
+  async create(dto: CreateWorkspaceDto, userId: number) {
+    return await WorkspaceService.createTx(this.prisma, dto, userId);
   }
 
   async findAll(userId: number, workspace?: WorkspaceDto, extraWhere?: Prisma.WorkspaceWhereInput) {

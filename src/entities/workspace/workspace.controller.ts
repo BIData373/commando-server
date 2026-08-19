@@ -68,6 +68,7 @@ export class WorkspaceController {
   @UseInterceptors(CopyDtosInRequest<UpdateWorkspaceDto, GetManagerWorkspaceIdDto>({
     from: 'params.id', to: 'body.context.workspace', dto: GetManagerWorkspaceIdDto
   }))
+  
   @Patch(':id')
   @ApiOkResponse({ type: WorkspaceDto })
   @TransformPlainToInstance(WorkspaceDto)

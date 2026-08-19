@@ -2,7 +2,6 @@ import { config } from "dotenv";
 import path from "node:path";
 
 export const env = process.env.ENV ?? ''
-
 export const envFilePath = [
   path.join(process.cwd(), 'config/common.env'),
   path.join(process.cwd(), `config`, env, '.env')
@@ -66,12 +65,18 @@ export const dbUseSSL = process.env.DB_USE_SSL
 
 export const messageRelayUrl = process.env.MESSAGE_RELAY_URL
 export const messageRelayToken = process.env.MESSAGE_RELAY_TOKEN
+export const biChatChannelName = process.env.BI_CHAT_CHANNEL_NAME
 
 export const notificationTemplate = process.env.NOTIFICATION_TEMPLATE
 export const vectorUrl = process.env.VECTOR_URL
 export const chatUrl = process.env.VITE_CHAT_URL
+export const VITE_CHAT_URL = process.env.VITE_CHAT_URL
 
 export const mirageEnabled = process.env.MIRAGE_ENABLED === 'true'
 export const mirageUrl = process.env.MIRAGE_URL
 export const mirageKey = process.env.MIRAGE_KEY
 export const mirageVersion = process.env.MIRAGE_VERSION
+
+export const projectChatUrl = process.env.VITE_CHAT_URL && process.env.VITE_CHAT_CHANNEL
+  ? new URL(`/channel/${process.env.VITE_CHAT_CHANNEL}`, process.env.VITE_CHAT_URL).href
+  : undefined
