@@ -38,12 +38,11 @@ export class TaskFieldsDto extends IdMetaFieldsDto {
   @Type(() => TagDto)
   tags: TagDto[];
 
-
   @ExposeProperty({ type: MessageDto })
   @Type(() => MessageDto)
   lastMessage: MessageDto;
 
   @ExposeProperty()
-  @Transform(({ obj }: { obj: TaskMessageCountPayload }) => obj._count.messages)
+  @Transform(({ obj }: { obj: TaskMessageCountPayload }) => obj?._count?.messages)
   messageCount: number
 }
