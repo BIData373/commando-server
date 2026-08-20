@@ -15,9 +15,9 @@ export class WorkspaceRequestsController {
 
   @ApiOperation({ operationId: 'createWorkspaceRequest' })
   @ApiBody({ type: CreateWorkspaceRequestDto })
+  @Post()
   @ApiCreatedResponse({ type: WorkspaceRequestDto })
   @TransformPlainToInstance(WorkspaceRequestDto)
-  @Post()
   async create(
     @Req() { user }: Request,
     @Body() createWorkspaceRequestDto: CreateWorkspaceRequestDto
