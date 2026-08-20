@@ -16,7 +16,7 @@ type AssigneeStatusInclude = {
 type AssigneeStatusEntity = Prisma.AssigneeTaskStatusGetPayload<AssigneeStatusInclude>
 
 type TaskInclude = Prisma.TaskGetPayload<{
-  include: { assigneeStatuses: AssigneeStatusInclude, source: true, tags: true, messages: true }
+  include: { assigneeStatuses: AssigneeStatusInclude, source: true, tags: true, messages: true, status: true }
 }>
 
 
@@ -68,6 +68,7 @@ export class TaskService {
         take: 1,
       },
       ...TaskService.includeMessageCount,
+      status: true,
       assigneeStatuses: {
         where: {
           assignee: {
@@ -129,12 +130,13 @@ export class TaskService {
   }
 
   static formatAdditionalTaskFields(
-    { assigneeStatuses, messages, ...rest }: TaskInclude,
+    { assigneeStatuses, messages, status, ...rest }: TaskInclude,
     workspace: WorkspaceWithPermissions,
     user: User,
   ) {
     return {
       ...rest,
+      status,
       assigneeStatuses: assigneeStatuses.map(assigneeStatus =>
         TaskService.formatAssigneeStatus(assigneeStatus, workspace, user)
       ),
@@ -206,7 +208,7 @@ export class TaskService {
             }
           }
         }),
-        ...(assignees && {
+        ...(assignees?.length ? {
           assigneeStatuses: {
             create: assignees.map(({ id, description }) => ({
               description,
@@ -214,6 +216,8 @@ export class TaskService {
               status: { connect: { id: notStartedStatus.id } }
             }))
           }
+        } : {
+          status: { connect: { id: notStartedStatus.id } }
         }),
         ...(tags && {
           tags: {
@@ -296,7 +300,7 @@ export class TaskService {
   }
 
   static extractTaskToRows<TTask extends TaskInclude>(
-    { assigneeStatuses, messages, ...task }: TTask,
+    { assigneeStatuses, messages, status: taskStatus, ...task }: TTask,
     defaultStatus: WorkspaceStatus,
     workspace: WorkspaceWithPermissions,
     user: User,
@@ -304,13 +308,18 @@ export class TaskService {
     archiveMap?: Map<number | null, Date>
   ) {
     if (!onlyUserRows && assigneeStatuses.length === 0) {
+      const isManager = (
+        workspace.permissions[0]?.type === PermissionType.MANAGER ||
+        !!user.info?.isBI
+      )
+
       return [{
         ...task,
         assigneeId: null,
-        editable: false,
+        editable: isManager,
         otherAssignees: [],
         rowKey: TaskService.formatTaskRowId(task.id),
-        status: defaultStatus,
+        status: taskStatus ?? defaultStatus,
         lastMessage: messages[0]
       }]
     }
@@ -475,17 +484,15 @@ export class TaskService {
       return formatted;
     }
 
-    const [defaultStatus] = await this.findDefaultStatusInWorkspaces(task.workspaceId);
-
-    return { ...formatted, status: defaultStatus };
+    return { ...formatted, status: task.status };
   }
 
   async update(
     { id, workspaceId }: Task,
-    { assignees, tags, context, sourceId, ...dto }: UpdateTaskDto,
+    { assignees, tags, context, sourceId, statusId, ...dto }: UpdateTaskDto,
     updatedBy: number
   ) {
-    const [notStartedStatus] = assignees !== undefined && assignees.length > 0
+    const [notStartedStatus] = assignees !== undefined
       ? await this.findDefaultStatusInWorkspaces(workspaceId)
       : [null];
 
@@ -498,25 +505,36 @@ export class TaskService {
             ? { disconnect: true }
             : { connect: { id: sourceId } }
         }),
-        ...(assignees !== undefined && {
+        // When statusId is explicitly provided (no assignees scenario), set it on the task
+        ...(statusId !== undefined && {
+          status: { connect: { id: statusId } }
+        }),
+        ...(assignees !== undefined && assignees.length > 0 && {
+          // Clear task-level status when assignees are added
+          status: { disconnect: true },
           assigneeStatuses: {
             deleteMany: {
               assigneeId: { notIn: assignees.map(a => a.id) }
             },
-            upsert: assignees.map(({ id: assigneeId, description, statusId }) => ({
+            upsert: assignees.map(({ id: assigneeId, description, statusId: assigneeStatusId }) => ({
               where: { taskId_assigneeId: { taskId: id, assigneeId } },
               create: {
                 assigneeId,
                 description,
-                statusId: statusId ?? notStartedStatus!.id
+                statusId: assigneeStatusId ?? notStartedStatus!.id
               },
               update: {
                 assigneeId,
                 ...(description !== undefined && { description }),
-                ...(statusId !== undefined && { statusId })
+                ...(assigneeStatusId !== undefined && { statusId: assigneeStatusId })
               }
             }))
           }
+        }),
+        ...(assignees !== undefined && assignees.length === 0 && {
+          // All assignees removed — set task-level default status
+          status: { connect: { id: notStartedStatus!.id } },
+          assigneeStatuses: { deleteMany: {} }
         }),
         ...(tags !== undefined && {
           tags: {

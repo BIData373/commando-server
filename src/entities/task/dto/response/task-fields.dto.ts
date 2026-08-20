@@ -30,6 +30,9 @@ export class TaskFieldsDto extends IdMetaFieldsDto {
   @ExposeProperty()
   workspaceId: number;
 
+  @ExposeProperty({ type: Number, nullable: true })
+  statusId: number | null;
+
   @ExposeProperty({ type: SourceDto, nullable: true })
   @Type(() => SourceDto)
   source: SourceDto | null;
