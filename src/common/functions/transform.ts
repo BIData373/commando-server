@@ -9,6 +9,7 @@ import { Path, WritePath } from "../types/path.type";
 
 export type RequestTarget = 'body' | 'params' | 'query' | 'user'
 type ToTarget<TTarget> = RequestTarget | `${RequestTarget}.${WritePath<TTarget>}`
+// Unlike WritePath, Path doesn't mark array segments, so a multi-segment from-path that crosses an array (e.g. "tasks.assignees") will type-check but silently resolve to undefined at runtime, since lodash `get` does a literal property walk instead of fanning out over the array.
 type FromTarget<TSource> = RequestTarget | `${RequestTarget}.${Path<TSource>}`
 
 export type DtoToAdd<TDto, TTarget = unknown, TSource = unknown> = {
@@ -19,6 +20,7 @@ export type DtoToAdd<TDto, TTarget = unknown, TSource = unknown> = {
 
 type PathSegment = { name: string; isArray: boolean }
 
+// Splits raw "key[]" path segments into { name, isArray } pairs.
 function parseSegments(rawSegments: string[]): PathSegment[] {
   return rawSegments.map(segment => (
     segment.endsWith('[]')
@@ -27,6 +29,7 @@ function parseSegments(rawSegments: string[]): PathSegment[] {
   ))
 }
 
+// Walks `target` along `segments` (fanning out into arrays) and merges `instances` onto the object(s) found at the end of the path.
 function copyFields(target: unknown, segments: PathSegment[], instances: object[]): void {
   if (target == null || typeof target !== 'object' || segments.length === 0) return
 
@@ -54,6 +57,7 @@ function copyFields(target: unknown, segments: PathSegment[], instances: object[
   }
 }
 
+// For each entry in dtosToAdd: builds a DTO instance from the `from` path(s) on the request, then writes it into the `to` path(s) on the request.
 export async function copyDtosInRequest<TTarget = unknown, TSource = unknown>(
   request: Request,
   dtosToAdd: DtoToAdd<ClassConstructor<Object>, TTarget, TSource>[]
@@ -83,6 +87,7 @@ export async function copyDtosInRequest<TTarget = unknown, TSource = unknown>(
   })
 }
 
+// Recursively collects every constraint message off a ValidationError tree, including nested children.
 function flattenConstraints(errors: ValidationError[]): string[] {
   return errors.flatMap(error => [
     ...Object.values(error.constraints ?? {}),
@@ -90,6 +95,7 @@ function flattenConstraints(errors: ValidationError[]): string[] {
   ]);
 }
 
+// Turns ValidationPipe errors into a 403 if every constraint is the forbidden-field marker, otherwise a 400 with the validation messages.
 export function forbiddenExceptionFactory(errors: ValidationError[]) {
   const messages = flattenConstraints(errors);
 
