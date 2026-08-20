@@ -50,10 +50,16 @@ function copyFields(target: unknown, segments: PathSegment[], instances: object[
   }
 
   else {
-    record[head] = {
-      ...(record[head] as object ?? {}),
-      ...Object.assign({}, ...instances)
-    }
+    const hasOwnField = instances.every(
+      instance => Object.prototype.hasOwnProperty.call(instance, head)
+    )
+
+    record[head] = hasOwnField
+      ? (instances[instances.length - 1] as Record<string, unknown>)[head]
+      : {
+        ...(record[head] as object ?? {}),
+        ...Object.assign({}, ...instances)
+      }
   }
 }
 
@@ -70,7 +76,7 @@ export async function copyDtosInRequest<TTarget = unknown, TSource = unknown>(
       const [fromKey, ...pathSegments] = (entry as string).split('.') as [RequestTarget, ...string[]]
 
       return pathSegments.length > 0
-        ? { id: get(request[fromKey], pathSegments) }
+        ? { [pathSegments[pathSegments.length - 1]]: get(request[fromKey], pathSegments) }
         : request[fromKey]
     }))
 
@@ -80,7 +86,7 @@ export async function copyDtosInRequest<TTarget = unknown, TSource = unknown>(
     toTargets.forEach(target => {
       const [toKey, ...rawSegments] = (target as string).split('.')
 
-      if (!request[toKey as RequestTarget]) {
+      if (request[toKey as RequestTarget]) {
         copyFields(request[toKey as RequestTarget], parseSegments(rawSegments), instances)
       }
     })

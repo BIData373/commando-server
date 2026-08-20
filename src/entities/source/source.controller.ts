@@ -4,16 +4,15 @@ import { ApiBody, ApiConsumes, ApiCreatedResponse, ApiOkResponse, ApiOperation, 
 import { TransformPlainToInstance } from 'class-transformer';
 import { Request } from 'express';
 import { memoryStorage } from 'multer';
-import { CopyDtosInRequest } from '../../common/interceptors/copy-dtos-in-request.interceptor';
 import { AddUserToContextInterceptor } from '../../common/interceptors/add-user-to-context.interceptor';
-import { GetManagerWorkspaceIdDto } from '../workspace/dto/request/get-workspace-id.dto';
-import { GetViewerWorkspaceIdFieldDto } from '../workspace/dto/request/get-workspace-id-field.dto';
+import { CopyDtosInRequest } from '../../common/interceptors/copy-dtos-in-request.interceptor';
+import { GetManagerWorkspaceIdFieldDto, GetViewerWorkspaceIdFieldDto } from '../workspace/dto/request/get-workspace-id-field.dto';
 import { CreateSourceDto } from './dto/request/create-source.dto';
 import { GetAIExtractionCallbackDto } from './dto/request/get-ai-extraction-callback.dto';
 import { GetManagerSourceIdDto, GetViewerSourceIdDto } from './dto/request/get-source-id.dto';
 import { UpdateSourceDto } from './dto/request/update-source.dto';
-import { SourceDto } from './dto/response/source.dto';
 import { SourceWithTasksDto } from './dto/response/source-with-tasks.dto';
+import { SourceDto } from './dto/response/source.dto';
 import { SourceService } from './source.service';
 
 @Controller('source')
@@ -32,7 +31,7 @@ export class SourceController {
     CopyDtosInRequest<CreateSourceDto, CreateSourceDto>({
       from: 'body.workspaceId',
       to: 'body.tasks[].assignees[].context.workspaceId',
-      dto: GetManagerWorkspaceIdDto
+      dto: GetManagerWorkspaceIdFieldDto
     })
   )
   @Post()
