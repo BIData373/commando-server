@@ -23,6 +23,11 @@ export class CreateSourceTaskDto {
 
   @ApiPropertyOptional()
   @IsOptional()
+  @IsString()
+  notes?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
   @IsBoolean()
   @TransformToBoolean()
   flagged?: boolean;
