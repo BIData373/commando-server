@@ -31,6 +31,12 @@ export class GetTaskFieldsDto extends GetContextDto<IUserContext> {
   @Type(() => Date)
   dueDate?: Date;
 
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
+  notes?: string;
+
+
   @ApiProperty({ type: [String], required: false })
   @IsOptional()
   @IsArray()
