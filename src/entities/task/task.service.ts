@@ -97,15 +97,19 @@ export class TaskService {
     } satisfies Prisma.TaskInclude
   }
 
+  static isManager(workspace: WorkspaceWithPermissions, user: User) {
+    return (
+      workspace.permissions[0]?.type === PermissionType.MANAGER ||
+      !!user.info?.isBI
+    )
+  }
+
   static formatAssigneeStatus(
     assigneeStatus: AssigneeStatusEntity,
     workspace: WorkspaceWithPermissions,
     user: User,
   ) {
-    const isManager = (
-      workspace.permissions[0]?.type === PermissionType.MANAGER ||
-      !!user.info?.isBI
-    )
+    const isManager = TaskService.isManager(workspace, user)
 
     const isAssigned = assigneeStatus.assignee.users.some(u => u.id === user.id)
 
@@ -308,10 +312,7 @@ export class TaskService {
     archiveMap?: Map<number | null, Date>
   ) {
     if (!onlyUserRows && assigneeStatuses.length === 0) {
-      const isManager = (
-        workspace.permissions[0]?.type === PermissionType.MANAGER ||
-        !!user.info?.isBI
-      )
+      const isManager = TaskService.isManager(workspace, user)
 
       return [{
         ...task,
@@ -496,6 +497,14 @@ export class TaskService {
       ? await this.findDefaultStatusInWorkspaces(workspaceId)
       : [null];
 
+    const statusUpdate = assignees !== undefined && assignees.length > 0
+      ? { disconnect: true }
+      : assignees !== undefined && assignees.length === 0
+        ? { connect: { id: notStartedStatus!.id } }
+        : statusId !== undefined
+          ? { connect: { id: statusId } }
+          : undefined;
+
     return await this.prisma.task.update({
       where: { id },
       data: {
@@ -505,13 +514,8 @@ export class TaskService {
             ? { disconnect: true }
             : { connect: { id: sourceId } }
         }),
-        // When statusId is explicitly provided (no assignees scenario), set it on the task
-        ...(statusId !== undefined && {
-          status: { connect: { id: statusId } }
-        }),
+        ...(statusUpdate && { status: statusUpdate }),
         ...(assignees !== undefined && assignees.length > 0 && {
-          // Clear task-level status when assignees are added
-          status: { disconnect: true },
           assigneeStatuses: {
             deleteMany: {
               assigneeId: { notIn: assignees.map(a => a.id) }
@@ -532,8 +536,6 @@ export class TaskService {
           }
         }),
         ...(assignees !== undefined && assignees.length === 0 && {
-          // All assignees removed — set task-level default status
-          status: { connect: { id: notStartedStatus!.id } },
           assigneeStatuses: { deleteMany: {} }
         }),
         ...(tags !== undefined && {
