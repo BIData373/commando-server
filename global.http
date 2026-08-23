@@ -3,12 +3,21 @@
     const dev = 'https://commando-server.vercel.app';
 
     exports.baseUrl = local;
-    exports.headers = {
-        'Content-Type': 'application/json',
-        'static-token': '3650244b-61fc-4f75-95eb-359d7483ff70',
+
+    const commonHeaders = {
+        'static-token': '3650244b-61fc-4f75-95eb-359d7483ff70'
         // 'requestusername': 's9336069',
         // 'is-bi': true
     };
+
+    exports.headers = {
+        'Content-Type': 'application/json',
+        ...commonHeaders
+    };
+
+    exports.formHeaders = commonHeaders;
+
+    exports.boundary = '----CommandoFormBoundary7MA4YWxkTrZu0gW';
 
     exports.workspaceId = 41;
 }}

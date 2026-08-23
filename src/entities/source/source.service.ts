@@ -7,6 +7,8 @@ import { SocketEventType } from '../../socket/types/socket-event-type.enum';
 import { TaskRunnerService } from '../../task-runner/task-runner.service';
 import { DeadlineType, ExtractionStatus, Prisma, Source, TaskCreationType, User } from '../../types/prisma';
 import { S3Service } from '../s3/s3.service';
+import { tagsConnectOrCreateArgs, tagsSetOrCreateArgs } from '../tag/functions/tag-args';
+import { taskAssigneeStatusesCreateArgs } from '../task/functions/task-args';
 import { TaskService } from '../task/task.service';
 import { CreateSourceDto } from './dto/request/create-source.dto';
 import { GetAIExtractionCallbackDto } from './dto/request/get-ai-extraction-callback.dto';
@@ -51,34 +53,21 @@ export class SourceService {
         draft: aiExtraction || draft,
         extractionStatus: aiExtraction ? ExtractionStatus.PENDING : undefined,
         ...(tags !== undefined && ({
-          tags: {
-            connectOrCreate: tags.map(name => ({
-              create: {
-                name,
-                workspaceId,
-                createdBy: userId,
-                updatedBy: userId
-              },
-              where: { name_workspaceId: { name, workspaceId } }
-            }))
-          }
+          tags: tagsConnectOrCreateArgs(tags, workspaceId, userId)
         })),
         ...(tasks !== undefined && ({
           tasks: {
-            create: tasks.map(({ assignees, ...taskDto }) => ({
+            create: tasks.map(({ assignees, tags: taskTags, ...taskDto }) => ({
               ...taskDto,
               workspaceId,
               creationType: TaskCreationType.HUMAN,
               createdBy: userId,
               updatedBy: userId,
               ...(assignees?.length && {
-                assigneeStatuses: {
-                  create: assignees.map(({ id, description }) => ({
-                    assigneeId: id,
-                    description,
-                    statusId: notStartedStatusId!
-                  }))
-                }
+                assigneeStatuses: taskAssigneeStatusesCreateArgs(assignees, notStartedStatusId!)
+              }),
+              ...(taskTags?.length && {
+                tags: tagsConnectOrCreateArgs(taskTags, workspaceId, userId)
               })
             }))
           }
@@ -165,18 +154,7 @@ export class SourceService {
         updatedBy,
         draft: aiExtraction || draft,
         ...(tags !== undefined && {
-          tags: {
-            connectOrCreate: tags.map(name => ({
-              create: {
-                name,
-                workspace: { connect: { id: workspaceId } },
-                createdBy: updatedBy,
-                updatedBy: updatedBy
-              },
-              where: { name_workspaceId: { name, workspaceId } }
-            })),
-            set: tags.map(name => ({ name_workspaceId: { name, workspaceId } }))
-          }
+          tags: tagsSetOrCreateArgs(tags, workspaceId, updatedBy)
         })
       },
       include: SourceService.include
