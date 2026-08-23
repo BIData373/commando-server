@@ -26,6 +26,7 @@ name=Radio With Tasks
 workspaceId={{workspaceId}}
 tasks[0][title]=Review notes
 tasks[0][deadlineType]=DATE
+tasks[0][tags][0]=urgent
 tasks[1][title]=Follow up
 tasks[1][deadlineType]=ROLLING
 
