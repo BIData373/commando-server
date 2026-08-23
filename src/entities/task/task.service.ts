@@ -497,13 +497,48 @@ export class TaskService {
       ? await this.findDefaultStatusInWorkspaces(workspaceId)
       : [null];
 
-    const statusUpdate = assignees !== undefined && assignees.length > 0
+    const status = assignees !== undefined && assignees.length > 0
       ? { disconnect: true }
       : assignees !== undefined && assignees.length === 0
         ? { connect: { id: notStartedStatus!.id } }
         : statusId !== undefined
           ? { connect: { id: statusId } }
           : undefined;
+
+    const assigneeStatuses = !assignees ? undefined
+      : !assignees.length
+        ? { deleteMany: {} }
+        : {
+          deleteMany: {
+            assigneeId: { notIn: assignees.map(a => a.id) }
+          },
+          upsert: assignees.map(({ id: assigneeId, description, statusId: assigneeStatusId }) => ({
+            where: { taskId_assigneeId: { taskId: id, assigneeId } },
+            create: {
+              assigneeId,
+              description,
+              statusId: assigneeStatusId ?? notStartedStatus!.id
+            },
+            update: {
+              assigneeId,
+              ...(description !== undefined && { description }),
+              ...(assigneeStatusId !== undefined && { statusId: assigneeStatusId })
+            }
+          }))
+        };
+
+    const tagsData = !tags ? undefined : {
+      connectOrCreate: tags.map(name => ({
+        create: {
+          name,
+          workspaceId,
+          createdBy: updatedBy,
+          updatedBy: updatedBy
+        },
+        where: { name_workspaceId: { name, workspaceId } }
+      })),
+      set: tags.map(name => ({ name_workspaceId: { name, workspaceId } }))
+    };
 
     return await this.prisma.task.update({
       where: { id },
@@ -514,44 +549,9 @@ export class TaskService {
             ? { disconnect: true }
             : { connect: { id: sourceId } }
         }),
-        ...(statusUpdate && { status: statusUpdate }),
-        ...(assignees !== undefined && assignees.length > 0 && {
-          assigneeStatuses: {
-            deleteMany: {
-              assigneeId: { notIn: assignees.map(a => a.id) }
-            },
-            upsert: assignees.map(({ id: assigneeId, description, statusId: assigneeStatusId }) => ({
-              where: { taskId_assigneeId: { taskId: id, assigneeId } },
-              create: {
-                assigneeId,
-                description,
-                statusId: assigneeStatusId ?? notStartedStatus!.id
-              },
-              update: {
-                assigneeId,
-                ...(description !== undefined && { description }),
-                ...(assigneeStatusId !== undefined && { statusId: assigneeStatusId })
-              }
-            }))
-          }
-        }),
-        ...(assignees !== undefined && assignees.length === 0 && {
-          assigneeStatuses: { deleteMany: {} }
-        }),
-        ...(tags !== undefined && {
-          tags: {
-            connectOrCreate: tags.map(name => ({
-              create: {
-                name,
-                workspaceId,
-                createdBy: updatedBy,
-                updatedBy: updatedBy
-              },
-              where: { name_workspaceId: { name, workspaceId } }
-            })),
-            set: tags.map(name => ({ name_workspaceId: { name, workspaceId } }))
-          }
-        }),
+        status,
+        assigneeStatuses,
+        tags: tagsData,
         updatedBy
       },
       include: TaskService.withWorkspaceInclude(updatedBy)
