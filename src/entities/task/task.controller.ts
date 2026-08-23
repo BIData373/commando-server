@@ -35,13 +35,15 @@ export class TaskController {
 
   @ApiOperation({ operationId: 'listTasks' })
   @ApiQuery({ type: GetViewerWorkspaceIdFieldDto })
+  @ApiQuery({ type: GetFilterIsArchived })
   @Get()
   @ApiOkResponse({ type: [TaskDto] })
   @TransformPlainToInstance(TaskDto)
   async findInWorkspace(
-    @Query() { context: { workspace, user } }: GetViewerWorkspaceIdFieldDto
+    @Query() { context: { workspace, user } }: GetViewerWorkspaceIdFieldDto,
+    @Query() { isArchived }: GetFilterIsArchived
   ) {
-    return await this.taskService.findInWorkspaceFormatted(workspace, user);
+    return await this.taskService.findInWorkspaceFormatted(workspace, user, isArchived);
   }
 
   @ApiOperation({ operationId: 'listTaskRows' })
@@ -82,13 +84,15 @@ export class TaskController {
 
   @ApiOperation({ operationId: 'getTask' })
   @ApiParam({ name: 'id', type: Number })
+  @ApiQuery({ type: GetFilterIsArchived })
   @Get(':id')
   @ApiOkResponse({ type: TaskDetailsDto })
   @TransformPlainToInstance(TaskDetailsDto)
   async findOne(
-    @Param() { id, context: { user } }: GetViewerTaskIdDto
+    @Param() { id, context: { user } }: GetViewerTaskIdDto,
+    @Query() { isArchived }: GetFilterIsArchived
   ) {
-    return await this.taskService.findOne(id, user);
+    return await this.taskService.findOne(id, user, isArchived);
   }
 
   // FIX Add to history
