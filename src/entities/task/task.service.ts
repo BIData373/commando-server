@@ -304,7 +304,7 @@ export class TaskService {
   }
 
   static extractTaskToRows<TTask extends TaskInclude>(
-    { assigneeStatuses, messages, status: taskStatus, ...task }: TTask,
+    { assigneeStatuses, messages, status, ...task }: TTask,
     defaultStatus: WorkspaceStatus,
     workspace: WorkspaceWithPermissions,
     user: User,
@@ -320,7 +320,7 @@ export class TaskService {
         editable: isManager,
         otherAssignees: [],
         rowKey: TaskService.formatTaskRowId(task.id),
-        status: taskStatus ?? defaultStatus,
+        status: status ?? defaultStatus,
         lastMessage: messages[0]
       }]
     }
@@ -497,9 +497,11 @@ export class TaskService {
       ? await this.findDefaultStatusInWorkspaces(workspaceId)
       : [null];
 
-    const status = assignees !== undefined && assignees.length > 0
+    const hasAssignees = assignees !== undefined && assignees.length > 0;
+
+    const status = hasAssignees
       ? { disconnect: true }
-      : assignees !== undefined && assignees.length === 0
+      : assignees !== undefined
         ? { connect: { id: notStartedStatus!.id } }
         : statusId !== undefined
           ? { connect: { id: statusId } }
