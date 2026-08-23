@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../common/prisma.service';
-import { Prisma } from '../../types/prisma';
 
 @Injectable()
 export class ArchivedWorkspaceAssigneeService {
@@ -9,20 +8,11 @@ export class ArchivedWorkspaceAssigneeService {
   ) { }
 
   async toggle(taskId: number, assigneeId?: number) {
-    const existing = await this.prismaService.archivedWorkspaceAssigneeTask.findFirst({
-      where: {
-        taskId,
-        assigneeId,
-      }
+    const { count } = await this.prismaService.archivedWorkspaceAssigneeTask.deleteMany({
+      where: { taskId, assigneeId }
     })
 
-    if (existing) {
-      await this.prismaService.archivedWorkspaceAssigneeTask.delete({
-        where: { id: existing.id }
-      })
-    }
-
-    else {
+    if (count === 0) {
       await this.prismaService.archivedWorkspaceAssigneeTask.create({
         data: { taskId, assigneeId }
       })

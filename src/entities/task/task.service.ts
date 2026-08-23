@@ -301,9 +301,16 @@ export class TaskService {
     workspace: WorkspaceWithPermissions,
     user: User,
     onlyUserRows: boolean = false,
+    // isArchived?: boolean,
     archiveMap?: Map<number | null, Date>
   ) {
+    // const archiveIds = new Map(getArchiveIds(task))
+
+
     if (!onlyUserRows && assigneeStatuses.length === 0) {
+      // const isTaskArchived = archiveIds.has(null)
+      // const needToArchiveTask = isArchived ? !isTaskArchived : isTaskArchived
+
       return [{
         ...task,
         assigneeId: null,
@@ -343,11 +350,18 @@ export class TaskService {
     return tasks.flatMap((task) => {
       const archiveIds = new Map(getArchiveIds(task))
 
+      if (task.assigneeStatuses.length === 0) {
+        const isTaskArchived = archiveIds.has(null)
+        const needToArchiveTask = isArchived ? !isTaskArchived : isTaskArchived
+        if (needToArchiveTask) return []
+        return [{ ...task, assigneeStatuses: [], archiveMap: archiveIds }]
+      }
+
       const activeAssignees = task.assigneeStatuses.filter(
         ({ assigneeId }) => isArchived ? archiveIds.has(assigneeId) : !archiveIds.has(assigneeId)
       )
 
-      if (activeAssignees.length === 0 && task.assigneeStatuses.length > 0) {
+      if (activeAssignees.length === 0) {
         return []
       }
 
