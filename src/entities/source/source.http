@@ -2,14 +2,31 @@
 
 ### Create Source — valid payload
 POST {{baseUrl}}/source
-...headers
-Content-Type: multipart/form-data
+...formHeaders
+Content-Type: multipart/form-data; boundary={{boundary}}
 
-name=Radio
-workspaceId={{workspaceId}}
-date=2024-01-01T00:00:00.000Z
-tags[0]=tag1
-attachment< ./sample.pdf
+--{{boundary}}
+Content-Disposition: form-data; name="name"
+
+Radio
+--{{boundary}}
+Content-Disposition: form-data; name="workspaceId"
+
+{{workspaceId}}
+--{{boundary}}
+Content-Disposition: form-data; name="date"
+
+2024-01-01T00:00:00.000Z
+--{{boundary}}
+Content-Disposition: form-data; name="tags[0]"
+
+tag1
+--{{boundary}}
+Content-Disposition: form-data; name="attachment"; filename="sample.pdf"
+Content-Type: application/pdf
+
+< ./sample.pdf
+--{{boundary}}--
 
 {{@response
   exports.sourceId = response.parsedBody.id;
@@ -19,48 +36,167 @@ attachment< ./sample.pdf
 
 ### Create Source — with embedded tasks
 POST {{baseUrl}}/source
-...headers
-Content-Type: multipart/form-data
+...formHeaders
+Content-Type: multipart/form-data; boundary={{boundary}}
 
-name=Radio With Tasks
-workspaceId={{workspaceId}}
-tasks[0][title]=Review notes
-tasks[0][deadlineType]=DATE
-tasks[0][tags][0]=urgent
-tasks[1][title]=Follow up
-tasks[1][deadlineType]=ROLLING
+--{{boundary}}
+Content-Disposition: form-data; name="name"
+
+Radio With Tasks
+--{{boundary}}
+Content-Disposition: form-data; name="workspaceId"
+
+{{workspaceId}}
+--{{boundary}}
+Content-Disposition: form-data; name="tasks[0][title]"
+
+Review notes
+--{{boundary}}
+Content-Disposition: form-data; name="tasks[0][deadlineType]"
+
+DATE
+--{{boundary}}
+Content-Disposition: form-data; name="tasks[0][tags][0]"
+
+urgent
+--{{boundary}}
+Content-Disposition: form-data; name="tasks[1][title]"
+
+Follow up
+--{{boundary}}
+Content-Disposition: form-data; name="tasks[1][deadlineType]"
+
+ROLLING
+--{{boundary}}--
 
 ?? status == 201
 
+### Create Source — with embedded task tags
+POST {{baseUrl}}/source
+...formHeaders
+Content-Type: multipart/form-data; boundary={{boundary}}
+
+--{{boundary}}
+Content-Disposition: form-data; name="name"
+
+Radio With Tagged Tasks
+--{{boundary}}
+Content-Disposition: form-data; name="workspaceId"
+
+{{workspaceId}}
+--{{boundary}}
+Content-Disposition: form-data; name="tasks[0][title]"
+
+Review notes
+--{{boundary}}
+Content-Disposition: form-data; name="tasks[0][deadlineType]"
+
+DATE
+--{{boundary}}
+Content-Disposition: form-data; name="tasks[0][tags][0]"
+
+urgent
+--{{boundary}}
+Content-Disposition: form-data; name="tasks[0][tags][1]"
+
+review
+--{{boundary}}--
+
+{{@response
+  exports.sourceWithTaggedTaskId = response.parsedBody.id;
+}}
+
+?? status == 201
+
+### Get Source by id — verify embedded task tags
+GET {{baseUrl}}/source/{{sourceWithTaggedTaskId}}
+...headers
+
+?? status == 200
+
+### Create Source — with embedded task, invalid tag (expect 400)
+POST {{baseUrl}}/source
+...formHeaders
+Content-Type: multipart/form-data; boundary={{boundary}}
+
+--{{boundary}}
+Content-Disposition: form-data; name="name"
+
+Radio With Invalid Task Tag
+--{{boundary}}
+Content-Disposition: form-data; name="workspaceId"
+
+{{workspaceId}}
+--{{boundary}}
+Content-Disposition: form-data; name="tasks[0][title]"
+
+Review notes
+--{{boundary}}
+Content-Disposition: form-data; name="tasks[0][deadlineType]"
+
+DATE
+--{{boundary}}
+Content-Disposition: form-data; name="tasks[0][tags][0]"
+
+
+--{{boundary}}--
+
+?? status == 400
+
 ### Create Source — with AI extraction
 POST {{baseUrl}}/source
-...headers
-Content-Type: multipart/form-data
+...formHeaders
+Content-Type: multipart/form-data; boundary={{boundary}}
 
-name=AI Extracted Source
-workspaceId={{workspaceId}}
-aiExtraction=true
-attachment< ./sample.pdf
+--{{boundary}}
+Content-Disposition: form-data; name="name"
+
+AI Extracted Source
+--{{boundary}}
+Content-Disposition: form-data; name="workspaceId"
+
+{{workspaceId}}
+--{{boundary}}
+Content-Disposition: form-data; name="aiExtraction"
+
+true
+--{{boundary}}
+Content-Disposition: form-data; name="attachment"; filename="sample.pdf"
+Content-Type: application/pdf
+
+< ./sample.pdf
+--{{boundary}}--
 
 ?? status == 201
 
 ### Create Source — missing required field (expect 400)
 POST {{baseUrl}}/source
-...headers
-Content-Type: multipart/form-data
+...formHeaders
+Content-Type: multipart/form-data; boundary={{boundary}}
 
-workspaceId={{workspaceId}}
+--{{boundary}}
+Content-Disposition: form-data; name="workspaceId"
+
+{{workspaceId}}
+--{{boundary}}--
 
 ?? status == 400
 
 ### Create Source — insufficient permission (expect 403)
 POST {{baseUrl}}/source
-...headers
+...formHeaders
 is-bi: false
-Content-Type: multipart/form-data
+Content-Type: multipart/form-data; boundary={{boundary}}
 
-name=Radio
-workspaceId={{workspaceId}}
+--{{boundary}}
+Content-Disposition: form-data; name="name"
+
+Radio
+--{{boundary}}
+Content-Disposition: form-data; name="workspaceId"
+
+{{workspaceId}}
+--{{boundary}}--
 
 ?? status == 403
 
@@ -89,11 +225,19 @@ is-bi: false
 
 ### Update Source — with new attachment
 PATCH {{baseUrl}}/source/{{sourceId}}
-...headers
-Content-Type: multipart/form-data
+...formHeaders
+Content-Type: multipart/form-data; boundary={{boundary}}
 
-name=Radio Updated
-attachment< ./sample-updated.pdf
+--{{boundary}}
+Content-Disposition: form-data; name="name"
+
+Radio Updated
+--{{boundary}}
+Content-Disposition: form-data; name="attachment"; filename="sample-updated.pdf"
+Content-Type: application/pdf
+
+< ./sample-updated.pdf
+--{{boundary}}--
 
 ?? status == 200
 
@@ -111,11 +255,15 @@ PATCH {{baseUrl}}/source/{{sourceId}}
 
 ### Update Source — insufficient permission (expect 403)
 PATCH {{baseUrl}}/source/{{sourceId}}
-...headers
+...formHeaders
 is-bi: false
-Content-Type: multipart/form-data
+Content-Type: multipart/form-data; boundary={{boundary}}
 
-name=Radio Updated
+--{{boundary}}
+Content-Disposition: form-data; name="name"
+
+Radio Updated
+--{{boundary}}--
 
 ?? status == 403
 
