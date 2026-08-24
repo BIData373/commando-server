@@ -6,6 +6,7 @@ import { SocketGateway } from '../../socket/socket.gateway';
 import { SocketEventType } from '../../socket/types/socket-event-type.enum';
 import { TaskRunnerService } from '../../task-runner/task-runner.service';
 import { DeadlineType, ExtractionStatus, Prisma, Source, TaskCreationType, User } from '../../types/prisma';
+import { MessageRelayService } from '../services/message-relay.service';
 import { S3Service } from '../s3/s3.service';
 import { tagsConnectOrCreateArgs, tagsSetOrCreateArgs } from '../tag/functions/tag-args';
 import { taskAssigneeStatusesCreateArgs } from '../task/functions/task-args';
@@ -14,20 +15,61 @@ import { CreateSourceDto } from './dto/request/create-source.dto';
 import { GetAIExtractionCallbackDto } from './dto/request/get-ai-extraction-callback.dto';
 import { UpdateSourceDto } from './dto/request/update-source.dto';
 import { SourceDto } from './dto/response/source.dto';
+import { chatUrl, notificationTemplate, vectorUrl } from '../../common/consts/env';
+import { renderTemplate } from '../../common/functions/template';
 
 @Injectable()
 export class SourceService {
   static readonly include: Prisma.SourceInclude = {
     tags: true
   }
-
   constructor(
     private readonly prisma: PrismaService,
     private readonly s3: S3Service,
     private readonly taskRunner: TaskRunnerService,
     private readonly socket: SocketGateway,
     private readonly taskService: TaskService,
+    private readonly messageRelayService: MessageRelayService,
   ) { }
+
+    private async sendTaskCreatedNotifications(
+      workspace: { title: string; chatNotification: boolean; mailNotification: boolean },
+      sourceName: string,
+      recipients: string[],
+      count: number,
+      date?: Date
+    ) {
+      const title = `קיבלת הנחיות חדשות מאת: ${workspace.title}`
+      const tasksUrl = `${vectorUrl}/personal/tasks`
+      const source = `מתוך דיון: ${sourceName} ${date?.toLocaleDateString() ?? ''}`
+  
+      if (workspace.chatNotification) {
+        const chatMessage = `${source}, נוצרו ${count} הנחיות באחריותך\n
+         לצפייה בהנחיות: ${tasksUrl}`
+        await this.messageRelayService.sendNotification(
+          recipients,
+          'chat',
+          title,
+          chatMessage
+        )
+      }
+      if (workspace.mailNotification) {
+        const html = renderTemplate(notificationTemplate!, {
+          workspaceName: workspace.title,
+          source,
+          count,
+          tasksUrl,
+          vectorUrl: vectorUrl,
+          chatUrl: chatUrl,
+        })
+        await this.messageRelayService.sendNotification(
+          recipients,
+          'mail',
+          title,
+          html
+        )
+      }
+    }
 
   async create(
     { tags, tasks, workspaceId, context, aiExtraction, draft, ...dto }: CreateSourceDto,
@@ -82,7 +124,58 @@ export class SourceService {
       this.taskRunner.sendTask('vector.process_document', [source.id])
     }
 
+    this.sendNotificationsForNewTasks((tasks ?? []).map(t => map(t.assignees ?? [], 'id')), workspaceId, dto.name, dto.date)
+      .catch(e => console.error('Failed to send task created notifications:', e));
+
     return source
+  }
+
+  // Counts unique tasks per user (a user linked to multiple assignees on the same task counts as 1)
+  // and sends a single notification to each user with their total count.
+  private async sendNotificationsForNewTasks(
+    taskAssigneeIds: number[][],
+    workspaceId: number,
+    sourceName: string,
+    date?: Date
+  ) {
+    // Collect all unique assignee IDs across all tasks
+    const assigneeIds = uniq(flatMap(taskAssigneeIds));
+    if (!assigneeIds.length) return;
+
+    // Fetch workspace notification settings and assignee-to-user mappings in parallel
+    const [workspace, assigneesWithUsers] = await Promise.all([
+      this.prisma.workspace.findUniqueOrThrow({
+        where: { id: workspaceId },
+        select: { title: true, chatNotification: true, mailNotification: true }
+      }),
+      this.prisma.assignee.findMany({
+        where: { id: { in: assigneeIds } },
+        select: { id: true, users: { select: { upn: true } } }
+      })
+    ]);
+
+    // Map each assignee ID to its linked user UPNs for quick lookup
+    const upnsByAssigneeId = new Map(
+      assigneesWithUsers.map(a => [a.id, a.users.map(u => u.upn)])
+    );
+
+    // Count unique tasks per user — Set ensures a user is counted once per task
+    const tasksPerUser = new Map<string, number>();
+    for (const assignees of taskAssigneeIds) {
+      const taskUpns = new Set(
+        flatMap(assignees, id => upnsByAssigneeId.get(id) ?? [])
+      );
+      for (const upn of taskUpns) {
+        tasksPerUser.set(upn, (tasksPerUser.get(upn) ?? 0) + 1);
+      }
+    }
+
+    // Send all notifications in parallel — one per user
+    await Promise.all(
+      [...tasksPerUser].map(([upn, count]) =>
+        this.sendTaskCreatedNotifications(workspace, sourceName, [upn], count, date)
+      )
+    );
   }
 
   async findInWorkspace(workspaceId: number): Promise<Prisma.SourceGetPayload<{ include: typeof SourceService.include }>[]> {
@@ -249,9 +342,9 @@ export class SourceService {
       })
     )
 
-    const taskCount = taskPromises.filter(t => !!t).length
+    const createdTasks = taskPromises.filter(t => !!t)
 
-    const extractionStatus = taskCount > 0
+    const extractionStatus = createdTasks.length > 0
       ? ExtractionStatus.FINISHED_WITH_TASKS
       : ExtractionStatus.FINISHED_WITHOUT_TASKS
 
@@ -259,6 +352,11 @@ export class SourceService {
       where: { id: source.id },
       data: { extractionStatus }
     })
+
+    this.sendNotificationsForNewTasks(
+      (dto.tasks ?? []).map(t => intersection(t.assigneeIds, validIds)),
+      source.workspaceId, source.name, source.date ?? undefined
+    ).catch((e: Error) => console.error('Failed to send AI task created notifications:', e));
 
     return await this.findOneAndEmit(source.id, user, workspace.urlName)
   }
