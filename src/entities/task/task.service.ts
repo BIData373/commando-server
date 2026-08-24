@@ -149,7 +149,7 @@ export class TaskService {
     if (task.assigneeStatuses.length === 0) {
       const isTaskArchived = archiveIds.has(null)
       if (isTaskArchived !== isArchived) return null
-      return task.assigneeStatuses 
+      return task.assigneeStatuses
     }
 
     const activeAssignees = task.assigneeStatuses.filter(
@@ -158,7 +158,7 @@ export class TaskService {
 
     if (activeAssignees.length === 0) return null
 
-    return activeAssignees 
+    return activeAssignees
   }
 
   static formatAdditionalTaskFields<TTask extends TaskInclude>(
@@ -174,7 +174,7 @@ export class TaskService {
     if (!activeAssignees) {
       return originalTask
     }
-    
+
     const filteredAssignees = isArchived === undefined ? assigneeStatuses : activeAssignees
 
     return {
@@ -452,7 +452,7 @@ export class TaskService {
       },
       include: {
         ...TaskService.withWorkspaceInclude(user.id),
-        archivedUserAssigneeTask: true,
+        archivedUserAssigneeTask: { where: { userId: user.id } },
       },
       orderBy: TaskService.orderBy
     });
