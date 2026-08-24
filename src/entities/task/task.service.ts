@@ -149,7 +149,7 @@ export class TaskService {
     if (task.assigneeStatuses.length === 0) {
       const isTaskArchived = archiveIds.has(null)
       if (isTaskArchived !== isArchived) return null
-      return { activeAssignees: task.assigneeStatuses }
+      return task.assigneeStatuses 
     }
 
     const activeAssignees = task.assigneeStatuses.filter(
@@ -158,7 +158,7 @@ export class TaskService {
 
     if (activeAssignees.length === 0) return null
 
-    return { activeAssignees }
+    return activeAssignees 
   }
 
   static formatAdditionalTaskFields<TTask extends TaskInclude>(
@@ -170,11 +170,16 @@ export class TaskService {
   ) {
     const { assigneeStatuses, messages, ...rest } = originalTask;
 
-    if (!TaskService.filterByArchivedAssignee(originalTask, archivedIds, isArchived)) return null
+    const activeAssignees = TaskService.filterByArchivedAssignee(originalTask, archivedIds, isArchived)
+    if (!activeAssignees) {
+      return originalTask
+    }
+    
+    const filteredAssignees = isArchived === undefined ? assigneeStatuses : activeAssignees
 
     return {
       ...rest,
-      assigneeStatuses: assigneeStatuses.map(assigneeStatus =>
+      assigneeStatuses: filteredAssignees.map(assigneeStatus =>
         TaskService.formatAssigneeStatus(assigneeStatus, workspace, user)
       ),
       workspace: TaskService.formatTaskWorkspace(workspace, user),
@@ -351,11 +356,9 @@ export class TaskService {
     isArchived?: boolean,
   ) {
     const { assigneeStatuses, messages, ...task } = originalTask
-    const result = TaskService.filterByArchivedAssignee(originalTask, archiveIds, isArchived)
+    const activeAssignees = TaskService.filterByArchivedAssignee(originalTask, archiveIds, isArchived)
 
-    if (!result) return []
-
-    const { activeAssignees } = result
+    if (!activeAssignees) return []
 
     if (!onlyUserRows && assigneeStatuses.length === 0) {
       return [{
