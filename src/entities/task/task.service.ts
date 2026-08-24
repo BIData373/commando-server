@@ -351,7 +351,7 @@ export class TaskService {
     isArchived?: boolean,
   ) {
     const { assigneeStatuses, messages, ...task } = originalTask
-    const result = TaskService.filterByArchivedAssignee(originalTask, getArchiveIds, isArchived)
+    const result = TaskService.filterByArchivedAssignee(originalTask, archiveIds, isArchived)
 
     if (!result) return []
 
