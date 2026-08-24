@@ -507,29 +507,34 @@ export class TaskService {
           ? { connect: { id: statusId } }
           : undefined;
 
-    const assigneeStatuses = !assignees ? undefined
-      : !assignees.length
-        ? { deleteMany: {} }
+    const assigneeStatuses = assignees && {
+      deleteMany: !hasAssignees
+        ? {}
         : {
-          deleteMany: {
-            assigneeId: { notIn: assignees.map(a => a.id) }
+          assigneeId: { notIn: assignees.map(a => a.id) }
+        },
+      ...(hasAssignees && {
+        upsert: assignees.map(({
+          id: assigneeId,
+          description,
+          statusId: assigneeStatusId
+        }) => ({
+          where: { taskId_assigneeId: { taskId: id, assigneeId } },
+          create: {
+            assigneeId,
+            description,
+            statusId: assigneeStatusId ?? notStartedStatus!.id
           },
-          upsert: assignees.map(({ id: assigneeId, description, statusId: assigneeStatusId }) => ({
-            where: { taskId_assigneeId: { taskId: id, assigneeId } },
-            create: {
-              assigneeId,
-              description,
-              statusId: assigneeStatusId ?? notStartedStatus!.id
-            },
-            update: {
-              assigneeId,
-              ...(description !== undefined && { description }),
-              ...(assigneeStatusId !== undefined && { statusId: assigneeStatusId })
-            }
-          }))
-        };
+          update: {
+            assigneeId,
+            description,
+            statusId: assigneeStatusId
+          }
+        }))
+      })
+    }
 
-    const tagsData = !tags ? undefined : {
+    const tagsData = tags && {
       connectOrCreate: tags.map(name => ({
         create: {
           name,
