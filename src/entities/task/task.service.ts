@@ -5,8 +5,10 @@ import { PrismaService } from '../../common/prisma.service';
 import { PermissionType, Prisma, Task, User, WorkspaceStatus } from '../../types/prisma';
 import { MessageRelayService } from '../services/message-relay.service';
 import { WorkspaceWithPermissions } from '../workspace/types/workspace-with-permission.type';
+import { tagsConnectOrCreateArgs, tagsSetOrCreateArgs } from '../tag/functions/tag-args';
 import { CreateTaskDto } from './dto/request/create-task.dto';
 import { UpdateTaskDto } from './dto/request/update-task.dto';
+import { taskAssigneeStatusesCreateArgs } from './functions/task-args';
 import { notificationTemplate, vectorUrl, chatUrl } from '../../common/consts/env';
 
 type AssigneeStatusInclude = {
@@ -212,29 +214,11 @@ export class TaskService {
             }
           }
         }),
-        ...(assignees?.length ? {
-          assigneeStatuses: {
-            create: assignees.map(({ id, description }) => ({
-              description,
-              assignee: { connect: { id } },
-              status: { connect: { id: notStartedStatus.id } }
-            }))
-          }
-        } : {
-          status: { connect: { id: notStartedStatus.id } }
+        ...(assignees?.length && {
+          assigneeStatuses: taskAssigneeStatusesCreateArgs(assignees, notStartedStatus.id)
         }),
         ...(tags && {
-          tags: {
-            connectOrCreate: tags.map(name => ({
-              create: {
-                name,
-                workspace: { connect: { id: workspaceId } },
-                createdBy: userId,
-                updatedBy: userId
-              },
-              where: { name_workspaceId: { name, workspaceId } }
-            }))
-          }
+          tags: tagsConnectOrCreateArgs(tags, workspaceId, userId)
         })
       },
       include: TaskService.withWorkspaceInclude(userId)
@@ -534,19 +518,6 @@ export class TaskService {
       })
     }
 
-    const tagsData = tags && {
-      connectOrCreate: tags.map(name => ({
-        create: {
-          name,
-          workspaceId,
-          createdBy: updatedBy,
-          updatedBy: updatedBy
-        },
-        where: { name_workspaceId: { name, workspaceId } }
-      })),
-      set: tags.map(name => ({ name_workspaceId: { name, workspaceId } }))
-    };
-
     return await this.prisma.task.update({
       where: { id },
       data: {
@@ -558,7 +529,9 @@ export class TaskService {
         }),
         status,
         assigneeStatuses,
-        tags: tagsData,
+        ...(tags !== undefined && {
+          tags: tagsSetOrCreateArgs(tags, workspaceId, updatedBy)
+        }),
         updatedBy
       },
       include: TaskService.withWorkspaceInclude(updatedBy)

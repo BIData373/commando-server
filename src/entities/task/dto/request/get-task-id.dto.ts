@@ -3,7 +3,7 @@ import { IdExists } from "../../../../common/decorators/id-exists.decorator";
 import { GetContextDto } from "../../../../common/dto/request/get-context.dto";
 import { PermissionType } from "../../../../types/prisma";
 import { IUserContext } from "../../../user/interfaces/user-context.interface";
-import { CheckForAssignee, findArgsInPermittedTask } from "../../functions/task-find-args";
+import { CheckForAssignee, findArgsInPermittedTask } from "../../functions/task-args";
 import { ITaskContext } from "../../interfaces/task.interface";
 
 export function GetPermittedTaskIdDto<TDto>(

@@ -2,9 +2,22 @@ import { FORBIDDEN_MESSAGE } from "@nestjs/core/guards";
 import { IEntityExistsValidationOptions } from "../../../common/decorators/entity-exists.decorator";
 import { IContext } from "../../../common/interfaces/context.interface";
 import { ExtractValue } from "../../../common/types/extract-value.type";
-import { PermissionType } from "../../../types/prisma";
+import { PermissionType, Prisma } from "../../../types/prisma";
 import { allowedTypes } from "../../permission/consts/permission-types";
 import { IUserContext } from "../../user/interfaces/user-context.interface";
+import { GetTaskAssigneeDto } from "../dto/request/get-task-assignee.dto";
+
+export const taskAssigneeStatusesCreateArgs = (
+    assignees: GetTaskAssigneeDto[],
+    statusId: number
+) => ({
+    create: assignees.map(({ id, description }) => ({
+        assigneeId: id,
+        description,
+        statusId
+    }))
+} satisfies Prisma.AssigneeTaskStatusCreateNestedManyWithoutTaskInput)
+
 
 export type CheckForAssignee<TDto> = boolean | ((obj: TDto) => number)
 
