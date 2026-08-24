@@ -143,22 +143,19 @@ export class TaskService {
   static filterByArchivedAssignee<TTask extends TaskInclude>(
     task: TTask,
     archiveIds: Map<number | null, Date>,
-    isArchived: boolean = false,
+    isArchived?: boolean,
   ) {
+    if (isArchived === undefined) return task.assigneeStatuses
 
     if (task.assigneeStatuses.length === 0) {
-      const isTaskArchived = archiveIds.has(null)
-      if (isTaskArchived !== isArchived) return null
-      return task.assigneeStatuses
+      return archiveIds.has(null) !== isArchived ? null : task.assigneeStatuses
     }
 
     const activeAssignees = task.assigneeStatuses.filter(
       ({ assigneeId }) => isArchived ? archiveIds.has(assigneeId) : !archiveIds.has(assigneeId)
     )
 
-    if (activeAssignees.length === 0) return null
-
-    return activeAssignees
+    return activeAssignees.length === 0 ? null : activeAssignees
   }
 
   static formatAdditionalTaskFields<TTask extends TaskInclude>(
