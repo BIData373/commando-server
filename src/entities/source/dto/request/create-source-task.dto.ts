@@ -32,6 +32,12 @@ export class CreateSourceTaskDto {
   @TransformToBoolean()
   flagged?: boolean;
 
+  @ApiPropertyOptional({ type: [String] })
+  @IsOptional()
+  @IsArray()
+  @IsNotEmptyString({ each: true })
+  tags?: string[];
+
   @ApiPropertyOptional({ type: [GetTaskAssigneeDto] })
   @IsOptional()
   @IsArray()
