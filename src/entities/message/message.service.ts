@@ -7,7 +7,10 @@ import { UpdateMessageDto } from './dto/request/update-message.dto';
 @Injectable()
 export class MessageService {
   static readonly include = {
-    user: true
+    user: true,
+    createdBy: true,
+    updatedBy: true,
+    deletedBy: true
   } satisfies Prisma.MessageInclude;
 
   static readonly orderBy = {
@@ -21,8 +24,8 @@ export class MessageService {
       data: {
         ...dto,
         userId,
-        createdBy: userId,
-        updatedBy: userId
+        createdById: userId,
+        updatedById: userId
       },
       include: MessageService.include
     });
@@ -46,7 +49,7 @@ export class MessageService {
   async update(id: number, dto: UpdateMessageDto, updatedBy: number) {
     return await this.prisma.message.update({
       where: { id },
-      data: { ...dto, updatedBy },
+      data: { ...dto, updatedById: updatedBy },
       include: MessageService.include
     });
   }
@@ -54,7 +57,7 @@ export class MessageService {
   async remove(id: number, deletedBy: number) {
     return await this.prisma.message.update({
       where: { id },
-      data: { deletedAt: new Date(), deletedBy },
+      data: { deletedAt: new Date(), deletedById: deletedBy },
       include: MessageService.include
     });
   }

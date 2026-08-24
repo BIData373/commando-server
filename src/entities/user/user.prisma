@@ -9,8 +9,39 @@ model User {
   assignees   Assignee[]    @relation("assignee_users")
   permissions Permission[]
   history     TaskHistory[]
-  messages    Message[]
+  messages    Message[]     @relation("message_user")
   userViews   UserView[]
+
+  createdAssignees Assignee[] @relation("assignee_created_by")
+  updatedAssignees Assignee[] @relation("assignee_updated_by")
+  deletedAssignees Assignee[] @relation("assignee_deleted_by")
+
+  createdMessages Message[] @relation("message_created_by")
+  updatedMessages Message[] @relation("message_updated_by")
+  deletedMessages Message[] @relation("message_deleted_by")
+
+  createdPikuds Pikud[] @relation("pikud_created_by")
+  updatedPikuds Pikud[] @relation("pikud_updated_by")
+  deletedPikuds Pikud[] @relation("pikud_deleted_by")
+
+  createdSources Source[] @relation("source_created_by")
+  updatedSources Source[] @relation("source_updated_by")
+  deletedSources Source[] @relation("source_deleted_by")
+
+  createdTags Tag[] @relation("tag_created_by")
+  updatedTags Tag[] @relation("tag_updated_by")
+
+  createdTasks Task[] @relation("task_created_by")
+  updatedTasks Task[] @relation("task_updated_by")
+  deletedTasks Task[] @relation("task_deleted_by")
+
+  createdWorkspaceRequests WorkspaceRequest[] @relation("workspace_request_created_by")
+  updatedWorkspaceRequests WorkspaceRequest[] @relation("workspace_request_updated_by")
+  deletedWorkspaceRequests WorkspaceRequest[] @relation("workspace_request_deleted_by")
+
+  createdWorkspaces Workspace[] @relation("workspace_created_by")
+  updatedWorkspaces Workspace[] @relation("workspace_updated_by")
+  deletedWorkspaces Workspace[] @relation("workspace_deleted_by")
 
   @@map("users")
 }

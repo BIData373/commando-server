@@ -7,13 +7,18 @@ model Workspace {
   chatNotification       Boolean @default(false) @map("chat_notification")
   mailNotification       Boolean @default(false) @map("mail_notification")
 
-  // Meta Fields
   createdAt DateTime  @default(now()) @map("created_at")
-  createdBy Int       @map("created_by")
   updatedAt DateTime  @updatedAt @map("updated_at")
-  updatedBy Int       @map("updated_by")
   deletedAt DateTime? @map("deleted_at")
-  deletedBy Int?      @map("deleted_by")
+
+  createdById Int  @map("created_by")
+  createdBy   User @relation("workspace_created_by", fields: [createdById], references: [id])
+
+  updatedById Int  @map("updated_by")
+  updatedBy   User @relation("workspace_updated_by", fields: [updatedById], references: [id])
+
+  deletedById Int? @map("deleted_by")
+  deletedBy   User? @relation("workspace_deleted_by", fields: [deletedById], references: [id])
 
   pikudId Int   @map("pikud_id")
   pikud   Pikud @relation(fields: [pikudId], references: [id])

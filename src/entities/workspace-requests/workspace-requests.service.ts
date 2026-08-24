@@ -16,6 +16,12 @@ export class WorkspaceRequestsService {
     createdAt: 'desc'
   } satisfies Prisma.WorkspaceRequestOrderByWithRelationInput;
 
+  static readonly include = {
+    createdBy: true,
+    updatedBy: true,
+    deletedBy: true
+  } satisfies Prisma.WorkspaceRequestInclude;
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly messageRelayService: MessageRelayService,
@@ -36,9 +42,10 @@ export class WorkspaceRequestsService {
     const workspaceRequest = await this.prisma.workspaceRequest.create({
       data: {
         details,
-        createdBy: user.id,
-        updatedBy: user.id
-      }
+        createdById: user.id,
+        updatedById: user.id
+      },
+      include: WorkspaceRequestsService.include
     });
 
     const response = WorkspaceRequestsService.formatWorkspaceRequest(workspaceRequest);
@@ -65,7 +72,8 @@ export class WorkspaceRequestsService {
   async findAll() {
     const workspaceRequests = await this.prisma.workspaceRequest.findMany({
       where: { deletedAt: null },
-      orderBy: WorkspaceRequestsService.orderBy
+      orderBy: WorkspaceRequestsService.orderBy,
+      include: WorkspaceRequestsService.include
     });
 
     return workspaceRequests.map(WorkspaceRequestsService.formatWorkspaceRequest);
@@ -73,7 +81,8 @@ export class WorkspaceRequestsService {
 
   async findOne(id: number) {
     const workspaceRequest = await this.prisma.workspaceRequest.findUnique({
-      where: { id, deletedAt: null }
+      where: { id, deletedAt: null },
+      include: WorkspaceRequestsService.include
     });
 
     if (!workspaceRequest) {
@@ -137,8 +146,9 @@ export class WorkspaceRequestsService {
           ...(Object.keys(details).length > 0 && {
             details: { ...current.details, ...details }
           }),
-          updatedBy
-        }
+          updatedById: updatedBy
+        },
+        include: WorkspaceRequestsService.include
       });
     });
 
@@ -160,7 +170,8 @@ ${isApproved
   async remove(id: number, deletedBy: number) {
     const workspaceRequest = await this.prisma.workspaceRequest.update({
       where: { id },
-      data: { deletedAt: new Date(), deletedBy }
+      data: { deletedAt: new Date(), deletedById: deletedBy },
+      include: WorkspaceRequestsService.include
     });
 
     return WorkspaceRequestsService.formatWorkspaceRequest(workspaceRequest);
