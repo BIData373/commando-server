@@ -172,19 +172,19 @@ export class TaskService {
 
     const activeAssignees = TaskService.filterByArchivedAssignee(originalTask, archivedIds, isArchived)
     if (!activeAssignees) {
-      return originalTask
+      return []
     }
 
     const filteredAssignees = isArchived === undefined ? assigneeStatuses : activeAssignees
 
-    return {
+    return [{
       ...rest,
       assigneeStatuses: filteredAssignees.map(assigneeStatus =>
         TaskService.formatAssigneeStatus(assigneeStatus, workspace, user)
       ),
       workspace: TaskService.formatTaskWorkspace(workspace, user),
       lastMessage: messages[0]
-    };
+    }];
   }
 
   private async sendTaskCreatedNotifications(
@@ -332,7 +332,7 @@ export class TaskService {
   async findInWorkspaceFormatted(workspace: WorkspaceWithPermissions, user: User, isArchived?: boolean) {
     const tasks = await this.findInWorkspace(workspace, isArchived)
 
-    return tasks.map(task => TaskService.formatAdditionalTaskFields(
+    return tasks.flatMap(task => TaskService.formatAdditionalTaskFields(
       task,
       workspace,
       user,
@@ -426,7 +426,7 @@ export class TaskService {
   async findFormattedBySource(sourceId: number, workspace: WorkspaceWithPermissions, user: User, isArchived?: boolean) {
     const tasks = await this.findBySource(sourceId, isArchived)
 
-    return tasks.map(task => TaskService.formatAdditionalTaskFields(
+    return tasks.flatMap(task => TaskService.formatAdditionalTaskFields(
       task,
       workspace,
       user,
@@ -461,7 +461,7 @@ export class TaskService {
   async findPersonalFormatted(user: User, isArchived?: boolean) {
     const tasks = await this.findPersonal(user, isArchived)
 
-    return tasks.map(task => TaskService.formatAdditionalTaskFields(
+    return tasks.flatMap(task => TaskService.formatAdditionalTaskFields(
       task,
       task.workspace,
       user,
@@ -504,7 +504,7 @@ export class TaskService {
       return null;
     }
 
-    const formatted = TaskService.formatAdditionalTaskFields(
+    const [formatted] = TaskService.formatAdditionalTaskFields(
       task,
       task.workspace,
       user,
