@@ -8,13 +8,18 @@ model Task {
   notes        String?
   creationType TaskCreationType @default(HUMAN) @map("creation_type")
 
-  // Meta Fields
   createdAt DateTime  @default(now()) @map("created_at")
-  createdBy Int       @map("created_by")
   updatedAt DateTime  @updatedAt @map("updated_at")
-  updatedBy Int       @map("updated_by")
   deletedAt DateTime? @map("deleted_at")
-  deletedBy Int?      @map("deleted_by")
+
+  createdById Int  @map("created_by")
+  createdBy   User @relation("task_created_by", fields: [createdById], references: [id])
+
+  updatedById Int  @map("updated_by")
+  updatedBy   User @relation("task_updated_by", fields: [updatedById], references: [id])
+
+  deletedById Int? @map("deleted_by")
+  deletedBy   User? @relation("task_deleted_by", fields: [deletedById], references: [id])
 
   workspaceId Int       @map("workspace_id")
   workspace   Workspace @relation(fields: [workspaceId], references: [id])
@@ -23,11 +28,11 @@ model Task {
   source   Source? @relation(fields: [sourceId], references: [id])
 
   archivedWorkspaceAssigneeTask ArchivedWorkspaceAssigneeTask[]
-  archivedUserAssigneeTask ArchivedUserAssigneeTask[]
-  tags             Tag[]                @relation("tasks_tags")
-  assigneeStatuses AssigneeTaskStatus[]
-  messages         Message[]
-  history          TaskHistory[]
+  archivedUserAssigneeTask      ArchivedUserAssigneeTask[]
+  tags                          Tag[]                           @relation("tasks_tags")
+  assigneeStatuses              AssigneeTaskStatus[]
+  messages                      Message[]
+  history                       TaskHistory[]
 
   @@map("tasks")
 }

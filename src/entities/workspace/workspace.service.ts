@@ -1,19 +1,25 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../common/prisma.service';
-import { Prisma } from '../../types/prisma';
+import { Prisma, Workspace } from '../../types/prisma';
 import { DEFAULT_STATUSES } from '../workspace-status/consts/default-statuses';
 import { CreateWorkspaceDto } from './dto/request/create-workspace.dto';
 import { UpdateWorkspaceDto } from './dto/request/update-workspace.dto';
-import { WorkspaceDto } from './dto/response/workspace.dto';
 
 @Injectable()
 export class WorkspaceService {
+  static readonly include = {
+    createdBy: true,
+    updatedBy: true,
+    deletedBy: true
+  } satisfies Prisma.WorkspaceInclude;
+
   constructor(
     private readonly prisma: PrismaService
   ) { }
 
   private permissionsInclude(userId: number): Prisma.WorkspaceInclude {
     return {
+      ...WorkspaceService.include,
       permissions: {
         where: { userId },
         select: { type: true }
@@ -41,14 +47,15 @@ export class WorkspaceService {
     return await tx.workspace.create({
       data: {
         ...dto,
-        createdBy: userId,
-        updatedBy: userId,
+        createdById: userId,
+        updatedById: userId,
         workspaceStatuses: {
           createMany: {
             data: DEFAULT_STATUSES
           }
         }
-      }
+      },
+      include: WorkspaceService.include
     });
   }
 
@@ -56,7 +63,7 @@ export class WorkspaceService {
     return await WorkspaceService.createTx(this.prisma, dto, userId);
   }
 
-  async findAll(userId: number, workspace?: WorkspaceDto, extraWhere?: Prisma.WorkspaceWhereInput) {
+  async findAll(userId: number, workspace?: Workspace, extraWhere?: Prisma.WorkspaceWhereInput) {
     if (workspace) return [workspace];
 
     const workspaces = await this.prisma.workspace.findMany({
@@ -88,21 +95,24 @@ export class WorkspaceService {
 
   async findOne(id: number) {
     return await this.prisma.workspace.findUnique({
-      where: { id, deletedAt: null }
+      where: { id, deletedAt: null },
+      include: WorkspaceService.include
     });
   }
 
   async update(id: number, { context, ...dto }: UpdateWorkspaceDto, updatedBy: number) {
     return await this.prisma.workspace.update({
       where: { id },
-      data: { ...dto, updatedBy }
+      data: { ...dto, updatedById: updatedBy },
+      include: WorkspaceService.include
     });
   }
 
   async remove(id: number, deletedBy: number) {
     return await this.prisma.workspace.update({
       where: { id },
-      data: { deletedAt: new Date(), deletedBy },
+      data: { deletedAt: new Date(), deletedById: deletedBy },
+      include: WorkspaceService.include
     });
   }
 }

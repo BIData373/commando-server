@@ -42,11 +42,6 @@ export class TaskService {
     createdAt: 'desc'
   } satisfies Prisma.TaskOrderByWithRelationInput;
 
-  constructor(
-    private readonly prisma: PrismaService,
-    private readonly messageRelayService: MessageRelayService
-  ) { }
-
   static readonly includeMessageCount: Prisma.TaskInclude = {
     _count: {
       select: {
@@ -58,6 +53,11 @@ export class TaskService {
       },
     },
   }
+
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly messageRelayService: MessageRelayService
+  ) { }
 
   static baseInclude() {
     return {
@@ -74,6 +74,9 @@ export class TaskService {
         take: 1,
       },
       ...TaskService.includeMessageCount,
+      createdBy: true,
+      updatedBy: true,
+      deletedBy: true,
       assigneeStatuses: {
         where: {
           assignee: {
@@ -243,18 +246,10 @@ export class TaskService {
     const createdTask = await this.prisma.task.create({
       data: {
         ...dto,
-        createdBy: userId,
-        updatedBy: userId,
-        workspace: {
-          connect: { id: workspaceId }
-        },
-        ...(typeof sourceId === 'number' && {
-          source: {
-            connect: {
-              id: sourceId
-            }
-          }
-        }),
+        createdById: userId,
+        updatedById: userId,
+        workspaceId,
+        ...(typeof sourceId === 'number' && { sourceId }),
         ...(assignees && {
           assigneeStatuses: taskAssigneeStatusesCreateArgs(assignees, notStartedStatus.id)
         }),
@@ -533,11 +528,7 @@ export class TaskService {
       where: { id },
       data: {
         ...dto,
-        ...(sourceId !== undefined && {
-          source: sourceId === null
-            ? { disconnect: true }
-            : { connect: { id: sourceId } }
-        }),
+        ...(sourceId !== undefined && { sourceId }),
         ...(assignees !== undefined && {
           assigneeStatuses: {
             deleteMany: {
@@ -561,7 +552,7 @@ export class TaskService {
         ...(tags !== undefined && {
           tags: tagsSetOrCreateArgs(tags, workspaceId, updatedBy)
         }),
-        updatedBy
+        updatedById: updatedBy
       },
       include: TaskService.withWorkspaceInclude(updatedBy)
     });
@@ -570,7 +561,7 @@ export class TaskService {
   async remove(id: number, deletedBy: number) {
     return await this.prisma.task.update({
       where: { id },
-      data: { deletedAt: new Date(), deletedBy },
+      data: { deletedAt: new Date(), deletedById: deletedBy },
       include: TaskService.withWorkspaceInclude(deletedBy)
     });
   }

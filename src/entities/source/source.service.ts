@@ -17,9 +17,17 @@ import { SourceDto } from './dto/response/source.dto';
 
 @Injectable()
 export class SourceService {
-  static readonly include: Prisma.SourceInclude = {
-    tags: true
-  }
+  static readonly include = {
+    tags: {
+      include: {
+        createdBy: true,
+        updatedBy: true
+      }
+    },
+    createdBy: true,
+    updatedBy: true,
+    deletedBy: true
+  } satisfies Prisma.SourceInclude;
 
   constructor(
     private readonly prisma: PrismaService,
@@ -61,8 +69,8 @@ export class SourceService {
               ...taskDto,
               workspaceId,
               creationType: TaskCreationType.HUMAN,
-              createdBy: userId,
-              updatedBy: userId,
+              createdById: userId,
+              updatedById: userId,
               ...(assignees?.length && {
                 assigneeStatuses: taskAssigneeStatusesCreateArgs(assignees, notStartedStatusId!)
               }),
@@ -72,8 +80,8 @@ export class SourceService {
             }))
           }
         })),
-        createdBy: userId,
-        updatedBy: userId
+        createdById: userId,
+        updatedById: userId
       },
       include: SourceService.include
     });
@@ -151,7 +159,7 @@ export class SourceService {
         ...dto,
         attachmentKey,
         attachmentName,
-        updatedBy,
+        updatedById: updatedBy,
         draft: aiExtraction || draft,
         ...(tags !== undefined && {
           tags: tagsSetOrCreateArgs(tags, workspaceId, updatedBy)
@@ -181,7 +189,7 @@ export class SourceService {
   async remove(id: number, deletedBy: number) {
     return await this.prisma.source.update({
       where: { id },
-      data: { deletedAt: new Date(), deletedBy },
+      data: { deletedAt: new Date(), deletedById: deletedBy },
       include: SourceService.include
     });
   }
@@ -189,9 +197,9 @@ export class SourceService {
   async processAiResult(source: Source, dto: GetAIExtractionCallbackDto) {
     const workspace = await this.prisma.workspace.findUniqueOrThrow({
       where: { id: source.workspaceId },
-      include: { permissions: { where: { userId: source.createdBy } } }
+      include: { permissions: { where: { userId: source.createdById } } }
     })
-    const user = await this.prisma.user.findUniqueOrThrow({ where: { id: source.createdBy } })
+    const user = await this.prisma.user.findUniqueOrThrow({ where: { id: source.createdById } })
 
     if (dto.error) {
       await this.prisma.source.update({
@@ -230,8 +238,8 @@ export class SourceService {
               creationType: TaskCreationType.AI,
               workspaceId: source.workspaceId,
               sourceId: source.id,
-              createdBy: source.createdBy,
-              updatedBy: source.createdBy,
+              createdById: source.createdById,
+              updatedById: source.createdById,
               ...(validTaskAssigneeIds.length > 0 && {
                 assigneeStatuses: {
                   create: validTaskAssigneeIds.map(assigneeId => ({

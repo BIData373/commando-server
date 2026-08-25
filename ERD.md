@@ -83,10 +83,10 @@ COMPLETED COMPLETED
     String icon_name "❓"
     Int workspace_id 
     DateTime created_at 
-    Int created_by 
     DateTime updated_at 
-    Int updated_by 
     DateTime deleted_at "❓"
+    Int created_by 
+    Int updated_by 
     Int deleted_by "❓"
     }
   
@@ -105,10 +105,10 @@ COMPLETED COMPLETED
     Int user_id 
     Int task_id 
     DateTime created_at 
-    Int created_by 
     DateTime updated_at 
-    Int updated_by 
     DateTime deleted_at "❓"
+    Int created_by 
+    Int updated_by 
     Int deleted_by "❓"
     }
   
@@ -125,10 +125,10 @@ COMPLETED COMPLETED
     String name 
     String icon "❓"
     DateTime created_at 
-    Int created_by 
     DateTime updated_at 
-    Int updated_by 
     DateTime deleted_at "❓"
+    Int created_by 
+    Int updated_by 
     Int deleted_by "❓"
     }
   
@@ -143,10 +143,10 @@ COMPLETED COMPLETED
     ExtractionStatus extraction_status "❓"
     Int workspace_id 
     DateTime created_at 
-    Int created_by 
     DateTime updated_at 
-    Int updated_by 
     DateTime deleted_at "❓"
+    Int created_by 
+    Int updated_by 
     Int deleted_by "❓"
     }
   
@@ -155,8 +155,8 @@ COMPLETED COMPLETED
     Int id "🗝️"
     String name 
     DateTime created_at 
-    Int created_by 
     DateTime updated_at 
+    Int created_by 
     Int updated_by 
     Int workspace_id 
     }
@@ -172,10 +172,10 @@ COMPLETED COMPLETED
     String notes "❓"
     TaskCreationType creation_type 
     DateTime created_at 
-    Int created_by 
     DateTime updated_at 
-    Int updated_by 
     DateTime deleted_at "❓"
+    Int created_by 
+    Int updated_by 
     Int deleted_by "❓"
     Int workspace_id 
     Int source_id "❓"
@@ -218,10 +218,10 @@ COMPLETED COMPLETED
     Boolean chat_notification 
     Boolean mail_notification 
     DateTime created_at 
-    Int created_by 
     DateTime updated_at 
-    Int updated_by 
     DateTime deleted_at "❓"
+    Int created_by 
+    Int updated_by 
     Int deleted_by "❓"
     Int pikud_id 
     }
@@ -233,10 +233,10 @@ COMPLETED COMPLETED
     WorkspaceRequestStatus status 
     String decline_message "❓"
     DateTime created_at 
-    Int created_by 
     DateTime updated_at 
-    Int updated_by 
     DateTime deleted_at "❓"
+    Int created_by 
+    Int updated_by 
     Int deleted_by "❓"
     }
   
@@ -255,22 +255,39 @@ COMPLETED COMPLETED
     "archived_workspace_assignee_task" }o--|| tasks : "task"
     "archived_workspace_assignee_task" }o--|o assignees : "assignee"
     "assignees" }o--|| workspaces : "workspace"
+    "assignees" }o--|| users : "createdBy"
+    "assignees" }o--|| users : "updatedBy"
+    "assignees" }o--|o users : "deletedBy"
     "assignees" o{--}o "users" : ""
     "assignee_task_statuses" }o--|| tasks : "task"
     "assignee_task_statuses" }o--|| assignees : "assignee"
     "assignee_task_statuses" }o--|| workspace_statuses : "status"
     "messages" }o--|| users : "user"
     "messages" }o--|| tasks : "task"
+    "messages" }o--|| users : "createdBy"
+    "messages" }o--|| users : "updatedBy"
+    "messages" }o--|o users : "deletedBy"
     "permissions" |o--|| "PermissionType" : "enum:type"
     "permissions" }o--|| users : "user"
     "permissions" }o--|| workspaces : "workspace"
+    "pikuds" }o--|| users : "createdBy"
+    "pikuds" }o--|| users : "updatedBy"
+    "pikuds" }o--|o users : "deletedBy"
     "sources" |o--|o "ExtractionStatus" : "enum:extraction_status"
     "sources" }o--|| workspaces : "workspace"
+    "sources" }o--|| users : "createdBy"
+    "sources" }o--|| users : "updatedBy"
+    "sources" }o--|o users : "deletedBy"
     "sources" o{--}o "tags" : ""
+    "tags" }o--|| users : "createdBy"
+    "tags" }o--|| users : "updatedBy"
     "tags" }o--|| workspaces : "workspace"
     "tags" o{--}o "tasks" : ""
     "tasks" |o--|| "DeadlineType" : "enum:deadline_type"
     "tasks" |o--|| "TaskCreationType" : "enum:creation_type"
+    "tasks" }o--|| users : "createdBy"
+    "tasks" }o--|| users : "updatedBy"
+    "tasks" }o--|o users : "deletedBy"
     "tasks" }o--|| workspaces : "workspace"
     "tasks" }o--|o sources : "source"
     "tasks_history" |o--|| "HistoryAction" : "enum:action"
@@ -279,8 +296,14 @@ COMPLETED COMPLETED
     "tasks_history" }o--|| users : "user"
     "user_views" }o--|| users : "user"
     "user_views" }o--|o workspaces : "workspace"
+    "workspaces" }o--|| users : "createdBy"
+    "workspaces" }o--|| users : "updatedBy"
+    "workspaces" }o--|o users : "deletedBy"
     "workspaces" }o--|| pikuds : "pikud"
     "workspace_requests" |o--|| "WorkspaceRequestStatus" : "enum:status"
+    "workspace_requests" }o--|| users : "createdBy"
+    "workspace_requests" }o--|| users : "updatedBy"
+    "workspace_requests" }o--|o users : "deletedBy"
     "workspace_statuses" |o--|| "WorkspaceStatusType" : "enum:status_type"
     "workspace_statuses" }o--|| workspaces : "workspace"
 ```
