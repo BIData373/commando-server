@@ -27,7 +27,7 @@ export class TaskRowDto extends TaskFieldsDto {
     @Type(() => AssigneeStatusDto)
     otherAssignees: AssigneeStatusDto[]
 
-    @ExposeProperty({ type: Date, required: false })
+    @ExposeProperty({ type: Date, nullable: true })
     @Type(() => Date)
-    archivedAt?: Date
+    archivedAt: Date | null
 }

@@ -1,15 +1,15 @@
 import { Injectable } from '@nestjs/common';
-import { filter, keyBy, map, uniq } from 'lodash';
+import { keyBy, map, uniq } from 'lodash';
+import { chatUrl, notificationTemplate, vectorUrl } from '../../common/consts/env';
 import { renderTemplate } from '../../common/functions/template';
 import { PrismaService } from '../../common/prisma.service';
 import { PermissionType, Prisma, Task, User, WorkspaceStatus } from '../../types/prisma';
 import { MessageRelayService } from '../services/message-relay.service';
-import { WorkspaceWithPermissions } from '../workspace/types/workspace-with-permission.type';
 import { tagsConnectOrCreateArgs, tagsSetOrCreateArgs } from '../tag/functions/tag-args';
+import { WorkspaceWithPermissions } from '../workspace/types/workspace-with-permission.type';
 import { CreateTaskDto } from './dto/request/create-task.dto';
 import { UpdateTaskDto } from './dto/request/update-task.dto';
 import { taskAssigneeStatusesCreateArgs } from './functions/task-args';
-import { notificationTemplate, vectorUrl, chatUrl } from '../../common/consts/env';
 
 type AssigneeStatusInclude = {
   include: { assignee: { include: { users: true } }; status: true };
@@ -110,27 +110,26 @@ export class TaskService {
     return new Map(archivedUserAssigneeTask.map(a => [a.assigneeId, a.createdAt]))
   }
 
-  static isManager(workspace: WorkspaceWithPermissions, user: User) {
-    return (
-      workspace.permissions[0]?.type === PermissionType.MANAGER ||
-      !!user.info?.isBI
-    )
-  }
-
   static formatAssigneeStatus(
-    assigneeStatus: AssigneeStatusEntity,
     workspace: WorkspaceWithPermissions,
     user: User,
+    archivedIds: Map<number | null, Date>,
+    assigneeStatus?: AssigneeStatusEntity
   ) {
-    const isAssigned = assigneeStatus.assignee.users.some(u => u.id === user.id)
+    const isAssigned = assigneeStatus?.assignee?.users?.some(u => u.id === user.id)
 
-    const editable = (
-      (workspace.assigneeStatusEditable && isAssigned) ||
-      TaskService.isManager(workspace, user)
+    const archivedAt = archivedIds.get(assigneeStatus?.assigneeId ?? null) ?? archivedIds.get(null) ?? null
+
+    const editable = !!user.info?.isBI || (
+      ((
+        workspace.assigneeStatusEditable && isAssigned) ||
+        workspace.permissions[0]?.type === PermissionType.MANAGER
+      ) && !archivedAt
     )
 
     return {
       ...assigneeStatus,
+      archivedAt,
       editable
     }
   }
@@ -146,12 +145,12 @@ export class TaskService {
 
   static filterByArchivedAssignee<TTask extends TaskInclude>(
     task: TTask,
-    archiveIds: Map<number | null, Date>,
+    archivedIds: Map<number | null, Date>,
     isArchived?: boolean,
   ) {
     if (isArchived === undefined) return task.assigneeStatuses
 
-    const isWholeTaskArchived = archiveIds.has(null)
+    const isWholeTaskArchived = archivedIds.has(null)
 
     if (task.assigneeStatuses.length === 0) {
       return isWholeTaskArchived !== isArchived ? null : task.assigneeStatuses
@@ -159,8 +158,8 @@ export class TaskService {
 
     const activeAssignees = task.assigneeStatuses.filter(
       ({ assigneeId }) => isArchived
-        ? (isWholeTaskArchived || archiveIds.has(assigneeId))
-        : (!isWholeTaskArchived && !archiveIds.has(assigneeId))
+        ? (isWholeTaskArchived || archivedIds.has(assigneeId))
+        : (!isWholeTaskArchived && !archivedIds.has(assigneeId))
     )
 
     return activeAssignees.length === 0 ? null : activeAssignees
@@ -185,7 +184,7 @@ export class TaskService {
     return [{
       ...rest,
       assigneeStatuses: filteredAssignees.map(assigneeStatus =>
-        TaskService.formatAssigneeStatus(assigneeStatus, workspace, user)
+        TaskService.formatAssigneeStatus(workspace, user, archivedIds, assigneeStatus)
       ),
       workspace: TaskService.formatTaskWorkspace(workspace, user),
       lastMessage: messages[0]
@@ -341,50 +340,48 @@ export class TaskService {
     workspace: WorkspaceWithPermissions,
     user: User,
     onlyUserRows: boolean = false,
-    archiveIds: Map<number | null, Date>,
+    archivedIds: Map<number | null, Date>,
     isArchived?: boolean,
   ) {
     const { assigneeStatuses, messages, ...task } = originalTask
-    const activeAssignees = TaskService.filterByArchivedAssignee(originalTask, archiveIds, isArchived)
+    const activeAssignees = TaskService.filterByArchivedAssignee(originalTask, archivedIds, isArchived)
 
     if (!activeAssignees) return []
 
     if (!onlyUserRows && assigneeStatuses.length === 0) {
       return [{
         ...task,
+        ...TaskService.formatAssigneeStatus(workspace, user, archivedIds),
         assigneeId: null,
-        editable: TaskService.isManager(workspace, user),
         otherAssignees: [],
         rowKey: TaskService.formatTaskRowId(task.id),
         status: defaultStatus,
         lastMessage: messages[0],
-        archivedAt: archiveIds.get(null) ?? null
       }]
     }
 
     const formattedAssigneeStatuses = assigneeStatuses.map(
-      assigneeStatus => TaskService.formatAssigneeStatus(assigneeStatus, workspace, user)
+      assigneeStatus => TaskService.formatAssigneeStatus(workspace, user, archivedIds, assigneeStatus)
     )
 
     const activeAssigneeIds = new Set(activeAssignees.map(({ assigneeId }) => assigneeId))
 
     const formattedActiveAssignees = formattedAssigneeStatuses.filter(
-      ({ assigneeId }) => activeAssigneeIds.has(assigneeId)
+      ({ assigneeId }) => assigneeId && activeAssigneeIds.has(assigneeId)
     )
 
     const assigneeStatusesForRows = onlyUserRows
-      ? formattedActiveAssignees.filter(({ assignee }) => assignee.users.some(({ id }) => id === user.id))
+      ? formattedActiveAssignees.filter(({ assignee }) => assignee?.users.some(({ id }) => id === user.id))
       : formattedActiveAssignees
 
     return assigneeStatusesForRows
       .map(({ assigneeId, statusId, taskId, ...fields }) => ({
         ...task,
-        rowKey: TaskService.formatTaskRowId(task.id, fields.assignee.id),
+        rowKey: TaskService.formatTaskRowId(task.id, fields?.assignee?.id),
         assigneeId,
         ...fields,
         otherAssignees: formattedAssigneeStatuses.filter(current => current.assigneeId !== assigneeId),
-        lastMessage: messages[0],
-        archivedAt: archiveIds.get(assigneeId) ?? archiveIds.get(null) ?? null
+        lastMessage: messages[0]
       }))
   }
 
