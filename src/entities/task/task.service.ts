@@ -151,12 +151,16 @@ export class TaskService {
   ) {
     if (isArchived === undefined) return task.assigneeStatuses
 
+    const isWholeTaskArchived = archiveIds.has(null)
+
     if (task.assigneeStatuses.length === 0) {
-      return archiveIds.has(null) !== isArchived ? null : task.assigneeStatuses
+      return isWholeTaskArchived !== isArchived ? null : task.assigneeStatuses
     }
 
     const activeAssignees = task.assigneeStatuses.filter(
-      ({ assigneeId }) => isArchived ? archiveIds.has(assigneeId) : !archiveIds.has(assigneeId)
+      ({ assigneeId }) => isArchived
+        ? (isWholeTaskArchived || archiveIds.has(assigneeId))
+        : (!isWholeTaskArchived && !archiveIds.has(assigneeId))
     )
 
     return activeAssignees.length === 0 ? null : activeAssignees
@@ -290,7 +294,7 @@ export class TaskService {
 
   static workspaceArchiveWhere(isArchived?: boolean): Prisma.TaskWhereInput {
     return {
-      ...(!isArchived && {
+      ...(isArchived === false && {
         archivedWorkspaceAssigneeTask: {
           none: { assigneeId: null }
         }
@@ -353,7 +357,8 @@ export class TaskService {
         otherAssignees: [],
         rowKey: TaskService.formatTaskRowId(task.id),
         status: defaultStatus,
-        lastMessage: messages[0]
+        lastMessage: messages[0],
+        archivedAt: archiveIds.get(null) ?? null
       }]
     }
 
@@ -361,9 +366,15 @@ export class TaskService {
       assigneeStatus => TaskService.formatAssigneeStatus(assigneeStatus, workspace, user)
     )
 
+    const activeAssigneeIds = new Set(activeAssignees.map(({ assigneeId }) => assigneeId))
+
+    const formattedActiveAssignees = formattedAssigneeStatuses.filter(
+      ({ assigneeId }) => activeAssigneeIds.has(assigneeId)
+    )
+
     const assigneeStatusesForRows = onlyUserRows
-      ? activeAssignees.filter(({ assignee }) => assignee.users.some(({ id }) => id === user.id))
-      : activeAssignees
+      ? formattedActiveAssignees.filter(({ assignee }) => assignee.users.some(({ id }) => id === user.id))
+      : formattedActiveAssignees
 
     return assigneeStatusesForRows
       .map(({ assigneeId, statusId, taskId, ...fields }) => ({
@@ -373,7 +384,7 @@ export class TaskService {
         ...fields,
         otherAssignees: formattedAssigneeStatuses.filter(current => current.assigneeId !== assigneeId),
         lastMessage: messages[0],
-        archivedAt: archiveIds.get(assigneeId) ?? null
+        archivedAt: archiveIds.get(assigneeId) ?? archiveIds.get(null) ?? null
       }))
   }
 
@@ -426,7 +437,7 @@ export class TaskService {
       where: {
         assigneeStatuses: { some: { assignee: { users: { some: { id: user.id } } } } },
         ...TaskService.commonWhere,
-        ...(!isArchived && {
+        ...(isArchived === false && {
           archivedUserAssigneeTask: {
             none: {
               userId: user.id,
