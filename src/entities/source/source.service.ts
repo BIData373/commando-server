@@ -33,7 +33,7 @@ export class SourceService {
   ) { }
 
     async sendTaskCreatedNotifications(
-      { title: workspaceTitle, chatNotification, mailNotification }: Pick<Workspace, 'title' | 'chatNotification' | 'mailNotification'>,
+           { title: workspaceTitle, chatNotification, mailNotification }: Workspace,
       sourceName: string,
       recipients: string[],
       count: number,
@@ -146,7 +146,6 @@ export class SourceService {
     const [workspace, assigneesWithUsers] = await this.prisma.$transaction([
       this.prisma.workspace.findUniqueOrThrow({
         where: { id: workspaceId },
-        select: { title: true, chatNotification: true, mailNotification: true }
       }),
       this.prisma.assignee.findMany({
         where: { id: { in: assigneeIds } },
