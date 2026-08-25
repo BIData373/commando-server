@@ -110,21 +110,23 @@ export class TaskService {
     return new Map(archivedUserAssigneeTask.map(a => [a.assigneeId, a.createdAt]))
   }
 
+  static isManager(workspace: WorkspaceWithPermissions, user: User) {
+    return (
+      workspace.permissions[0]?.type === PermissionType.MANAGER ||
+      !!user.info?.isBI
+    )
+  }
+
   static formatAssigneeStatus(
     assigneeStatus: AssigneeStatusEntity,
     workspace: WorkspaceWithPermissions,
     user: User,
   ) {
-    const isManager = (
-      workspace.permissions[0]?.type === PermissionType.MANAGER ||
-      !!user.info?.isBI
-    )
-
     const isAssigned = assigneeStatus.assignee.users.some(u => u.id === user.id)
 
     const editable = (
       (workspace.assigneeStatusEditable && isAssigned) ||
-      isManager
+      TaskService.isManager(workspace, user)
     )
 
     return {
@@ -347,7 +349,7 @@ export class TaskService {
       return [{
         ...task,
         assigneeId: null,
-        editable: false,
+        editable: TaskService.isManager(workspace, user),
         otherAssignees: [],
         rowKey: TaskService.formatTaskRowId(task.id),
         status: defaultStatus,
