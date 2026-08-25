@@ -357,7 +357,8 @@ export class TaskService {
         otherAssignees: [],
         rowKey: TaskService.formatTaskRowId(task.id),
         status: defaultStatus,
-        lastMessage: messages[0]
+        lastMessage: messages[0],
+        archivedAt: archiveIds.get(null) ?? null
       }]
     }
 
