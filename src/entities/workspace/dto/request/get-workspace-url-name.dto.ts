@@ -44,4 +44,4 @@ export class GetOptionalWorkspaceUrlNameDto extends GetContextDto<Partial<IWorks
   urlName?: string;
 }
 
-export class GetNewWorkspaceUrlNameDto extends GetWorkspaceUrlNameMixin({ failIfExists: true }) { }
+export class GetNewWorkspaceUrlNameDto extends GetWorkspaceUrlNameMixin({ failIfExists: true, message: 'urlname-exists' }) { }

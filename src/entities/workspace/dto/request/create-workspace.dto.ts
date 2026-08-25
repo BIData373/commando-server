@@ -10,6 +10,7 @@ export class CreateWorkspaceDto extends GetNewWorkspaceUrlNameDto {
   @ApiProperty()
   @EntityExists('workspace', {
     failIfExists: true,
+    message: 'title-exists',
     findArgs: ({ value }) => ({
       where: { title: value, deletedAt: null }
     })
@@ -39,6 +40,6 @@ export class CreateWorkspaceDto extends GetNewWorkspaceUrlNameDto {
   mailNotification?: boolean;
 
   @ApiProperty()
-  @IdExists('pikud', { filterDeletedAt: true })
+  @IdExists('pikud', { filterDeletedAt: true, message: 'pikud-not-found' })
   pikudId: number;
 }
