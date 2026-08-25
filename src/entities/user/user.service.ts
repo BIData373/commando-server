@@ -5,7 +5,7 @@ import * as https from 'node:https';
 import { mirageEnabled, mirageKey, mirageUrl, mirageVersion } from '../../common/consts/env';
 import { formatUpnForEntity } from '../../common/functions/user';
 import { PrismaService } from '../../common/prisma.service';
-import { Prisma } from '../../types/prisma';
+import { Prisma, User } from '../../types/prisma';
 import { CreateUserDto } from './dto/request/create-user.dto';
 import { GetUserInfoDto } from './dto/request/get-user-info.dto';
 import { UpdateUserDto } from './dto/request/update-user.dto';
@@ -71,39 +71,55 @@ export class UserService {
       : Prisma.JsonNull
   }
 
-  static async upsertTx(tx: Prisma.TransactionClient, { upn, info }: CreateUserDto) {
+  static matchesExisting(existing: User | null | undefined, infoToSave: ReturnType<typeof UserService.formatInfoForSave>) {
+    return !!existing && isMatch(existing.info as object, infoToSave)
+  }
+
+  static async upsertTx(
+    tx: Prisma.TransactionClient,
+    { upn, info }: CreateUserDto,
+    preFetchedExisting?: User | null
+  ) {
     const infoToSave = UserService.formatInfoForSave(info)
     const strippedUpn = formatUpnForEntity(upn)
-
-    const existing = await tx.user.findFirst({ where: { upn: strippedUpn } })
-    if (existing && isMatch(existing.info as object, infoToSave)) {
-      return existing
-    }
 
     // Serialize concurrent upserts for the same stripped UPN
     // Lock is released when the transaction ends
     await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${strippedUpn}))`
 
+    const lockedExisting = await tx.user.findFirst({ where: { upn: strippedUpn } })
+    if (preFetchedExisting === undefined && UserService.matchesExisting(lockedExisting, infoToSave)) {
+      return lockedExisting
+    }
+
     const userToSave: Prisma.UserCreateInput = {
       upn: strippedUpn,
       info: {
         upn: strippedUpn,
-        ...(existing && typeof existing?.info === 'object'
-          ? existing?.info
+        ...(lockedExisting && typeof lockedExisting?.info === 'object'
+          ? lockedExisting?.info
           : {}
         ),
         ...(info ? infoToSave : {})
       }
     }
 
-    return existing
-      ? await tx.user.update({ where: { id: existing.id }, data: userToSave })
+    return lockedExisting
+      ? await tx.user.update({ where: { id: lockedExisting.id }, data: userToSave })
       : await tx.user.create({ data: userToSave })
   }
 
-  async upsert(dto: CreateUserDto) {
+  async upsert({ upn, info }: CreateUserDto) {
+    const infoToSave = UserService.formatInfoForSave(info)
+    const strippedUpn = formatUpnForEntity(upn)
+
+    const existing = await this.prisma.user.findFirst({ where: { upn: strippedUpn } })
+    if (UserService.matchesExisting(existing, infoToSave)) {
+      return existing
+    }
+
     return await this.prisma.$transaction(async tx => (
-      await UserService.upsertTx(tx, dto)
+      await UserService.upsertTx(tx, { upn, info }, existing)
     ))
   }
 
