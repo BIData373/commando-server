@@ -1,8 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { filter, keyBy, map, uniq } from 'lodash';
 import { renderTemplate } from '../../common/functions/template';
 import { PrismaService } from '../../common/prisma.service';
-import { PermissionType, Prisma, Task, User, WorkspaceStatus } from '../../types/prisma';
+import { PermissionType, Prisma, Task, User } from '../../types/prisma';
 import { MessageRelayService } from '../services/message-relay.service';
 import { WorkspaceWithPermissions } from '../workspace/types/workspace-with-permission.type';
 import { tagsConnectOrCreateArgs, tagsSetOrCreateArgs } from '../tag/functions/tag-args';
@@ -171,7 +170,7 @@ export class TaskService {
     archivedIds: Map<number | null, Date>,
     isArchived?: boolean,
   ) {
-    const { assigneeStatuses, messages,status, ...rest } = originalTask;
+    const { assigneeStatuses, messages, status, ...rest } = originalTask;
 
     const activeAssignees = TaskService.filterByArchivedAssignee(originalTask, archivedIds, isArchived)
     if (!activeAssignees) {
@@ -180,9 +179,12 @@ export class TaskService {
 
     const filteredAssignees = isArchived === undefined ? assigneeStatuses : activeAssignees
 
+    const isManager = TaskService.isManager(workspace, user)
+
     return [{
       ...rest,
       status,
+      ...(filteredAssignees.length === 0 && { editable: isManager }),
       assigneeStatuses: filteredAssignees.map(assigneeStatus =>
         TaskService.formatAssigneeStatus(assigneeStatus, workspace, user)
       ),
@@ -246,6 +248,9 @@ export class TaskService {
         updatedBy: userId,
         workspace: {
           connect: { id: workspaceId }
+        },
+        status: {
+          connect: { id: notStartedStatus.id }
         },
         ...(typeof sourceId === 'number' && {
           source: {
@@ -336,14 +341,13 @@ export class TaskService {
 
   static extractTaskToRows<TTask extends TaskInclude>(
     originalTask: TTask,
-    defaultStatus: WorkspaceStatus,
     workspace: WorkspaceWithPermissions,
     user: User,
     onlyUserRows: boolean = false,
     archiveIds: Map<number | null, Date>,
     isArchived?: boolean,
   ) {
-    const { assigneeStatuses, messages,status, ...task } = originalTask
+    const { assigneeStatuses, messages, status, ...task } = originalTask
     const activeAssignees = TaskService.filterByArchivedAssignee(originalTask, archiveIds, isArchived)
 
     if (!activeAssignees) return []
@@ -356,7 +360,7 @@ export class TaskService {
         editable: TaskService.isManager(workspace, user),
         otherAssignees: [],
         rowKey: TaskService.formatTaskRowId(task.id),
-        status: status ?? defaultStatus,
+        status,
         lastMessage: messages[0]
       }]
     }
@@ -383,12 +387,10 @@ export class TaskService {
 
   async findRowsInWorkspace(workspace: WorkspaceWithPermissions, user: User, isArchived?: boolean) {
     const tasks = await this.findInWorkspace(workspace, isArchived);
-    const [defaultStatus] = await this.findDefaultStatusInWorkspaces(workspace.id);
 
     return tasks.map(task =>
       TaskService.extractTaskToRows(
         task,
-        defaultStatus,
         workspace,
         user,
         false,
@@ -463,14 +465,9 @@ export class TaskService {
   async findPersonalRows(user: User, isArchived?: boolean) {
     const tasks = await this.findPersonal(user, isArchived);
 
-    const workspaceIds = uniq(map(tasks, 'workspaceId'));
-    const defaultStatuses = await this.findDefaultStatusInWorkspaces(...workspaceIds);
-    const defaultStatusesMap = keyBy(defaultStatuses, 'workspaceId');
-
     return tasks.map(task =>
       TaskService.extractTaskToRows(
         task,
-        defaultStatusesMap[task.workspace.id],
         task.workspace,
         user,
         true,
@@ -501,15 +498,7 @@ export class TaskService {
       isArchived
     );
 
-    if (!formatted) {
-      return null
-    }
-
-    if (formatted.assigneeStatuses.length > 0) {
-      return formatted
-    }
-
-    return { ...formatted, status: task.status };
+    return formatted ?? null;
   }
 
   async update(
