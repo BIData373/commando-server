@@ -71,7 +71,10 @@ export class UserService {
       : Prisma.JsonNull
   }
 
-  static matchesExisting(existing: User | null | undefined, infoToSave: ReturnType<typeof UserService.formatInfoForSave>) {
+  static matchesExisting(
+    existing: User | null | undefined,
+    infoToSave: ReturnType<typeof UserService.formatInfoForSave>
+  ): existing is User {
     return !!existing && isMatch(existing.info as object, infoToSave)
   }
 
