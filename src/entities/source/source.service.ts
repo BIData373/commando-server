@@ -1,13 +1,15 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { flatMap, intersection, map, uniq } from 'lodash';
+import { countBy, flatMap, intersection, map, uniq } from 'lodash';
+import { chatUrl, discussionNotificationTemplate, vectorUrl } from '../../common/consts/env';
 import { decodeMulterFilename } from '../../common/functions/string';
+import { renderTemplate } from '../../common/functions/template';
 import { PrismaService } from '../../common/prisma.service';
 import { SocketGateway } from '../../socket/socket.gateway';
 import { SocketEventType } from '../../socket/types/socket-event-type.enum';
 import { TaskRunnerService } from '../../task-runner/task-runner.service';
-import { DeadlineType, ExtractionStatus, Prisma, Source, TaskCreationType, User } from '../../types/prisma';
-import { MessageRelayService } from '../services/message-relay.service';
+import { DeadlineType, ExtractionStatus, Prisma, Source, TaskCreationType, User, Workspace } from '../../types/prisma';
 import { S3Service } from '../s3/s3.service';
+import { MessageRelayService } from '../services/message-relay.service';
 import { tagsConnectOrCreateArgs, tagsSetOrCreateArgs } from '../tag/functions/tag-args';
 import { taskAssigneeStatusesCreateArgs } from '../task/functions/task-args';
 import { TaskService } from '../task/task.service';
@@ -15,8 +17,6 @@ import { CreateSourceDto } from './dto/request/create-source.dto';
 import { GetAIExtractionCallbackDto } from './dto/request/get-ai-extraction-callback.dto';
 import { UpdateSourceDto } from './dto/request/update-source.dto';
 import { SourceDto } from './dto/response/source.dto';
-import { chatUrl, notificationTemplate, vectorUrl } from '../../common/consts/env';
-import { renderTemplate } from '../../common/functions/template';
 
 @Injectable()
 export class SourceService {
@@ -32,18 +32,18 @@ export class SourceService {
     private readonly messageRelayService: MessageRelayService,
   ) { }
 
-    private async sendTaskCreatedNotifications(
-      workspace: { title: string; chatNotification: boolean; mailNotification: boolean },
+    async sendTaskCreatedNotifications(
+      { title: workspaceTitle, chatNotification, mailNotification }: Pick<Workspace, 'title' | 'chatNotification' | 'mailNotification'>,
       sourceName: string,
       recipients: string[],
       count: number,
       date?: Date
     ) {
-      const title = `קיבלת הנחיות חדשות מאת: ${workspace.title}`
+      const title = `קיבלת הנחיות חדשות מאת: ${workspaceTitle}`
       const tasksUrl = `${vectorUrl}/personal/tasks`
       const source = `מתוך דיון: ${sourceName} ${date?.toLocaleDateString() ?? ''}`
-  
-      if (workspace.chatNotification) {
+
+      if (chatNotification) {
         const chatMessage = `${source}, נוצרו ${count} הנחיות באחריותך\n
          לצפייה בהנחיות: ${tasksUrl}`
         await this.messageRelayService.sendNotification(
@@ -53,9 +53,9 @@ export class SourceService {
           chatMessage
         )
       }
-      if (workspace.mailNotification) {
-        const html = renderTemplate(notificationTemplate!, {
-          workspaceName: workspace.title,
+      if (mailNotification) {
+        const html = renderTemplate(discussionNotificationTemplate!, {
+          workspaceName: workspaceTitle,
           source,
           count,
           tasksUrl,
@@ -143,7 +143,7 @@ export class SourceService {
     if (!assigneeIds.length) return;
 
     // Fetch workspace notification settings and assignee-to-user mappings in parallel
-    const [workspace, assigneesWithUsers] = await Promise.all([
+    const [workspace, assigneesWithUsers] = await this.prisma.$transaction([
       this.prisma.workspace.findUniqueOrThrow({
         where: { id: workspaceId },
         select: { title: true, chatNotification: true, mailNotification: true }
@@ -154,25 +154,21 @@ export class SourceService {
       })
     ]);
 
-    // Map each assignee ID to its linked user UPNs for quick lookup
+    // Map each assignee ID to its linked user UPNs
     const upnsByAssigneeId = new Map(
       assigneesWithUsers.map(a => [a.id, a.users.map(u => u.upn)])
     );
 
-    // Count unique tasks per user — Set ensures a user is counted once per task
-    const tasksPerUser = new Map<string, number>();
-    for (const assignees of taskAssigneeIds) {
-      const taskUpns = new Set(
-        flatMap(assignees, id => upnsByAssigneeId.get(id) ?? [])
-      );
-      for (const upn of taskUpns) {
-        tasksPerUser.set(upn, (tasksPerUser.get(upn) ?? 0) + 1);
-      }
-    }
+    // Count unique tasks per user — uniq ensures a user with multiple assignees on the same task counts once
+    const tasksPerUser = countBy(
+      flatMap(taskAssigneeIds, assignees =>
+        uniq(flatMap(assignees, id => upnsByAssigneeId.get(id) ?? []))
+      )
+    );
 
     // Send all notifications in parallel — one per user
     await Promise.all(
-      [...tasksPerUser].map(([upn, count]) =>
+      Object.entries(tasksPerUser).map(([upn, count]) =>
         this.sendTaskCreatedNotifications(workspace, sourceName, [upn], count, date)
       )
     );
