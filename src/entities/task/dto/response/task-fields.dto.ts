@@ -33,8 +33,8 @@ export class TaskFieldsDto extends IdMetaFieldsDto {
   @ExposeProperty()
   workspaceId: number;
 
-  @ExposeProperty({ type: Number, nullable: true })
-  statusId: number | null;
+  @ExposeProperty()
+  statusId: number;
 
   @ExposeProperty({ type: SourceDto, nullable: true })
   @Type(() => SourceDto)
@@ -51,4 +51,11 @@ export class TaskFieldsDto extends IdMetaFieldsDto {
   @ExposeProperty()
   @Transform(({ obj }: { obj: TaskMessageCountPayload }) => obj?._count?.messages)
   messageCount: number
+
+  @ExposeProperty()
+  editable: boolean;
+
+  @ExposeProperty({ type: Date, nullable: true })
+  @Type(() => Date)
+  archivedAt: Date | null;
 }
