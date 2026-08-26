@@ -96,10 +96,24 @@ export class AssigneeService {
   }
 
   async remove(id: number, deletedBy: number) {
-    return await this.prisma.assignee.update({
-      where: { id },
-      data: { deletedAt: new Date(), deletedBy },
-      include: AssigneeService.include
+    return await this.prisma.$transaction(async (tx) => {
+      // 1. Soft delete the assignee
+      const deletedAssignee = await tx.assignee.update({
+        where: { id },
+        data: { deletedAt: new Date(), deletedBy },
+        include: AssigneeService.include
+      })
+
+      const updateAssignee = {
+        where: { assigneeId: id },
+        data: { assigneeId: null }
+      }
+
+      await tx.archivedUserAssigneeTask.updateMany(updateAssignee)
+
+      await tx.archivedWorkspaceAssigneeTask.updateMany(updateAssignee)
+
+      return deletedAssignee
     });
   }
 }
