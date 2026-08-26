@@ -179,7 +179,7 @@ COMPLETED COMPLETED
     Int deleted_by "❓"
     Int workspace_id 
     Int source_id "❓"
-    Int status_id "❓"
+    Int status_id 
     }
   
 
@@ -274,7 +274,7 @@ COMPLETED COMPLETED
     "tasks" |o--|| "TaskCreationType" : "enum:creation_type"
     "tasks" }o--|| workspaces : "workspace"
     "tasks" }o--|o sources : "source"
-    "tasks" }o--|o workspace_statuses : "status"
+    "tasks" }o--|| workspace_statuses : "status"
     "tasks_history" |o--|| "HistoryAction" : "enum:action"
     "tasks_history" }o--|| tasks : "task"
     "tasks_history" }o--|| workspaces : "workspace"

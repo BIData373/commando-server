@@ -517,19 +517,15 @@ export class TaskService {
     { assignees, tags, context, sourceId, statusId, ...dto }: UpdateTaskDto,
     updatedBy: number
   ) {
-    const [notStartedStatus] = assignees !== undefined
+    const hasAssignees = assignees !== undefined && assignees.length > 0;
+
+    const [notStartedStatus] = hasAssignees
       ? await this.findDefaultStatusInWorkspaces(workspaceId)
       : [null];
 
-    const hasAssignees = assignees !== undefined && assignees.length > 0;
-
-    const status = hasAssignees
-      ? { disconnect: true }
-      : assignees !== undefined
-        ? { connect: { id: notStartedStatus!.id } }
-        : statusId !== undefined
-          ? { connect: { id: statusId } }
-          : undefined;
+    const status = statusId !== undefined
+      ? { connect: { id: statusId } }
+      : undefined;
 
     const assigneeStatuses = assignees && {
       deleteMany: !hasAssignees
