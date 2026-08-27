@@ -98,33 +98,37 @@ export class AssigneeService {
   async remove(id: number, deletedBy: number) {
     const searchAssignee = { where: { assigneeId: id } }
 
-    const archivedWorkspaceAssignee = await this.prisma.archivedWorkspaceAssigneeTask.findMany(searchAssignee)
-    if (archivedWorkspaceAssignee.length > 0) {
-      const [archivedWorkspaceTask] = archivedWorkspaceAssignee
-
-      const assigneeTasks = await this.prisma.assigneeTaskStatus.findMany({
+    return await this.prisma.$transaction(async tsx => {
+      const assigneeTasks = await tsx.assigneeTaskStatus.findMany({
         where: {
-          taskId: archivedWorkspaceTask.taskId,
+          task: {
+            is: {
+              archivedWorkspaceAssigneeTask: {
+                some: {
+                  assigneeId: id
+                }
+              }
+            }
+          },
           assignee: { deletedAt: null }
         },
       })
 
       if (assigneeTasks.length > 1) {
-        await this.prisma.archivedWorkspaceAssigneeTask.deleteMany(searchAssignee)
+        await tsx.archivedWorkspaceAssigneeTask.deleteMany(searchAssignee)
       } else {
         const updateAssignee = {
           ...searchAssignee,
           data: { assigneeId: null }
         }
-        await this.prisma.archivedWorkspaceAssigneeTask.updateMany(updateAssignee)
+        await tsx.archivedWorkspaceAssigneeTask.updateMany(updateAssignee)
       }
-    }
 
-
-    return await this.prisma.assignee.update({
-      where: { id },
-      data: { deletedAt: new Date(), deletedBy },
-      include: AssigneeService.include
+      return await tsx.assignee.update({
+        where: { id },
+        data: { deletedAt: new Date(), deletedBy },
+        include: AssigneeService.include
+      })
     })
   }
 }
