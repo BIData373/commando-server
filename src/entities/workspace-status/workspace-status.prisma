@@ -8,6 +8,7 @@ model WorkspaceStatus {
   workspace   Workspace @relation(fields: [workspaceId], references: [id])
 
   assigneeTaskStatuses AssigneeTaskStatus[]
+  tasks                Task[]
 
   @@map("workspace_statuses")
 }

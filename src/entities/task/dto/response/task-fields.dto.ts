@@ -6,6 +6,7 @@ import { SourceDto } from '../../../source/dto/response/source.dto';
 import { TagDto } from '../../../tag/dto/response/tag.dto';
 import { MessageDto } from '../../../message/dto/response/message.dto';
 import { TaskMessageCountPayload } from '../../types/tasks-payload.type';
+import { WorkspaceStatusDto } from '../../../workspace-status/dto/response/workspace-status.dto';
 
 @Exclude()
 export class TaskFieldsDto extends IdMetaFieldsDto {
@@ -33,6 +34,10 @@ export class TaskFieldsDto extends IdMetaFieldsDto {
   @ExposeProperty()
   workspaceId: number;
 
+  @ExposeProperty({ type: WorkspaceStatusDto })
+  @Type(() => WorkspaceStatusDto)
+  status: WorkspaceStatusDto;
+
   @ExposeProperty({ type: SourceDto, nullable: true })
   @Type(() => SourceDto)
   source: SourceDto | null;
@@ -48,4 +53,11 @@ export class TaskFieldsDto extends IdMetaFieldsDto {
   @ExposeProperty()
   @Transform(({ obj }: { obj: TaskMessageCountPayload }) => obj?._count?.messages)
   messageCount: number
+
+  @ExposeProperty()
+  editable: boolean;
+
+  @ExposeProperty({ type: Date, nullable: true })
+  @Type(() => Date)
+  archivedAt: Date | null;
 }

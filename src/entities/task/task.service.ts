@@ -1,9 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { keyBy, map, uniq } from 'lodash';
 import { chatUrl, notificationTemplate, vectorUrl } from '../../common/consts/env';
 import { renderTemplate } from '../../common/functions/template';
 import { PrismaService } from '../../common/prisma.service';
-import { PermissionType, Prisma, Task, User, WorkspaceStatus } from '../../types/prisma';
+import { PermissionType, Prisma, Task, User } from '../../types/prisma';
 import { MessageRelayService } from '../services/message-relay.service';
 import { tagsConnectOrCreateArgs, tagsSetOrCreateArgs } from '../tag/functions/tag-args';
 import { WorkspaceWithPermissions } from '../workspace/types/workspace-with-permission.type';
@@ -18,7 +17,7 @@ type AssigneeStatusInclude = {
 type AssigneeStatusEntity = Prisma.AssigneeTaskStatusGetPayload<AssigneeStatusInclude>
 
 type TaskInclude = Prisma.TaskGetPayload<{
-  include: { assigneeStatuses: AssigneeStatusInclude, source: true, tags: true, messages: true }
+  include: { assigneeStatuses: AssigneeStatusInclude, source: true, tags: true, messages: true, status: true }
 }>
 
 type TaskArchivedWorkspaceAssigneeInclude = Prisma.ArchivedWorkspaceAssigneeTaskGetPayload<{}>
@@ -74,6 +73,7 @@ export class TaskService {
         take: 1,
       },
       ...TaskService.includeMessageCount,
+      status: true,
       assigneeStatuses: {
         where: {
           assignee: {
@@ -172,7 +172,7 @@ export class TaskService {
     archivedIds: Map<number | null, Date>,
     isArchived?: boolean,
   ) {
-    const { assigneeStatuses, messages, ...rest } = originalTask;
+    const { assigneeStatuses, messages, status, ...rest } = originalTask;
 
     const activeAssignees = TaskService.filterByArchivedAssignee(originalTask, archivedIds, isArchived)
     if (!activeAssignees) {
@@ -183,6 +183,8 @@ export class TaskService {
 
     return [{
       ...rest,
+      status,
+      ...(filteredAssignees.length === 0 && TaskService.formatAssigneeStatus(workspace, user, archivedIds)),
       assigneeStatuses: filteredAssignees.map(assigneeStatus =>
         TaskService.formatAssigneeStatus(workspace, user, archivedIds, assigneeStatus)
       ),
@@ -247,6 +249,9 @@ export class TaskService {
         workspace: {
           connect: { id: workspaceId }
         },
+        status: {
+          connect: { id: notStartedStatus.id }
+        },
         ...(typeof sourceId === 'number' && {
           source: {
             connect: {
@@ -254,7 +259,7 @@ export class TaskService {
             }
           }
         }),
-        ...(assignees && {
+        ...(assignees?.length && {
           assigneeStatuses: taskAssigneeStatusesCreateArgs(assignees, notStartedStatus.id)
         }),
         ...(tags && {
@@ -335,14 +340,13 @@ export class TaskService {
 
   static extractTaskToRows<TTask extends TaskInclude>(
     task: TTask,
-    defaultStatus: WorkspaceStatus,
     workspace: WorkspaceWithPermissions,
     user: User,
     onlyUserRows: boolean = false,
     archivedIds: Map<number | null, Date>,
     isArchived?: boolean,
   ) {
-    const { assigneeStatuses, messages, ...taskFields } = task
+    const { assigneeStatuses, messages, status, ...taskFields } = task
     const activeAssignees = TaskService.filterByArchivedAssignee(task, archivedIds, isArchived)
 
     if (!activeAssignees) {
@@ -355,12 +359,13 @@ export class TaskService {
     }
 
     if (!onlyUserRows && assigneeStatuses.length === 0) {
+
       return [{
         ...fields,
         ...TaskService.formatAssigneeStatus(workspace, user, archivedIds),
         otherAssignees: [],
         rowKey: TaskService.formatTaskRowId(taskFields.id),
-        status: defaultStatus
+        status,
       }]
     }
 
@@ -389,12 +394,10 @@ export class TaskService {
 
   async findRowsInWorkspace(workspace: WorkspaceWithPermissions, user: User, isArchived?: boolean) {
     const tasks = await this.findInWorkspace(workspace, isArchived);
-    const [defaultStatus] = await this.findDefaultStatusInWorkspaces(workspace.id);
 
     return tasks.map(task =>
       TaskService.extractTaskToRows(
         task,
-        defaultStatus,
         workspace,
         user,
         false,
@@ -467,14 +470,9 @@ export class TaskService {
   async findPersonalRows(user: User, isArchived?: boolean) {
     const tasks = await this.findPersonal(user, isArchived);
 
-    const workspaceIds = uniq(map(tasks, 'workspaceId'));
-    const defaultStatuses = await this.findDefaultStatusInWorkspaces(...workspaceIds);
-    const defaultStatusesMap = keyBy(defaultStatuses, 'workspaceId');
-
     return tasks.flatMap(task =>
       TaskService.extractTaskToRows(
         task,
-        defaultStatusesMap[task.workspace.id],
         task.workspace,
         user,
         true,
@@ -508,27 +506,50 @@ export class TaskService {
       isArchived
     );
 
-    if (!formatted) {
-      return null
-    }
-
-    if (formatted.assigneeStatuses.length > 0) {
-      return formatted
-    }
-
-    const [defaultStatus] = await this.findDefaultStatusInWorkspaces(task.workspaceId);
-
-    return { ...formatted, status: defaultStatus };
+    return formatted ?? null;
   }
 
   async update(
     { id, workspaceId }: Task,
-    { assignees, tags, context, sourceId, ...dto }: UpdateTaskDto,
+    { assignees, tags, context, sourceId, statusId, ...dto }: UpdateTaskDto,
     updatedBy: number
   ) {
-    const [notStartedStatus] = assignees !== undefined && assignees.length > 0
+    const hasAssignees = assignees !== undefined && assignees.length > 0;
+
+    const [notStartedStatus] = hasAssignees
       ? await this.findDefaultStatusInWorkspaces(workspaceId)
       : [null];
+
+    const status = statusId !== undefined
+      ? { connect: { id: statusId } }
+      : undefined;
+
+    const assigneeStatuses = assignees && {
+      deleteMany: !hasAssignees
+        ? {}
+        : {
+          assigneeId: { notIn: assignees.map(a => a.id) }
+        },
+      ...(hasAssignees && {
+        upsert: assignees.map(({
+          id: assigneeId,
+          description,
+          statusId: assigneeStatusId
+        }) => ({
+          where: { taskId_assigneeId: { taskId: id, assigneeId } },
+          create: {
+            assigneeId,
+            description,
+            statusId: assigneeStatusId ?? notStartedStatus!.id
+          },
+          update: {
+            assigneeId,
+            description,
+            statusId: assigneeStatusId
+          }
+        }))
+      })
+    }
 
     return await this.prisma.task.update({
       where: { id },
@@ -539,26 +560,8 @@ export class TaskService {
             ? { disconnect: true }
             : { connect: { id: sourceId } }
         }),
-        ...(assignees !== undefined && {
-          assigneeStatuses: {
-            deleteMany: {
-              assigneeId: { notIn: assignees.map(a => a.id) }
-            },
-            upsert: assignees.map(({ id: assigneeId, description, statusId }) => ({
-              where: { taskId_assigneeId: { taskId: id, assigneeId } },
-              create: {
-                assigneeId,
-                description,
-                statusId: statusId ?? notStartedStatus!.id
-              },
-              update: {
-                assigneeId,
-                ...(description !== undefined && { description }),
-                ...(statusId !== undefined && { statusId })
-              }
-            }))
-          }
-        }),
+        status,
+        assigneeStatuses,
         ...(tags !== undefined && {
           tags: tagsSetOrCreateArgs(tags, workspaceId, updatedBy)
         }),

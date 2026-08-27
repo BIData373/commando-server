@@ -102,6 +102,7 @@ export class SourceService {
             create: tasks.map(({ assignees, tags: taskTags, ...taskDto }) => ({
               ...taskDto,
               workspaceId,
+              statusId: notStartedStatusId!,
               creationType: TaskCreationType.HUMAN,
               createdBy: userId,
               updatedBy: userId,
@@ -317,6 +318,7 @@ export class SourceService {
               dueDate: deadlineDate ? new Date(deadlineDate) : undefined,
               creationType: TaskCreationType.AI,
               workspaceId: source.workspaceId,
+              statusId: notStartedStatus.id,
               sourceId: source.id,
               createdBy: source.createdBy,
               updatedBy: source.createdBy,
