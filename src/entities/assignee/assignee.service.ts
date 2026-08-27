@@ -115,23 +115,26 @@ export class AssigneeService {
       })
 
       for (const { taskId, _count } of assigneeTaskCounts) {
+        const assigneeTask = { ...searchAssignee, taskId }
+
         const where = {
           where: {
             taskId_assigneeId: {
-              ...searchAssignee,
-              taskId
+              ...assigneeTask
             }
           },
         }
+
+        await tsx.archivedUserAssigneeTask.deleteMany({
+          where: { ...assigneeTask },
+        })
 
         if (_count.assigneeId > 1) {
           await tsx.archivedWorkspaceAssigneeTask.delete(where);
         } else {
           await tsx.archivedWorkspaceAssigneeTask.update({
             ...where,
-            data: {
-              assigneeId: null,
-            },
+            data: { assigneeId: null }
           })
         }
       }
