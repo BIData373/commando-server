@@ -417,7 +417,9 @@ export class TaskService {
         ...TaskService.baseInclude(),
         archivedWorkspaceAssigneeTask: true
       },
-      orderBy: TaskService.orderBy
+      // Extraction order - the user reviews and edits a source's tasks in the order the AI produced
+      // them, so oldest first. Not TaskService.orderBy, which is newest first.
+      orderBy: { id: 'asc' }
     });
   }
 
