@@ -1,4 +1,13 @@
-import { CreateErrorDto } from '../../../../common/dto/response/error.dto';
-import { WorkspaceError } from '../../consts/workspace-error';
+import { ErrorDtoMixin } from '../../../../common/dto/response/error-dto-mixin.dto';
+import { WorkspaceError } from '../../enum/workspace-error';
 
-export class WorkspaceErrorDto extends CreateErrorDto(WorkspaceError) { }
+export class CreateWorkspaceErrorDto extends ErrorDtoMixin([
+  WorkspaceError.URL_NAME_EXISTS,
+  WorkspaceError.TITLE_EXISTS,
+  WorkspaceError.PIKUD_NOT_FOUND,
+]) { }
+
+export class UpdateWorkspaceErrorDto extends ErrorDtoMixin([
+  WorkspaceError.URL_NAME_EXISTS,
+  WorkspaceError.TITLE_EXISTS,
+]) { }

@@ -5,7 +5,7 @@ import { IsNotEmptyString } from '../../../../common/decorators/is-not-empty-str
 import { IsUrlName } from '../../../../common/decorators/is-url-name.decorator';
 import { GetContextDto } from '../../../../common/dto/request/get-context.dto';
 import { IContext } from '../../../../common/interfaces/context.interface';
-import { WorkspaceError } from '../../consts/workspace-error';
+import { WorkspaceError } from '../../enum/workspace-error';
 import { WORKSPACE_TITLE_MAX_LENGTH } from '../../consts/workspace-max-length';
 import { IWorkspaceContext } from '../../interfaces/workspace-context.interface';
 import { GetWorkspaceFieldsDto } from './get-workspace-fields.dto';

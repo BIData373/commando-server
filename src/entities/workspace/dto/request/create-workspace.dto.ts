@@ -3,7 +3,7 @@ import { IsBoolean, IsOptional, IsString, Max, MaxLength } from 'class-validator
 import { EntityExists } from '../../../../common/decorators/entity-exists.decorator';
 import { IdExists } from '../../../../common/decorators/id-exists.decorator';
 import { IsNotEmptyString } from '../../../../common/decorators/is-not-empty-string.decorator';
-import { WorkspaceError } from '../../consts/workspace-error';
+import { WorkspaceError } from '../../enum/workspace-error';
 import { WORKSPACE_TITLE_MAX_LENGTH } from '../../consts/workspace-max-length';
 import { GetNewWorkspaceUrlNameDto } from './get-workspace-url-name.dto';
 

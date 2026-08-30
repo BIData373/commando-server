@@ -1,8 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-export function CreateErrorDto<T extends Record<string, string>>(enumType: T) {
-  const values = Object.values(enumType);
-
+export function ErrorDtoMixin<T extends readonly string[]>(messages: T) {
   class CustomErrorDto {
     @ApiProperty({
       type: Number,
@@ -11,11 +9,11 @@ export function CreateErrorDto<T extends Record<string, string>>(enumType: T) {
     statusCode: number;
 
     @ApiProperty({
-      enum: enumType,
-      example: values[0],
+      enum: messages as unknown as string[],
+      example: messages[0],
       description: 'Specific error code key',
     })
-    message: T[keyof T];
+    message: T[number];
 
     @ApiProperty({
       type: String,

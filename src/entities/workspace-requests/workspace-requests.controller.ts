@@ -6,7 +6,7 @@ import { BIGuard } from '../../common/guards/bi.guard';
 import { CreateWorkspaceRequestDto } from './dto/request/create-workspace-request.dto';
 import { GetWorkspaceRequestIdDto } from './dto/request/get-workspace-request-id.dto';
 import { UpdateWorkspaceRequestDto } from './dto/request/update-workspace-request.dto';
-import { WorkspaceRequestErrorDto } from './dto/response/workspace-request-error.dto';
+import { CreateWorkspaceRequestErrorDto, UpdateWorkspaceRequestErrorDto, WorkspaceRequestNotFoundErrorDto } from './dto/response/workspace-request-error.dto';
 import { WorkspaceRequestDto } from './dto/response/workspace-request.dto';
 import { WorkspaceRequestsService } from './workspace-requests.service';
 
@@ -18,7 +18,7 @@ export class WorkspaceRequestsController {
   @ApiBody({ type: CreateWorkspaceRequestDto })
   @Post()
   @ApiCreatedResponse({ type: WorkspaceRequestDto })
-  @ApiBadRequestResponse({ type: WorkspaceRequestErrorDto })
+  @ApiBadRequestResponse({ type: CreateWorkspaceRequestErrorDto })
   @TransformPlainToInstance(WorkspaceRequestDto)
   async create(
     @Req() { user }: Request,
@@ -41,7 +41,7 @@ export class WorkspaceRequestsController {
   @ApiParam({ name: 'id', type: Number })
   @Get(':id')
   @ApiOkResponse({ type: WorkspaceRequestDto })
-  @ApiBadRequestResponse({ type: WorkspaceRequestErrorDto })
+  @ApiBadRequestResponse({ type: WorkspaceRequestNotFoundErrorDto })
   @TransformPlainToInstance(WorkspaceRequestDto)
   async findOne(
     @Param() { id }: GetWorkspaceRequestIdDto
@@ -55,7 +55,7 @@ export class WorkspaceRequestsController {
   @ApiBody({ type: UpdateWorkspaceRequestDto })
   @Patch(':id')
   @ApiOkResponse({ type: WorkspaceRequestDto })
-  @ApiBadRequestResponse({ type: WorkspaceRequestErrorDto })
+  @ApiBadRequestResponse({ type: UpdateWorkspaceRequestErrorDto })
   @TransformPlainToInstance(WorkspaceRequestDto)
   async update(
     @Req() { user }: Request,
@@ -70,7 +70,7 @@ export class WorkspaceRequestsController {
   @ApiParam({ name: 'id', type: Number })
   @Delete(':id')
   @ApiOkResponse({ type: WorkspaceRequestDto })
-  @ApiBadRequestResponse({ type: WorkspaceRequestErrorDto })
+  @ApiBadRequestResponse({ type: WorkspaceRequestNotFoundErrorDto })
   @TransformPlainToInstance(WorkspaceRequestDto)
   async remove(
     @Req() { user }: Request,

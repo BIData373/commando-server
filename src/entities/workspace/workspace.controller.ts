@@ -8,7 +8,7 @@ import { CreateWorkspaceDto } from './dto/request/create-workspace.dto';
 import { GetManagerWorkspaceIdDto, GetWorkspaceIdDto } from './dto/request/get-workspace-id.dto';
 import { GetOptionalWorkspaceUrlNameDto } from './dto/request/get-workspace-url-name.dto';
 import { UpdateWorkspaceDto } from './dto/request/update-workspace.dto';
-import { WorkspaceErrorDto } from './dto/response/workspace-error.dto';
+import { CreateWorkspaceErrorDto, UpdateWorkspaceErrorDto } from './dto/response/workspace-error.dto';
 import { WorkspaceWithPermissionDto } from './dto/response/workspace-with-permission.dto';
 import { WorkspaceDto } from './dto/response/workspace.dto';
 import { WorkspaceService } from './workspace.service';
@@ -22,7 +22,7 @@ export class WorkspaceController {
   @ApiBody({ type: CreateWorkspaceDto })
   @Post()
   @ApiCreatedResponse({ type: WorkspaceDto })
-  @ApiBadRequestResponse({ type: WorkspaceErrorDto })
+  @ApiBadRequestResponse({ type: CreateWorkspaceErrorDto })
   @TransformPlainToInstance(WorkspaceDto)
   async create(
     @Req() { user }: Request,
@@ -73,7 +73,7 @@ export class WorkspaceController {
   
   @Patch(':id')
   @ApiOkResponse({ type: WorkspaceDto })
-  @ApiBadRequestResponse({ type: WorkspaceErrorDto })
+  @ApiBadRequestResponse({ type: UpdateWorkspaceErrorDto })
   @TransformPlainToInstance(WorkspaceDto)
   async update(
     @Req() { user }: Request,
