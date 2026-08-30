@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req, UseGuards, UseInterceptors } from '@nestjs/common';
-import { ApiBody, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery } from '@nestjs/swagger';
+import { ApiBadRequestResponse, ApiBody, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { TransformPlainToInstance } from 'class-transformer';
 import { Request } from 'express';
 import { BIGuard } from '../../common/guards/bi.guard';
@@ -8,9 +8,10 @@ import { CreateWorkspaceDto } from './dto/request/create-workspace.dto';
 import { GetManagerWorkspaceIdDto, GetWorkspaceIdDto } from './dto/request/get-workspace-id.dto';
 import { GetOptionalWorkspaceUrlNameDto } from './dto/request/get-workspace-url-name.dto';
 import { UpdateWorkspaceDto } from './dto/request/update-workspace.dto';
+import { WorkspaceErrorDto } from './dto/response/workspace-error.dto';
+import { WorkspaceWithPermissionDto } from './dto/response/workspace-with-permission.dto';
 import { WorkspaceDto } from './dto/response/workspace.dto';
 import { WorkspaceService } from './workspace.service';
-import { WorkspaceWithPermissionDto } from './dto/response/workspace-with-permission.dto';
 
 @Controller('workspace')
 export class WorkspaceController {
@@ -21,6 +22,7 @@ export class WorkspaceController {
   @ApiBody({ type: CreateWorkspaceDto })
   @Post()
   @ApiCreatedResponse({ type: WorkspaceDto })
+  @ApiBadRequestResponse({ type: WorkspaceErrorDto })
   @TransformPlainToInstance(WorkspaceDto)
   async create(
     @Req() { user }: Request,
@@ -71,6 +73,7 @@ export class WorkspaceController {
   
   @Patch(':id')
   @ApiOkResponse({ type: WorkspaceDto })
+  @ApiBadRequestResponse({ type: WorkspaceErrorDto })
   @TransformPlainToInstance(WorkspaceDto)
   async update(
     @Req() { user }: Request,

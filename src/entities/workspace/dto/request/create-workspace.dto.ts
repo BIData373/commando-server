@@ -3,14 +3,15 @@ import { IsBoolean, IsOptional, IsString, Max, MaxLength } from 'class-validator
 import { EntityExists } from '../../../../common/decorators/entity-exists.decorator';
 import { IdExists } from '../../../../common/decorators/id-exists.decorator';
 import { IsNotEmptyString } from '../../../../common/decorators/is-not-empty-string.decorator';
-import { GetNewWorkspaceUrlNameDto } from './get-workspace-url-name.dto';
+import { WorkspaceError } from '../../consts/workspace-error';
 import { WORKSPACE_TITLE_MAX_LENGTH } from '../../consts/workspace-max-length';
+import { GetNewWorkspaceUrlNameDto } from './get-workspace-url-name.dto';
 
 export class CreateWorkspaceDto extends GetNewWorkspaceUrlNameDto {
   @ApiProperty()
   @EntityExists('workspace', {
     failIfExists: true,
-    message: 'title-exists',
+    message: WorkspaceError.TITLE_EXISTS,
     findArgs: ({ value }) => ({
       where: { title: value, deletedAt: null }
     })
@@ -40,6 +41,6 @@ export class CreateWorkspaceDto extends GetNewWorkspaceUrlNameDto {
   mailNotification?: boolean;
 
   @ApiProperty()
-  @IdExists('pikud', { filterDeletedAt: true, message: 'pikud-not-found' })
+  @IdExists('pikud', { filterDeletedAt: true, message: WorkspaceError.PIKUD_NOT_FOUND })
   pikudId: number;
 }
