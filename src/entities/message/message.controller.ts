@@ -4,7 +4,7 @@ import { TransformPlainToInstance } from 'class-transformer';
 import { Request } from 'express';
 import { GetViewerTaskIdFieldDto } from '../task/dto/request/get-task-id-field.dto';
 import { CreateMessageDto } from './dto/request/create-message.dto';
-import { GetManagerMessageIdDto, GetViewerMessageIdDto } from './dto/request/get-message-id.dto';
+import { GetManagerMessageIdDto, GetManagerOrOwnerMessageIdDto, GetViewerMessageIdDto } from './dto/request/get-message-id.dto';
 import { UpdateMessageDto } from './dto/request/update-message.dto';
 import { MessageDto } from './dto/response/message.dto';
 import { MessageService } from './message.service';
@@ -68,7 +68,7 @@ export class MessageController {
   @TransformPlainToInstance(MessageDto)
   async remove(
     @Req() { user }: Request,
-    @Param() { id }: GetManagerMessageIdDto
+    @Param() { id }: GetManagerOrOwnerMessageIdDto
   ) {
     return await this.messageService.remove(id, user.id);
   }

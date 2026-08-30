@@ -36,6 +36,7 @@ export class GetTaskFieldsDto extends GetContextDto<IUserContext> {
   @IsString()
   notes?: string;
 
+
   @ApiProperty({ type: [String], required: false })
   @IsOptional()
   @IsArray()

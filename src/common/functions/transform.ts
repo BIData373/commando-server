@@ -5,10 +5,11 @@ import { ValidationError } from "class-validator";
 import type { Request } from "express";
 import { get } from "lodash";
 import { sendForbiddenMessages } from "../consts/env";
-import { Path } from "../types/path.type";
+import { Path, WritePath } from "../types/path.type";
 
 export type RequestTarget = 'body' | 'params' | 'query' | 'user'
-type ToTarget<TTarget> = RequestTarget | `${RequestTarget}.${Path<TTarget>}`
+type ToTarget<TTarget> = RequestTarget | `${RequestTarget}.${WritePath<TTarget>}`
+// Unlike WritePath, Path doesn't mark array segments, so a multi-segment from-path that crosses an array (e.g. "tasks.assignees") will type-check but silently resolve to undefined at runtime, since lodash `get` does a literal property walk instead of fanning out over the array.
 type FromTarget<TSource> = RequestTarget | `${RequestTarget}.${Path<TSource>}`
 
 export type DtoToAdd<TDto, TTarget = unknown, TSource = unknown> = {
@@ -17,7 +18,19 @@ export type DtoToAdd<TDto, TTarget = unknown, TSource = unknown> = {
   dto: TDto | TDto[]
 }
 
-function copyFields(target: unknown, segments: string[], instances: object[]): void {
+type PathSegment = { name: string; isArray: boolean }
+
+// Splits raw "key[]" path segments into { name, isArray } pairs.
+function parseSegments(rawSegments: string[]): PathSegment[] {
+  return rawSegments.map(segment => (
+    segment.endsWith('[]')
+      ? { name: segment.slice(0, -2), isArray: true }
+      : { name: segment, isArray: false }
+  ))
+}
+
+// Walks `target` along `segments` (fanning out into arrays) and merges `instances` onto the object(s) found at the end of the path.
+function copyFields(target: unknown, segments: PathSegment[], instances: object[]): void {
   if (target == null || typeof target !== 'object' || segments.length === 0) return
 
   if (Array.isArray(target)) {
@@ -25,20 +38,32 @@ function copyFields(target: unknown, segments: string[], instances: object[]): v
     return
   }
 
-  const [head, ...rest] = segments
+  const [{ name: head, isArray }, ...rest] = segments
   const record = target as Record<string, unknown>
 
   if (rest.length > 0) {
-    copyFields(record[head] ??= {}, rest, instances)
-    return
+    if (record[head] === undefined && !isArray) {
+      record[head] = {}
+    }
+
+    copyFields(record[head], rest, instances)
   }
 
-  record[head] = {
-    ...(record[head] as object ?? {}),
-    ...Object.assign({}, ...instances)
+  else {
+    const hasOwnField = instances.every(
+      instance => Object.prototype.hasOwnProperty.call(instance, head)
+    )
+
+    record[head] = hasOwnField
+      ? (instances[instances.length - 1] as Record<string, unknown>)[head]
+      : {
+        ...(record[head] as object ?? {}),
+        ...Object.assign({}, ...instances)
+      }
   }
 }
 
+// For each entry in dtosToAdd: builds a DTO instance from the `from` path(s) on the request, then writes it into the `to` path(s) on the request.
 export async function copyDtosInRequest<TTarget = unknown, TSource = unknown>(
   request: Request,
   dtosToAdd: DtoToAdd<ClassConstructor<Object>, TTarget, TSource>[]
@@ -51,7 +76,7 @@ export async function copyDtosInRequest<TTarget = unknown, TSource = unknown>(
       const [fromKey, ...pathSegments] = (entry as string).split('.') as [RequestTarget, ...string[]]
 
       return pathSegments.length > 0
-        ? { id: get(request[fromKey], pathSegments) }
+        ? { [pathSegments[pathSegments.length - 1]]: get(request[fromKey], pathSegments) }
         : request[fromKey]
     }))
 
@@ -59,15 +84,16 @@ export async function copyDtosInRequest<TTarget = unknown, TSource = unknown>(
       .map(currentDto => plainToInstance(currentDto, source))
 
     toTargets.forEach(target => {
-      const [toKey, ...pathSegments] = (target as string).split('.') as [RequestTarget, ...string[]]
+      const [toKey, ...rawSegments] = (target as string).split('.')
 
-      if (!request[toKey]) return
-
-      copyFields(request[toKey], pathSegments, instances)
+      if (request[toKey as RequestTarget]) {
+        copyFields(request[toKey as RequestTarget], parseSegments(rawSegments), instances)
+      }
     })
   })
 }
 
+// Recursively collects every constraint message off a ValidationError tree, including nested children.
 function flattenConstraints(errors: ValidationError[]): string[] {
   return errors.flatMap(error => [
     ...Object.values(error.constraints ?? {}),
@@ -75,6 +101,7 @@ function flattenConstraints(errors: ValidationError[]): string[] {
   ]);
 }
 
+// Turns ValidationPipe errors into a 403 if every constraint is the forbidden-field marker, otherwise a 400 with the validation messages.
 export function forbiddenExceptionFactory(errors: ValidationError[]) {
   const messages = flattenConstraints(errors);
 

@@ -12,6 +12,10 @@ async function main() {
 
   console.time('* DB Clean Up')
   // Cleanup in reverse FK dependency order
+  await prisma.archivedUserAssigneeTask.deleteMany();
+  await prisma.archivedWorkspaceAssigneeTask.deleteMany();
+  await prisma.userView.deleteMany();
+  await prisma.workspaceRequest.deleteMany();
   await prisma.taskHistory.deleteMany();
   await prisma.message.deleteMany();
   await prisma.assigneeTaskStatus.deleteMany();
@@ -168,6 +172,15 @@ async function main() {
     'הסתיים בהצלחה, ממתין לאימות סופי',
   ];
   const randomDesc = () => RANDOM_DESCRIPTIONS[Math.floor(Math.random() * RANDOM_DESCRIPTIONS.length)];
+
+  // Task.statusId is its own column, but the seed derives it from the assignee statuses so the data
+  // stays coherent: all done → COMPLETED, none started → NOT_STARTED, anything mixed → IN_PROGRESS.
+  const taskStatusType = (assignees: { statusType: WorkspaceStatusType }[]) => {
+    if (assignees.length === 0) return WorkspaceStatusType.NOT_STARTED;
+    if (assignees.every((a) => a.statusType === WorkspaceStatusType.COMPLETED)) return WorkspaceStatusType.COMPLETED;
+    if (assignees.every((a) => a.statusType === WorkspaceStatusType.NOT_STARTED)) return WorkspaceStatusType.NOT_STARTED;
+    return WorkspaceStatusType.IN_PROGRESS;
+  };
 
   // ── Tasks + AssigneeTaskStatus + TaskHistory ───────────────────────────────
   const taskDefs = [
@@ -425,6 +438,7 @@ async function main() {
         ...(def.dueDate && { dueDate: def.dueDate }),
         workspaceId: def.workspaceId,
         sourceId: def.sourceId,
+        statusId: statusIdByType[def.workspaceId][taskStatusType(def.assignees)],
         createdBy: def.createdBy,
         updatedBy: def.createdBy,
         ...(def.tagIds.length > 0 && { tags: { connect: def.tagIds.map((id) => ({ id })) } }),

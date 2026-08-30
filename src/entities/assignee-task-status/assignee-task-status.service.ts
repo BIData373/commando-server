@@ -2,13 +2,14 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../common/prisma.service';
 import { Prisma } from '../../types/prisma';
 import { UpdateAssigneeTaskStatusDto } from './dto/request/update-assignee-task-status.dto';
+import { TaskService } from '../task/task.service';
 
 @Injectable()
 export class AssigneeTaskStatusService {
   static readonly include: Prisma.AssigneeTaskStatusInclude = {
     assignee: true,
     status: true,
-    task: true
+    task: { include: TaskService.baseInclude() }
   }
 
   constructor(private readonly prisma: PrismaService) { }

@@ -8,7 +8,6 @@ import { CreateTaskDto } from './dto/request/create-task.dto';
 import { GetManagerTaskIdDto, GetViewerTaskIdDto } from './dto/request/get-task-id.dto';
 import { ListTaskRowsQueryDto } from './dto/request/list-task-rows.dto';
 import { UpdateTaskDto } from './dto/request/update-task.dto';
-import { TaskDetailsDto } from './dto/response/task-details.dto';
 import { TaskRowWithWorkspaceDto } from './dto/response/task-row-with-workspace.dto';
 import { TaskRowDto } from './dto/response/task-row.dto';
 import { TaskWithWorkspaceDto } from './dto/response/task-with-workspace.dto';
@@ -35,13 +34,15 @@ export class TaskController {
 
   @ApiOperation({ operationId: 'listTasks' })
   @ApiQuery({ type: GetViewerWorkspaceIdFieldDto })
+  @ApiQuery({ type: GetFilterIsArchived })
   @Get()
   @ApiOkResponse({ type: [TaskDto] })
   @TransformPlainToInstance(TaskDto)
   async findInWorkspace(
-    @Query() { context: { workspace, user } }: GetViewerWorkspaceIdFieldDto
+    @Query() { context: { workspace, user } }: GetViewerWorkspaceIdFieldDto,
+    @Query() { isArchived }: GetFilterIsArchived
   ) {
-    return await this.taskService.findInWorkspaceFormatted(workspace, user);
+    return await this.taskService.findInWorkspaceFormatted(workspace, user, isArchived);
   }
 
   @ApiOperation({ operationId: 'listTaskRows' })
@@ -82,13 +83,15 @@ export class TaskController {
 
   @ApiOperation({ operationId: 'getTask' })
   @ApiParam({ name: 'id', type: Number })
+  @ApiQuery({ type: GetFilterIsArchived })
   @Get(':id')
-  @ApiOkResponse({ type: TaskDetailsDto })
-  @TransformPlainToInstance(TaskDetailsDto)
+  @ApiOkResponse({ type: TaskWithWorkspaceDto })
+  @TransformPlainToInstance(TaskWithWorkspaceDto)
   async findOne(
-    @Param() { id, context: { user } }: GetViewerTaskIdDto
+    @Param() { id, context: { user } }: GetViewerTaskIdDto,
+    @Query() { isArchived }: GetFilterIsArchived
   ) {
-    return await this.taskService.findOne(id, user);
+    return await this.taskService.findOne(id, user, isArchived);
   }
 
   // FIX Add to history
