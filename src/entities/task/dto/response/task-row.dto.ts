@@ -16,18 +16,7 @@ export class TaskRowDto extends TaskFieldsDto {
     @Type(() => AssigneeDto)
     assignee?: AssigneeDto
 
-    @ExposeProperty({ type: WorkspaceStatusDto })
-    @Type(() => WorkspaceStatusDto)
-    status: WorkspaceStatusDto
-
-    @ExposeProperty()
-    editable: boolean
-
     @ExposeProperty({ type: [AssigneeStatusDto] })
     @Type(() => AssigneeStatusDto)
     otherAssignees: AssigneeStatusDto[]
-
-    @ExposeProperty({ type: Date, required: false })
-    @Type(() => Date)
-    archivedAt?: Date
 }

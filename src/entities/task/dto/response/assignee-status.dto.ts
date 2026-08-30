@@ -16,6 +16,10 @@ export class AssigneeStatusDto {
     @ExposeProperty()
     description: string
 
+    @ExposeProperty({ type: Date, nullable: true })
+    @Type(() => Date)
+    archivedAt: Date | null
+
     @ExposeProperty()
     editable: boolean
 }
