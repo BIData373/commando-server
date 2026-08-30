@@ -7,7 +7,7 @@ import { PrismaService } from '../../common/prisma.service';
 import { SocketGateway } from '../../socket/socket.gateway';
 import { SocketEventType } from '../../socket/types/socket-event-type.enum';
 import { TaskRunnerService } from '../../task-runner/task-runner.service';
-import { DeadlineType, ExtractionStatus, Prisma, Source, TaskCreationType, User, Workspace } from '../../types/prisma';
+import { DeadlineType, ExtractionStatus, Prisma, Source, Task, TaskCreationType, User, Workspace } from '../../types/prisma';
 import { S3Service } from '../s3/s3.service';
 import { MessageRelayService } from '../services/message-relay.service';
 import { tagsConnectOrCreateArgs, tagsSetOrCreateArgs } from '../tag/functions/tag-args';
@@ -102,6 +102,7 @@ export class SourceService {
             create: tasks.map(({ assignees, tags: taskTags, ...taskDto }) => ({
               ...taskDto,
               workspaceId,
+              statusId: notStartedStatusId!,
               creationType: TaskCreationType.HUMAN,
               createdBy: userId,
               updatedBy: userId,
@@ -200,9 +201,9 @@ export class SourceService {
     return { ...source, tasks };
   }
 
-  async findOneAndEmit(id: number, user: User, urlName: string) {
+  async findOneAndEmit(id: number, user: User, urlName: string, event: SocketEventType) {
     const result = await this.findOne(id, user)
-    this.socket.emitToUrlName(urlName, SocketEventType.TASK_EXTRACTION_FINISHED, result)
+    this.socket.emitToUrlName(urlName, event, result)
     return result
   }
 
@@ -286,7 +287,7 @@ export class SourceService {
         where: { id: source.id },
         data: { extractionStatus: dto.error }
       })
-      return await this.findOneAndEmit(source.id, user, workspace.urlName)
+      return await this.findOneAndEmit(source.id, user, workspace.urlName, SocketEventType.TASK_EXTRACTION_FINISHED)
     }
 
     const assigneeIds = uniq(flatMap(dto.tasks, 'assigneeIds'))
@@ -306,17 +307,25 @@ export class SourceService {
 
     const [notStartedStatus] = await this.taskService.findDefaultStatusInWorkspaces(source.workspaceId)
 
-    const taskPromises = await Promise.all(
-      (dto.tasks ?? []).map(async ({ title, deadlineType, deadlineDate, assigneeIds: taskAssigneeIds }) => {
-        const validTaskAssigneeIds = intersection(taskAssigneeIds, validIds)
-        try {
-          return await this.prisma.task.create({
+    const aiTasks = dto.tasks ?? []
+    let createdTasks: Task[] = []
+
+    try {
+      // Sequential transaction so the tasks land in the order the AI returned them and a partial write
+      // is impossible. Postgres aborts the whole transaction on the first failing statement, so this is
+      // all-or-nothing by design — there is no per-task recovery to be had here.
+      createdTasks = await this.prisma.$transaction(
+        aiTasks.map(({ title, deadlineType, deadlineDate, assigneeIds: taskAssigneeIds }) => {
+          const validTaskAssigneeIds = intersection(taskAssigneeIds, validIds)
+
+          return this.prisma.task.create({
             data: {
               title,
-              deadlineType: deadlineType ?? DeadlineType.IMMEDIATE,
+              deadlineType: deadlineType ?? DeadlineType.DATE,
               dueDate: deadlineDate ? new Date(deadlineDate) : undefined,
               creationType: TaskCreationType.AI,
               workspaceId: source.workspaceId,
+              statusId: notStartedStatus.id,
               sourceId: source.id,
               createdBy: source.createdBy,
               updatedBy: source.createdBy,
@@ -330,14 +339,12 @@ export class SourceService {
               })
             }
           })
-        } catch (e) {
-          console.log('Failed to Create AI Task: ', e)
-          // Individual task creation failures shouldn't fail the whole extraction
-        }
-      })
-    )
-
-    const createdTasks = taskPromises.filter(t => !!t)
+        })
+      )
+    } catch (e) {
+      console.log('Failed to Create AI Tasks: ', e)
+      // The extraction itself still finishes — it just finishes without tasks
+    }
 
     const extractionStatus = createdTasks.length > 0
       ? ExtractionStatus.FINISHED_WITH_TASKS
@@ -348,11 +355,13 @@ export class SourceService {
       data: { extractionStatus }
     })
 
-    this.sendNotificationsForNewTasks(
-      (dto.tasks ?? []).map(t => intersection(t.assigneeIds, validIds)),
-      source.workspaceId, source.name, source.date ?? undefined
-    ).catch((e: Error) => console.error('Failed to send AI task created notifications:', e));
+    if (createdTasks.length > 0) {
+      this.sendNotificationsForNewTasks(
+        aiTasks.map(t => intersection(t.assigneeIds, validIds)),
+        source.workspaceId, source.name, source.date ?? undefined
+      ).catch((e: Error) => console.error('Failed to send AI task created notifications:', e));
+    }
 
-    return await this.findOneAndEmit(source.id, user, workspace.urlName)
+    return await this.findOneAndEmit(source.id, user, workspace.urlName, SocketEventType.TASK_EXTRACTION_FINISHED)
   }
 }

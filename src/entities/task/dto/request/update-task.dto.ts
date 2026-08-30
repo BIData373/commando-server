@@ -51,4 +51,17 @@ export class UpdateTaskDto extends IntersectionType(
   @ValidateNested({ each: true })
   @Type(() => GetTaskAssigneeDto)
   assignees?: GetTaskAssigneeDto[]
+
+  @ApiProperty({ type: Number, required: false })
+  @IsOptional()
+  @IdExists('workspaceStatus', {
+    validateIf: ({ value, obj }) => !!value && !!obj?.context?.task?.id,
+    findArgs: ({ value, obj }) => ({
+      where: {
+        id: value,
+        workspace: isInTasks(obj)
+      }
+    })
+  })
+  statusId?: number;
 }
