@@ -11,8 +11,13 @@ export function ErrorDtoMixin<T extends Record<string, string>>(enumType: T | T[
     statusCode: number;
 
     @ApiProperty({
-      enum: enumType,
-      example: values[0],
+      ...(values.length > 0
+        ? {
+          enum: values, 
+          example: values[0]
+        }
+        : { type: String }
+      ),
       description: 'Specific error code key',
     })
     message: T[keyof T];
@@ -27,3 +32,5 @@ export function ErrorDtoMixin<T extends Record<string, string>>(enumType: T | T[
 
   return CustomErrorDto;
 }
+
+export class ErrorDto extends ErrorDtoMixin([]) { }

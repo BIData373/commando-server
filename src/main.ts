@@ -9,7 +9,7 @@ import 'reflect-metadata';
 import { AppModule, openApiRoute } from './app.module';
 import { isDev, port, serverPrefix, ssoEnabled, swaggerEnabled, useRedis } from './common/consts/env';
 import { staticTokenHeader } from './common/consts/headers';
-import { ErrorDto } from './common/dto/response/error.dto';
+import { ErrorDto } from './common/dto/response/error-dto-mixin.dto';
 import { SocketEventDto } from './socket/dto/socket-event.dto';
 import { RedisAdapter } from './socket/redis.adapter';
 
