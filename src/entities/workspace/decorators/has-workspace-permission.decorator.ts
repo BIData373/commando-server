@@ -11,26 +11,26 @@ import { UserDto } from "../../user/dto/response/user.dto";
 
 interface IPermissionExistsValidationOptions<
     TDtoField extends keyof TDto,
-    TDto extends Record<TDtoField, number>
+    TDto extends Partial<Record<TDtoField, number>>
 > extends IEntityExistsValidationOptions<TDto, TDtoField, ExtractValue<TDto, TDtoField>, "permission"> { }
 
 export interface IWorkspaceFindArgs<
     TDtoField extends keyof TDto,
-    TDto extends Record<TDtoField, number>
+    TDto extends Partial<Record<TDtoField, number>>
 > {
     workspaceFindArgs?(params: PredicateParams<TDto, TDtoField, ExtractValue<TDto, TDtoField>>): Prisma.PermissionWhereInput['workspace']
 }
 
 export interface IHasWorkspacePermissionOptions<
     TDtoField extends keyof TDto,
-    TDto extends Record<TDtoField, number>
+    TDto extends Partial<Record<TDtoField, number>>
 > extends
     IPermissionExistsValidationOptions<TDtoField, TDto>,
     IWorkspaceFindArgs<TDtoField, TDto> { }
 
 interface IHasWorkspacePermissionContraints<
     TDtoField extends keyof TDto,
-    TDto extends Record<TDtoField, number>
+    TDto extends Partial<Record<TDtoField, number>>
 > extends IHasWorkspacePermissionOptions<TDtoField, TDto> {
     type: PermissionType,
     extractUser: (obj: TDto) => UserDto,
@@ -40,7 +40,7 @@ interface IHasWorkspacePermissionContraints<
 @Injectable()
 export class HasWorkspacePermissionConstraint<
     TDtoField extends keyof TDto,
-    TDto extends Record<TDtoField, number>
+    TDto extends Partial<Record<TDtoField, number>>
 > implements ValidatorConstraintInterface {
     constructor(private readonly prisma: PrismaService) { }
 
@@ -84,7 +84,7 @@ export class HasWorkspacePermissionConstraint<
 
 export function HasWorkspacePermission<
     TDtoField extends keyof TDto,
-    TDto extends Record<TDtoField, number>
+    TDto extends Partial<Record<TDtoField, number>>
 >(
     type: PermissionType,
     extractUser: (obj: TDto) => UserDto,

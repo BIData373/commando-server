@@ -62,7 +62,7 @@ COMPLETED COMPLETED
     Int id "🗝️"
     Int user_id 
     Int task_id 
-    Int assignee_id "❓"
+    Int assignee_id 
     DateTime created_at 
     }
   
@@ -70,7 +70,7 @@ COMPLETED COMPLETED
   "archived_workspace_assignee_task" {
     Int id "🗝️"
     Int task_id 
-    Int assignee_id "❓"
+    Int assignee_id 
     DateTime created_at 
     }
   
@@ -171,6 +171,7 @@ COMPLETED COMPLETED
     DateTime due_date "❓"
     String notes "❓"
     TaskCreationType creation_type 
+    DateTime archived_at "❓"
     DateTime created_at 
     Int created_by 
     DateTime updated_at 
@@ -252,9 +253,9 @@ COMPLETED COMPLETED
   
     "archived_user_assignee_task" }o--|| tasks : "task"
     "archived_user_assignee_task" }o--|| users : "user"
-    "archived_user_assignee_task" }o--|o assignees : "assignee"
+    "archived_user_assignee_task" }o--|| assignees : "assignee"
     "archived_workspace_assignee_task" }o--|| tasks : "task"
-    "archived_workspace_assignee_task" }o--|o assignees : "assignee"
+    "archived_workspace_assignee_task" }o--|| assignees : "assignee"
     "assignees" }o--|| workspaces : "workspace"
     "assignees" o{--}o "users" : ""
     "assignee_task_statuses" }o--|| tasks : "task"
