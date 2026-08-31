@@ -31,6 +31,9 @@ export class TaskFieldsDto extends IdMetaFieldsDto {
   @ExposeProperty({ type: String, nullable: true })
   notes: string | null;
 
+  @ExposeProperty({ type: Date, nullable: true })
+  archivedAt: Date | null;
+
   @ExposeProperty()
   workspaceId: number;
 
@@ -56,8 +59,4 @@ export class TaskFieldsDto extends IdMetaFieldsDto {
 
   @ExposeProperty()
   editable: boolean;
-
-  @ExposeProperty({ type: Date, nullable: true })
-  @Type(() => Date)
-  archivedAt: Date | null;
 }

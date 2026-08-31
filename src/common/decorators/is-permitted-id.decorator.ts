@@ -11,7 +11,7 @@ import { IdExists } from "./id-exists.decorator";
 export interface IIsIdPermittedOptions<
     TDtoField extends keyof TDto,
     TModel extends Models,
-    TDto extends Record<TDtoField, number> & IContext<IUserContext>
+    TDto extends Partial<Record<TDtoField, number>> & IContext<IUserContext>
 > extends
     IEntityExistsValidationOptions<
         TDto,
@@ -24,7 +24,7 @@ export interface IIsIdPermittedOptions<
 export function IsIdPermitted<
     TDtoField extends keyof TDto,
     TModel extends Models,
-    TDto extends Record<TDtoField, number> & IContext<IUserContext>
+    TDto extends Partial<Record<TDtoField, number>> & IContext<IUserContext>
 >(
     model: TModel,
     type: PermissionType,

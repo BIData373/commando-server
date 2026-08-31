@@ -1,10 +1,11 @@
-import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../../common/prisma.service';
-import { Prisma } from '../../types/prisma';
-import { CreateUserDto } from '../user/dto/request/create-user.dto';
-import { UserService } from '../user/user.service';
-import { CreateAssigneeDto } from './dto/request/create-assignee.dto';
-import { UpdateAssigneeDto } from './dto/request/update-assignee.dto';
+import { Injectable } from '@nestjs/common'
+import { PrismaService } from '../../common/prisma.service'
+import { Prisma } from '../../types/prisma'
+import { ArchivedWorkspaceAssigneeService } from '../archived-workspace-assignee-task/archived-workspace-assignee-task.service'
+import { CreateUserDto } from '../user/dto/request/create-user.dto'
+import { UserService } from '../user/user.service'
+import { CreateAssigneeDto } from './dto/request/create-assignee.dto'
+import { UpdateAssigneeDto } from './dto/request/update-assignee.dto'
 
 @Injectable()
 export class AssigneeService {
@@ -54,7 +55,7 @@ export class AssigneeService {
           })
         },
         include: AssigneeService.include
-      });
+      })
     })
   }
 
@@ -69,7 +70,7 @@ export class AssigneeService {
     return await this.prisma.assignee.findUnique({
       where: { id, deletedAt: null },
       include: AssigneeService.include
-    });
+    })
   }
 
   async update(
@@ -91,15 +92,35 @@ export class AssigneeService {
           })
         },
         include: AssigneeService.include
-      });
+      })
     })
   }
 
+  static async detachArchivedTasksTx(tx: Prisma.TransactionClient, assigneeId: number) {
+    await ArchivedWorkspaceAssigneeService.detachArchivesTx(
+      tx,
+      { assigneeId },
+      {
+        archivedAt: null,
+        archivedWorkspaceAssigneeTask: { none: { assigneeId: { not: assigneeId } } },
+        assigneeStatuses: {
+          none: { assigneeId: { not: assigneeId }, assignee: { deletedAt: null } }
+        }
+      }
+    )
+  }
+
   async remove(id: number, deletedBy: number) {
-    return await this.prisma.assignee.update({
-      where: { id },
-      data: { deletedAt: new Date(), deletedBy },
-      include: AssigneeService.include
-    });
+    return await this.prisma.$transaction(async tx => {
+      await tx.archivedUserAssigneeTask.deleteMany({ where: { assigneeId: id } })
+
+      await AssigneeService.detachArchivedTasksTx(tx, id)
+
+      return await tx.assignee.update({
+        where: { id },
+        data: { deletedAt: new Date(), deletedBy },
+        include: AssigneeService.include
+      })
+    })
   }
 }

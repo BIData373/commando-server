@@ -7,7 +7,7 @@ export class ArchivedUserAssigneeTaskService {
     private readonly prisma: PrismaService,
   ) { }
 
-  async toggle(taskId: number, userId: number, assigneeId?: number) {
+  async toggle(taskId: number, userId: number, assigneeId: number) {
     await this.prisma.$transaction(async tx => {
       const { count } = await tx.archivedUserAssigneeTask.deleteMany({
         where: { taskId, userId, assigneeId }

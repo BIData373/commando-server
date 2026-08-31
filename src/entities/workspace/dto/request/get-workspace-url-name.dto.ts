@@ -4,6 +4,7 @@ import { IsOptional } from "class-validator";
 import { EntityExists, IEntityExistsValidationOptions } from "../../../../common/decorators/entity-exists.decorator";
 import { IsUrlName } from "../../../../common/decorators/is-url-name.decorator";
 import { GetContextDto } from "../../../../common/dto/request/get-context.dto";
+import { WorkspaceError } from "../../enum/workspace-error";
 import { IWorkspaceContext } from "../../interfaces/workspace-context.interface";
 
 interface IUrlName {
@@ -44,4 +45,4 @@ export class GetOptionalWorkspaceUrlNameDto extends GetContextDto<Partial<IWorks
   urlName?: string;
 }
 
-export class GetNewWorkspaceUrlNameDto extends GetWorkspaceUrlNameMixin({ failIfExists: true }) { }
+export class GetNewWorkspaceUrlNameDto extends GetWorkspaceUrlNameMixin({ failIfExists: true, message: WorkspaceError.URL_NAME_EXISTS }) { }
