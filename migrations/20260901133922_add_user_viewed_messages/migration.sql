@@ -8,6 +8,9 @@ CREATE TABLE "user_viewed_messages" (
     CONSTRAINT "user_viewed_messages_pkey" PRIMARY KEY ("user_id","task_id")
 );
 
+-- CreateIndex
+CREATE INDEX "user_viewed_messages_user_id_idx" ON "user_viewed_messages"("user_id");
+
 -- AddForeignKey
 ALTER TABLE "user_viewed_messages" ADD CONSTRAINT "user_viewed_messages_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 

@@ -9,4 +9,5 @@ model UserViewedMessages {
 
     @@id([userId, taskId])
     @@map("user_viewed_messages")
+    @@index([userId])
 }
