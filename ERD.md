@@ -203,6 +203,14 @@ COMPLETED COMPLETED
     }
   
 
+  "user_viewed_messages" {
+    Int user_id 
+    Int task_id 
+    DateTime viewed_message_at "❓"
+    DateTime viewed_task_at 
+    }
+  
+
   "user_views" {
     Int id "🗝️"
     Int user_id 
@@ -280,6 +288,8 @@ COMPLETED COMPLETED
     "tasks_history" }o--|| tasks : "task"
     "tasks_history" }o--|| workspaces : "workspace"
     "tasks_history" }o--|| users : "user"
+    "user_viewed_messages" }o--|| users : "user"
+    "user_viewed_messages" }o--|| tasks : "task"
     "user_views" }o--|| users : "user"
     "user_views" }o--|o workspaces : "workspace"
     "workspaces" }o--|| pikuds : "pikud"

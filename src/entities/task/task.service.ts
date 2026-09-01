@@ -19,7 +19,9 @@ type AssigneeStatusInclude = {
 type AssigneeStatusEntity = Prisma.AssigneeTaskStatusGetPayload<AssigneeStatusInclude>
 
 type TaskInclude = Prisma.TaskGetPayload<{
-  include: { assigneeStatuses: AssigneeStatusInclude, source: true, tags: true, messages: true, status: true }
+  include: {
+    assigneeStatuses: AssigneeStatusInclude, source: true, tags: true, messages: true, status: true, userViewedMessages: true
+  }
 }>
 
 
@@ -171,7 +173,7 @@ export class TaskService {
     archivedIds: Record<number, Date | undefined>,
     isArchived?: boolean,
   ) {
-    const { assigneeStatuses, messages, status, ...rest } = originalTask
+    const { assigneeStatuses, status, ...rest } = originalTask
 
     const activeAssignees = TaskService.filterByArchivedAssignee(originalTask, archivedIds, isArchived)
     if (!activeAssignees) {
@@ -188,7 +190,7 @@ export class TaskService {
         TaskService.formatAssigneeStatus(workspace, user, archivedIds, originalTask.archivedAt, assigneeStatus)
       ),
       workspace: TaskService.formatTaskWorkspace(workspace, user),
-      lastMessage: messages[0]
+      ...TaskService.userViewedMessage(originalTask),
     }]
   }
 
@@ -302,7 +304,7 @@ export class TaskService {
   }
 
   // FIX Dont include assignee users?
-  async findInWorkspace(workspace: WorkspaceWithPermissions, isArchived?: boolean) {
+  async findInWorkspace(workspace: WorkspaceWithPermissions, userId: number, isArchived?: boolean) {
     return await this.prisma.task.findMany({
       where: {
         workspaceId: workspace.id,
@@ -311,14 +313,15 @@ export class TaskService {
       },
       include: {
         ...TaskService.baseInclude(),
-        archivedWorkspaceAssigneeTask: true
+        archivedWorkspaceAssigneeTask: true,
+        userViewedMessages: { where: { userId } }
       },
       orderBy: TaskService.orderBy
     })
   }
 
   async findInWorkspaceFormatted(workspace: WorkspaceWithPermissions, user: User, isArchived?: boolean) {
-    const tasks = await this.findInWorkspace(workspace, isArchived)
+    const tasks = await this.findInWorkspace(workspace, user.id, isArchived)
 
     return tasks.flatMap(task => TaskService.formatAdditionalTaskFields(
       task,
@@ -333,6 +336,23 @@ export class TaskService {
     return `${taskId}${TaskService.TASK_ROW_ID_SEPARATOR}${assigneeId}`
   }
 
+  static userViewedMessage({ messages, userViewedMessages, createdAt }: TaskInclude) {
+    const [viewedMessage] = userViewedMessages
+    const [lastMessage] = messages
+    const viewedInTable = viewedMessage != null && createdAt <= viewedMessage.viewedTaskAt
+
+    const viewedLastMessage = lastMessage == null || (
+      viewedMessage?.viewedMessageAt != null &&
+      lastMessage.createdAt <= viewedMessage.viewedMessageAt
+    )
+
+    return {
+      viewedInTable,
+      viewedLastMessage,
+      lastMessage
+    }
+  }
+
   static extractTaskToRows<TTask extends TaskInclude>(
     task: TTask,
     workspace: WorkspaceWithPermissions,
@@ -341,7 +361,7 @@ export class TaskService {
     archivedIds: Record<number, Date | undefined>,
     isArchived?: boolean,
   ) {
-    const { assigneeStatuses, messages, status, ...taskFields } = task
+    const { assigneeStatuses, status, ...taskFields } = task
     const activeAssignees = TaskService.filterByArchivedAssignee(task, archivedIds, isArchived)
 
     if (!activeAssignees) {
@@ -350,11 +370,10 @@ export class TaskService {
 
     const fields = {
       ...taskFields,
-      lastMessage: messages[0]
+      ...TaskService.userViewedMessage(task)
     }
 
     if (!onlyUserRows && assigneeStatuses.length === 0) {
-
       return [{
         ...fields,
         ...TaskService.formatAssigneeStatus(workspace, user, archivedIds, task.archivedAt),
@@ -388,7 +407,7 @@ export class TaskService {
   }
 
   async findRowsInWorkspace(workspace: WorkspaceWithPermissions, user: User, isArchived?: boolean) {
-    const tasks = await this.findInWorkspace(workspace, isArchived)
+    const tasks = await this.findInWorkspace(workspace, user.id, isArchived)
 
     return tasks.map(task =>
       TaskService.extractTaskToRows(
@@ -402,7 +421,7 @@ export class TaskService {
     ).flat()
   }
 
-  async findBySource(sourceId: number, isArchived?: boolean) {
+  async findBySource(sourceId: number, userId: number, isArchived?: boolean) {
     return await this.prisma.task.findMany({
       where: {
         sourceId, deletedAt: null,
@@ -410,7 +429,8 @@ export class TaskService {
       },
       include: {
         ...TaskService.baseInclude(),
-        archivedWorkspaceAssigneeTask: true
+        archivedWorkspaceAssigneeTask: true,
+        userViewedMessages: { where: { userId } }
       },
       // Extraction order - the user reviews and edits a source's tasks in the order the AI produced
       // them, so oldest first. Not TaskService.orderBy, which is newest first.
@@ -419,7 +439,7 @@ export class TaskService {
   }
 
   async findFormattedBySource(sourceId: number, workspace: WorkspaceWithPermissions, user: User, isArchived?: boolean) {
-    const tasks = await this.findBySource(sourceId, isArchived)
+    const tasks = await this.findBySource(sourceId, user.id, isArchived)
 
     return tasks.flatMap(task => TaskService.formatAdditionalTaskFields(
       task,
@@ -446,6 +466,7 @@ export class TaskService {
       include: {
         ...TaskService.withWorkspaceInclude(user.id),
         archivedUserAssigneeTask: { where: { userId: user.id } },
+        userViewedMessages: { where: { userId: user.id } }
       },
       orderBy: TaskService.orderBy
     })
