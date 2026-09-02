@@ -2,9 +2,9 @@ import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req } from '@
 import { ApiBody, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { TransformPlainToInstance } from 'class-transformer';
 import { Request } from 'express';
-import { GetViewerTaskIdFieldDto } from '../task/dto/request/get-task-id-field.dto';
 import { CreateMessageDto } from './dto/request/create-message.dto';
 import { GetManagerMessageIdDto, GetManagerOrOwnerMessageIdDto, GetViewerMessageIdDto } from './dto/request/get-message-id.dto';
+import { ListMessagesQueryDto } from './dto/request/list-messages-query.dto';
 import { UpdateMessageDto } from './dto/request/update-message.dto';
 import { MessageDto } from './dto/response/message.dto';
 import { MessageService } from './message.service';
@@ -26,14 +26,14 @@ export class MessageController {
   }
 
   @ApiOperation({ operationId: 'listMessages' })
-  @ApiQuery({ type: GetViewerTaskIdFieldDto })
+  @ApiQuery({ type: ListMessagesQueryDto })
   @Get()
-  @ApiOkResponse({ type: [MessageDto] })
-  @TransformPlainToInstance(MessageDto)
-  async findInTask(
-    @Query() { taskId }: GetViewerTaskIdFieldDto
+  @ApiOkResponse()
+  async findAll(
+    @Req() { user }: Request,
+    @Query() query: ListMessagesQueryDto
   ) {
-    return await this.messageService.findInTask(taskId);
+    return await this.messageService.findMessagesByFilter(query, user.id);
   }
 
   @ApiOperation({ operationId: 'getMessage' })
