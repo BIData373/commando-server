@@ -64,6 +64,7 @@ export class TaskService {
         include: { tags: true }
       },
       messages: {
+        where: { deletedAt: null },
         include: {
           user: true,
         },
