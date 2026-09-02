@@ -203,11 +203,11 @@ COMPLETED COMPLETED
     }
   
 
-  "user_viewed_messages" {
+  "user_viewed_tasks" {
     Int user_id 
     Int task_id 
-    DateTime viewed_message_at "❓"
-    DateTime viewed_task_at 
+    DateTime panel_viewed_at "❓"
+    DateTime table_viewed_at 
     }
   
 
@@ -288,8 +288,8 @@ COMPLETED COMPLETED
     "tasks_history" }o--|| tasks : "task"
     "tasks_history" }o--|| workspaces : "workspace"
     "tasks_history" }o--|| users : "user"
-    "user_viewed_messages" }o--|| users : "user"
-    "user_viewed_messages" }o--|| tasks : "task"
+    "user_viewed_tasks" }o--|| users : "user"
+    "user_viewed_tasks" }o--|| tasks : "task"
     "user_views" }o--|| users : "user"
     "user_views" }o--|o workspaces : "workspace"
     "workspaces" }o--|| pikuds : "pikud"

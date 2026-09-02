@@ -1,0 +1,6 @@
+# @import ../../../global.http
+
+PATCH {{baseUrl}}/user-viewed-tasks?taskId=6
+...headers
+requestusername: avi
+is-bi: false

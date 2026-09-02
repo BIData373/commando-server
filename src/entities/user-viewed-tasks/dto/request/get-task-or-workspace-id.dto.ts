@@ -9,5 +9,4 @@ export class GetTaskOrWorkspaceIdDto extends GetOptionalViewerWorkspaceIdFieldDt
     @IsOptional()
     @IsPermittedTaskId(PermissionType.VIEWER, true)
     taskId?: number;
-
 }

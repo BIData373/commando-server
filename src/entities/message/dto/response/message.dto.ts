@@ -14,4 +14,7 @@ export class MessageDto extends IdMetaFieldsDto {
 
   @ExposeProperty()
   taskId: number;
+
+  @ExposeProperty()
+  viewed: boolean
 }

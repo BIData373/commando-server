@@ -1,6 +1,0 @@
-# @import ../../../global.http
-
-PATCH {{baseUrl}}/user-viewed-messages?workspaceId={{workspaceId}}
-...headers
-requestusername: yael
-is-bi: false

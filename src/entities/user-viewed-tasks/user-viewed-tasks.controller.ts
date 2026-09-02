@@ -3,11 +3,11 @@ import { ApiNoContentResponse, ApiOperation } from '@nestjs/swagger';
 import { HttpStatusCode } from 'axios';
 import { Request } from 'express';
 import { GetTaskOrWorkspaceIdDto } from './dto/request/get-task-or-workspace-id.dto';
-import { UserViewedMessagesService } from './user-viewed-messages.service';
+import { UserViewedTasksService } from './user-viewed-tasks.service';
 
-@Controller('user-viewed-messages')
-export class UserViewedMessageController {
-    constructor(private readonly userViewedMessagesService: UserViewedMessagesService) { }
+@Controller('user-viewed-tasks')
+export class UserViewedTasksController {
+    constructor(private readonly userViewedMessagesService: UserViewedTasksService) { }
 
     @ApiOperation({ operationId: 'viewMessages' })
     @Patch()

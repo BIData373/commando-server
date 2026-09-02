@@ -20,7 +20,7 @@ type AssigneeStatusEntity = Prisma.AssigneeTaskStatusGetPayload<AssigneeStatusIn
 
 type TaskInclude = Prisma.TaskGetPayload<{
   include: {
-    assigneeStatuses: AssigneeStatusInclude, source: true, tags: true, messages: true, status: true, userViewedMessages: true
+    assigneeStatuses: AssigneeStatusInclude, source: true, tags: true, messages: true, status: true, userViewedTasks: true
   }
 }>
 
@@ -190,7 +190,7 @@ export class TaskService {
         TaskService.formatAssigneeStatus(workspace, user, archivedIds, originalTask.archivedAt, assigneeStatus)
       ),
       workspace: TaskService.formatTaskWorkspace(workspace, user),
-      ...TaskService.userViewedMessage(originalTask),
+      ...TaskService.formatUserViewedTask(originalTask),
     }]
   }
 
@@ -314,7 +314,7 @@ export class TaskService {
       include: {
         ...TaskService.baseInclude(),
         archivedWorkspaceAssigneeTask: true,
-        userViewedMessages: { where: { userId } }
+        userViewedTasks: { where: { userId } }
       },
       orderBy: TaskService.orderBy
     })
@@ -336,19 +336,19 @@ export class TaskService {
     return `${taskId}${TaskService.TASK_ROW_ID_SEPARATOR}${assigneeId}`
   }
 
-  static userViewedMessage({ messages, userViewedMessages, createdAt }: TaskInclude) {
-    const [viewedMessage] = userViewedMessages
+  static formatUserViewedTask({ messages, userViewedTasks, createdAt }: TaskInclude) {
+    const [viewedTask] = userViewedTasks
     const [lastMessage] = messages
-    const viewedInTable = viewedMessage != null && createdAt <= viewedMessage.viewedTaskAt
+    const viewedInTable = viewedTask != null && createdAt <= viewedTask.tableViewedAt
 
-    const viewedLastMessage = lastMessage == null || (
-      viewedMessage?.viewedMessageAt != null &&
-      lastMessage.createdAt <= viewedMessage.viewedMessageAt
+    const viewedMessages = lastMessage == null || (
+      viewedTask?.panelViewedAt != null &&
+      lastMessage.createdAt <= viewedTask.panelViewedAt
     )
 
     return {
       viewedInTable,
-      viewedLastMessage,
+      viewedMessages,
       lastMessage
     }
   }
@@ -370,7 +370,7 @@ export class TaskService {
 
     const fields = {
       ...taskFields,
-      ...TaskService.userViewedMessage(task)
+      ...TaskService.formatUserViewedTask(task)
     }
 
     if (!onlyUserRows && assigneeStatuses.length === 0) {
@@ -430,7 +430,7 @@ export class TaskService {
       include: {
         ...TaskService.baseInclude(),
         archivedWorkspaceAssigneeTask: true,
-        userViewedMessages: { where: { userId } }
+        userViewedTasks: { where: { userId } }
       },
       // Extraction order - the user reviews and edits a source's tasks in the order the AI produced
       // them, so oldest first. Not TaskService.orderBy, which is newest first.
@@ -466,7 +466,7 @@ export class TaskService {
       include: {
         ...TaskService.withWorkspaceInclude(user.id),
         archivedUserAssigneeTask: { where: { userId: user.id } },
-        userViewedMessages: { where: { userId: user.id } }
+        userViewedTasks: { where: { userId: user.id } }
       },
       orderBy: TaskService.orderBy
     })
@@ -507,7 +507,8 @@ export class TaskService {
       where: { id, deletedAt: null },
       include: {
         ...TaskService.withWorkspaceInclude(user.id),
-        archivedWorkspaceAssigneeTask: true
+        archivedWorkspaceAssigneeTask: true,
+        userViewedTasks: { where: { userId: user.id } }
       }
     })
 

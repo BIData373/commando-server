@@ -64,5 +64,5 @@ export class TaskFieldsDto extends IdMetaFieldsDto {
   viewedInTable: boolean;
 
   @ExposeProperty()
-  viewedLastMessage: boolean;
+  viewedMessages: boolean;
 }
