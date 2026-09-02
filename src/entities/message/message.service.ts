@@ -101,10 +101,18 @@ export class MessageService {
   }
 
   async findPersonal(userId: number, isArchived?: boolean) {
-    const archiveWhere: Prisma.TaskWhereInput = isArchived
-      ? { archivedUserAssigneeTask: { some: { userId } } }
-      : { archivedUserAssigneeTask: { none: { userId } } };
-
+    const archiveWhere: Prisma.TaskWhereInput = {
+      archivedUserAssigneeTask: isArchived ?
+        {
+          some: {
+            userId
+          }
+        } : {
+          none: {
+            userId
+          }
+        }
+    };
     return await this.prisma.message.findMany({
       where: {
         deletedAt: null,
