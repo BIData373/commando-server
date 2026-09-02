@@ -46,7 +46,7 @@ export class WorkspaceRequestsService {
 הבקשה נשלחה על ידי: *[${user.upn}](${createdByUrl}) - ${user.info?.name ?? 'חסר שם'}*
 שם סביבה: *${response.title}*`
 
-    await this.messageRelayService.sendNotification([biChatChannelName!], chatTitleMessage, chatBodyMessage, process.env.BI_CHAT_CHANNEL_NAME)
+    await this.messageRelayService.sendNotification([], chatTitleMessage, chatBodyMessage, 'chat', [biChatChannelName!])
     const managerTitleMessage = `בקשה חדשה לפתיחת סביבה במערכת: ווקטור`
     const managerBodyMessage = `מספר בקשה: *${response.id}*
 הבקשה נשלחה על ידי: *[${user.upn}](${createdByUrl}) - ${user.info?.name ?? 'חסר שם'}*
@@ -55,7 +55,7 @@ export class WorkspaceRequestsService {
 לפרטים נוספים לפנות בקבוצה בצא'ט המבצעי)(${projectChatUrl}) *681-7980*
     `
 
-    await this.messageRelayService.sendNotification([user.upn], managerTitleMessage, managerBodyMessage)
+    await this.messageRelayService.sendNotification([user.upn], managerTitleMessage, managerBodyMessage, 'chat')
     return response
   }
 
@@ -148,7 +148,7 @@ ${isApproved
           ? 'הסביבה נפתחה במערכת ואתם מוגדרים כמנהלים שלה'
           : `סיבת הדחייה: *${workspaceRequest.declineMessage ?? 'לא צוינה'}*`}`
 
-      await this.messageRelayService.sendNotification(workspaceRequest.details.managers, titleMessage, bodyMessage)
+      await this.messageRelayService.sendNotification(workspaceRequest.details.managers, titleMessage, bodyMessage, 'chat')
     }
 
     return WorkspaceRequestsService.formatWorkspaceRequest(workspaceRequest)
