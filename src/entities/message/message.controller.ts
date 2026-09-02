@@ -7,6 +7,7 @@ import { GetManagerMessageIdDto, GetManagerOrOwnerMessageIdDto, GetViewerMessage
 import { ListMessagesQueryDto } from './dto/request/list-messages-query.dto';
 import { UpdateMessageDto } from './dto/request/update-message.dto';
 import { MessageDto } from './dto/response/message.dto';
+
 import { MessageService } from './message.service';
 
 @Controller('message')
@@ -28,7 +29,8 @@ export class MessageController {
   @ApiOperation({ operationId: 'listMessages' })
   @ApiQuery({ type: ListMessagesQueryDto })
   @Get()
-  @ApiOkResponse()
+  @ApiOkResponse({ type: [MessageDto] })
+  @TransformPlainToInstance(MessageDto)
   async findAll(
     @Req() { user }: Request,
     @Query() query: ListMessagesQueryDto
