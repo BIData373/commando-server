@@ -51,19 +51,15 @@ export class MessageService {
   }: ListMessagesQueryDto,
     userId: number
   ) {
-    if (taskId) {
-      return await this.findInTask(taskId);
-    }
-    if (taskIds) {
-      return await this.findByTaskIds(taskIds);
-    }
-    if (workspaceId) {
-      return await this.findInWorkspace(workspaceId, isArchived);
-    }
-    if (personal) {
-      return await this.findPersonal(userId, isArchived);
-    }
-    return [];
+    const handlers: [boolean, Function][] = [
+      [!!taskId, () => this.findInTask(taskId!)],
+      [!!taskIds, () => this.findByTaskIds(taskIds!)],
+      [!!workspaceId, () => this.findInWorkspace(workspaceId!, isArchived)],
+      [!!personal, () => this.findPersonal(userId, isArchived)],
+    ];
+
+    const [, handler] = handlers.find(([value]) => value) ?? [];
+    return handler ? await handler() : [];
   }
 
   async findByTaskIds(taskIds: number[]) {
