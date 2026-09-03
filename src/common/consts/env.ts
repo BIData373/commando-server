@@ -71,13 +71,14 @@ export const notificationTemplate = process.env.NOTIFICATION_TEMPLATE
 export const discussionNotificationTemplate = process.env.DISCUSSION_NOTIFICATION_TEMPLATE
 export const vectorUrl = process.env.VECTOR_URL
 export const chatUrl = process.env.VITE_CHAT_URL
-export const VITE_CHAT_URL = process.env.VITE_CHAT_URL
 
 export const mirageEnabled = process.env.MIRAGE_ENABLED === 'true'
 export const mirageUrl = process.env.MIRAGE_URL
 export const mirageKey = process.env.MIRAGE_KEY
 export const mirageVersion = process.env.MIRAGE_VERSION
 
-export const projectChatUrl = process.env.VITE_CHAT_URL && process.env.VITE_CHAT_CHANNEL
-  ? new URL(`/channel/${process.env.VITE_CHAT_CHANNEL}`, process.env.VITE_CHAT_URL).href
+export const redPhone = process.env.BI_RED_PHONE
+export const chatChannel = process.env.VITE_CHAT_CHANNEL
+export const chatChannelUrl = chatUrl && chatChannel
+  ? new URL(`/channel/${chatChannel}`, chatUrl).href
   : undefined

@@ -64,6 +64,7 @@ export class TaskService {
         include: { tags: true }
       },
       messages: {
+        where: { deletedAt: null },
         include: {
           user: true,
         },
@@ -203,13 +204,10 @@ export class TaskService {
 
     if (workspace.chatNotification) {
       const chatMessage = `ההנחיה: ${taskName}\n מעבר להנחיה: ${taskUrl}`
-      await this.messageRelayService.sendNotification(
-        recipients,
-        'chat',
-        title,
-        chatMessage
-      )
+
+      await this.messageRelayService.sendNotification(recipients, title, chatMessage, 'chat')
     }
+
     if (workspace.mailNotification) {
       const html = renderTemplate(notificationTemplate!, {
         workspaceName: workspace.title,
@@ -218,12 +216,8 @@ export class TaskService {
         vectorUrl: vectorUrl,
         chatUrl: chatUrl,
       })
-      await this.messageRelayService.sendNotification(
-        recipients,
-        'mail',
-        title,
-        html
-      )
+
+      await this.messageRelayService.sendNotification(recipients, title, html, 'mail')
     }
   }
 
