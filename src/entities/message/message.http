@@ -28,8 +28,42 @@ Content-Type: application/json
 
 ?? status == 400
 
-### Get all Messages
-GET {{baseUrl}}/message
+### Get Messages — by single taskId
+GET {{baseUrl}}/message?taskId=460
+...headers
+?? status == 200
+
+### Get Messages — by multiple taskIds
+GET {{baseUrl}}/message?taskIds=402,467,404,460
+...headers
+
+?? status == 200
+
+### Get Messages — by workspaceId
+GET {{baseUrl}}/message?workspaceId=40
+...headers
+
+?? status == 200
+
+### Get Messages — by workspaceId archived
+GET {{baseUrl}}/message?workspaceId=40&isArchived=true
+...headers
+
+?? status == 200
+
+### Get Messages — personal
+GET {{baseUrl}}/message?personal=true
+...headers
+requestusername: avi
+is-bi: false
+
+?? status == 200
+
+### Get Messages — personal archived
+GET {{baseUrl}}/message?personal=true&isArchived=true
+...headers
+requestusername: avi
+is-bi: false
 
 ?? status == 200
 
