@@ -18,8 +18,16 @@ type AssigneeStatusInclude = {
 
 type AssigneeStatusEntity = Prisma.AssigneeTaskStatusGetPayload<AssigneeStatusInclude>
 
-type TaskInclude = Prisma.TaskGetPayload<{
-  include: { assigneeStatuses: AssigneeStatusInclude, source: true, tags: true, messages: true, status: true }
+type TaskIncludePayload = Prisma.TaskGetPayload<{
+  include: {
+    assigneeStatuses: AssigneeStatusInclude,
+    source: true,
+    tags: true,
+    messages: true,
+    status: true,
+    archivedWorkspaceAssigneeTask: true,
+    archivedUserAssigneeTask: true
+  }
 }>
 
 
@@ -56,41 +64,39 @@ export class TaskService {
     },
   }
 
-  static baseInclude() {
-    return {
-      tags: true,
-      source: {
-        where: { deletedAt: null },
-        include: { tags: true }
+  static readonly baseInclude = {
+    tags: true,
+    source: {
+      where: { deletedAt: null },
+      include: { tags: true }
+    },
+    messages: {
+      where: { deletedAt: null },
+      include: {
+        user: true,
       },
-      messages: {
-        where: { deletedAt: null },
-        include: {
-          user: true,
-        },
-        orderBy: TaskService.orderBy,
-        take: 1,
-      },
-      ...TaskService.includeMessageCount,
-      status: true,
-      assigneeStatuses: {
-        where: {
-          assignee: {
-            deletedAt: null,
-          }
-        },
-        orderBy: { assigneeId: 'asc' },
-        include: {
-          assignee: { include: { users: true } },
-          status: true
+      orderBy: TaskService.orderBy,
+      take: 1,
+    },
+    ...TaskService.includeMessageCount,
+    status: true,
+    assigneeStatuses: {
+      where: {
+        assignee: {
+          deletedAt: null,
         }
+      },
+      orderBy: { assigneeId: 'asc' },
+      include: {
+        assignee: { include: { users: true } },
+        status: true
       }
-    } satisfies Prisma.TaskInclude
-  }
+    }
+  } satisfies Prisma.TaskInclude
 
   static withWorkspaceInclude(userId?: number) {
     return {
-      ...TaskService.baseInclude(),
+      ...TaskService.baseInclude,
       workspace: {
         include: {
           permissions: userId
@@ -98,6 +104,14 @@ export class TaskService {
             : true
         }
       }
+    } satisfies Prisma.TaskInclude
+  }
+
+  static withArchivedInclude(userId: number) {
+    return {
+      ...TaskService.baseInclude,
+      archivedWorkspaceAssigneeTask: true,
+      archivedUserAssigneeTask: { where: { userId } },
     } satisfies Prisma.TaskInclude
   }
 
@@ -110,26 +124,30 @@ export class TaskService {
   static formatAssigneeStatus(
     workspace: WorkspaceWithPermissions,
     user: User,
-    archivedIds: Record<number, Date | undefined>,
+    workspaceArchivedIds: Record<number, Date | undefined>,
+    personalArchivedIds: Record<number, Date | undefined>,
     wholeTaskArchivedAt: Date | null,
     assigneeStatus?: AssigneeStatusEntity
   ) {
     const isAssigned = assigneeStatus?.assignee?.users?.some(u => u.id === user.id)
 
-    const archivedAt = (assigneeStatus && archivedIds[assigneeStatus.assigneeId])
+    const workspaceArchivedAt = (assigneeStatus && workspaceArchivedIds[assigneeStatus.assigneeId])
       ?? wholeTaskArchivedAt
       ?? null
+
+    const personalArchivedAt = (assigneeStatus && personalArchivedIds[assigneeStatus.assigneeId]) ?? null
 
     const editable = !!user.info?.isBI || (
       ((
         workspace.assigneeStatusEditable && isAssigned) ||
         workspace.permissions[0]?.type === PermissionType.MANAGER
-      ) && !archivedAt
+      ) && !(workspaceArchivedAt || personalArchivedAt)
     )
 
     return {
       ...assigneeStatus,
-      archivedAt,
+      workspaceArchivedAt,
+      personalArchivedAt,
       editable
     }
   }
@@ -143,50 +161,69 @@ export class TaskService {
     }
   }
 
-  static filterByArchivedAssignee<TTask extends TaskInclude>(
+  static filterByArchivedAssignee<TTask extends TaskIncludePayload>(
     task: TTask,
     archivedIds: Record<number, Date | undefined>,
     isArchived?: boolean,
   ) {
-    if (isArchived === undefined) return task.assigneeStatuses
+    if (isArchived === undefined) {
+      return task.assigneeStatuses
+    }
 
     const isWholeTaskArchived = !!task.archivedAt
 
     if (task.assigneeStatuses.length === 0) {
       return isWholeTaskArchived !== isArchived ? null : task.assigneeStatuses
     }
-
     const activeAssignees = task.assigneeStatuses.filter(
       ({ assigneeId }) => isArchived
-        ? (isWholeTaskArchived || !!archivedIds[assigneeId])
-        : (!isWholeTaskArchived && !archivedIds[assigneeId])
+        ? !!archivedIds[assigneeId]
+        : !archivedIds[assigneeId]
     )
 
     return activeAssignees.length === 0 ? null : activeAssignees
   }
 
-  static formatAdditionalTaskFields<TTask extends TaskInclude>(
+  static formatAdditionalTaskFields<TTask extends TaskIncludePayload>(
     originalTask: TTask,
     workspace: WorkspaceWithPermissions,
     user: User,
-    archivedIds: Record<number, Date | undefined>,
-    isArchived?: boolean,
+    archiveLocation: 'workspace' | 'personal',
+    isArchived?: boolean
   ) {
     const { assigneeStatuses, messages, status, ...rest } = originalTask
+
+    const workspaceArchiveMap = TaskService.getArchivedIdsMap(originalTask.archivedWorkspaceAssigneeTask)
+    const personalArchiveMap = TaskService.getArchivedIdsMap(originalTask.archivedWorkspaceAssigneeTask)
+
+    const archivedIds = archiveLocation === 'workspace' ? workspaceArchiveMap : personalArchiveMap
 
     const activeAssignees = TaskService.filterByArchivedAssignee(originalTask, archivedIds, isArchived)
     if (!activeAssignees) {
       return []
     }
 
-    const filteredAssignees = isArchived === undefined ? assigneeStatuses : activeAssignees
-
     return [{
       ...rest,
       status,
-      ...(filteredAssignees.length === 0 && TaskService.formatAssigneeStatus(workspace, user, archivedIds, originalTask.archivedAt)),
-      assigneeStatuses: filteredAssignees.map(assigneeStatus =>
-        TaskService.formatAssigneeStatus(workspace, user, archivedIds, originalTask.archivedAt, assigneeStatus)
+      ...(activeAssignees.length === 0 &&
+        TaskService.formatAssigneeStatus(
+          workspace,
+          user,
+          workspaceArchiveMap,
+          personalArchiveMap,
+          originalTask.archivedAt
+        )
+      ),
+      assigneeStatuses: activeAssignees.map(assigneeStatus =>
+        TaskService.formatAssigneeStatus(
+          workspace,
+          user,
+          workspaceArchiveMap,
+          personalArchiveMap,
+          originalTask.archivedAt,
+          assigneeStatus
+        )
       ),
       workspace: TaskService.formatTaskWorkspace(workspace, user),
       lastMessage: messages[0]
@@ -289,36 +326,33 @@ export class TaskService {
     return createdTask
   }
 
-  static workspaceArchiveWhere(isArchived?: boolean): Prisma.TaskWhereInput {
-    return {
-      ...(isArchived === false && { archivedAt: null })
-    }
-  }
-
   // FIX Dont include assignee users?
-  async findInWorkspace(workspace: WorkspaceWithPermissions, isArchived?: boolean) {
+  async findInWorkspace(
+    workspace: WorkspaceWithPermissions,
+    user: User
+  ) {
     return await this.prisma.task.findMany({
       where: {
         workspaceId: workspace.id,
-        ...TaskService.commonWhere,
-        ...TaskService.workspaceArchiveWhere(isArchived)
+        ...TaskService.commonWhere
       },
-      include: {
-        ...TaskService.baseInclude(),
-        archivedWorkspaceAssigneeTask: true
-      },
+      include: TaskService.withArchivedInclude(user.id),
       orderBy: TaskService.orderBy
     })
   }
 
-  async findInWorkspaceFormatted(workspace: WorkspaceWithPermissions, user: User, isArchived?: boolean) {
-    const tasks = await this.findInWorkspace(workspace, isArchived)
+  async findInWorkspaceFormatted(
+    workspace: WorkspaceWithPermissions,
+    user: User,
+    isArchived?: boolean
+  ) {
+    const tasks = await this.findInWorkspace(workspace, user)
 
     return tasks.flatMap(task => TaskService.formatAdditionalTaskFields(
       task,
       workspace,
       user,
-      TaskService.getArchivedIdsMap(task.archivedWorkspaceAssigneeTask),
+      'workspace',
       isArchived
     ))
   }
@@ -327,17 +361,22 @@ export class TaskService {
     return `${taskId}${TaskService.TASK_ROW_ID_SEPARATOR}${assigneeId}`
   }
 
-  static extractTaskToRows<TTask extends TaskInclude>(
+  static extractTaskToRows<TTask extends TaskIncludePayload>(
     task: TTask,
     workspace: WorkspaceWithPermissions,
     user: User,
-    onlyUserRows: boolean = false,
-    archivedIds: Record<number, Date | undefined>,
-    isArchived?: boolean,
+    archiveLocation: 'workspace' | 'personal',
+    isArchived?: boolean
   ) {
     const { assigneeStatuses, messages, status, ...taskFields } = task
-    const activeAssignees = TaskService.filterByArchivedAssignee(task, archivedIds, isArchived)
 
+    const workspaceArchiveMap = TaskService.getArchivedIdsMap(task.archivedWorkspaceAssigneeTask)
+    const personalArchiveMap = TaskService.getArchivedIdsMap(task.archivedUserAssigneeTask)
+
+    const isWorkspace = archiveLocation === 'workspace'
+    const archivedIds = isWorkspace ? workspaceArchiveMap : personalArchiveMap
+
+    const activeAssignees = TaskService.filterByArchivedAssignee(task, archivedIds, isArchived)
     if (!activeAssignees) {
       return []
     }
@@ -347,11 +386,16 @@ export class TaskService {
       lastMessage: messages[0]
     }
 
-    if (!onlyUserRows && assigneeStatuses.length === 0) {
-
+    if (isWorkspace && assigneeStatuses.length === 0) {
       return [{
         ...fields,
-        ...TaskService.formatAssigneeStatus(workspace, user, archivedIds, task.archivedAt),
+        ...TaskService.formatAssigneeStatus(
+          workspace,
+          user,
+          workspaceArchiveMap,
+          personalArchiveMap,
+          task.archivedAt
+        ),
         otherAssignees: [],
         rowKey: TaskService.formatTaskRowId(taskFields.id),
         status,
@@ -359,7 +403,14 @@ export class TaskService {
     }
 
     const formattedAssigneeStatuses = assigneeStatuses.map(
-      assigneeStatus => TaskService.formatAssigneeStatus(workspace, user, archivedIds, task.archivedAt, assigneeStatus)
+      assigneeStatus => TaskService.formatAssigneeStatus(
+        workspace,
+        user,
+        workspaceArchiveMap,
+        personalArchiveMap,
+        task.archivedAt,
+        assigneeStatus
+      )
     )
 
     const activeAssigneeIds = new Set(activeAssignees.map(({ assigneeId }) => assigneeId))
@@ -368,7 +419,7 @@ export class TaskService {
       ({ assigneeId }) => assigneeId && activeAssigneeIds.has(assigneeId)
     )
 
-    const assigneeStatusesForRows = onlyUserRows
+    const assigneeStatusesForRows = !isWorkspace
       ? formattedActiveAssignees.filter(({ assignee }) => assignee?.users.some(({ id }) => id === user.id))
       : formattedActiveAssignees
 
@@ -381,45 +432,43 @@ export class TaskService {
       }))
   }
 
-  async findRowsInWorkspace(workspace: WorkspaceWithPermissions, user: User, isArchived?: boolean) {
-    const tasks = await this.findInWorkspace(workspace, isArchived)
+  async findRowsInWorkspace(
+    workspace: WorkspaceWithPermissions,
+    user: User,
+    isArchived?: boolean
+  ) {
+    const tasks = await this.findInWorkspace(workspace, user)
 
     return tasks.map(task =>
       TaskService.extractTaskToRows(
         task,
         workspace,
         user,
-        false,
-        TaskService.getArchivedIdsMap(task.archivedWorkspaceAssigneeTask),
+        'workspace',
         isArchived
       )
     ).flat()
   }
 
-  async findBySource(sourceId: number, isArchived?: boolean) {
+  async findBySource(sourceId: number, userId: number, isArchived?: boolean) {
     return await this.prisma.task.findMany({
       where: {
-        sourceId, deletedAt: null,
-        ...TaskService.workspaceArchiveWhere(isArchived)
+        sourceId,
+        deletedAt: null
       },
-      include: {
-        ...TaskService.baseInclude(),
-        archivedWorkspaceAssigneeTask: true
-      },
-      // Extraction order - the user reviews and edits a source's tasks in the order the AI produced
-      // them, so oldest first. Not TaskService.orderBy, which is newest first.
+      include: TaskService.withArchivedInclude(userId),
       orderBy: { id: 'asc' }
     })
   }
 
   async findFormattedBySource(sourceId: number, workspace: WorkspaceWithPermissions, user: User, isArchived?: boolean) {
-    const tasks = await this.findBySource(sourceId, isArchived)
+    const tasks = await this.findBySource(sourceId, user.id, isArchived)
 
     return tasks.flatMap(task => TaskService.formatAdditionalTaskFields(
       task,
       workspace,
       user,
-      TaskService.getArchivedIdsMap(task.archivedWorkspaceAssigneeTask),
+      'workspace',
       isArchived
     ))
   }
@@ -438,8 +487,8 @@ export class TaskService {
         ...TaskService.commonWhere
       },
       include: {
-        ...TaskService.withWorkspaceInclude(user.id),
-        archivedUserAssigneeTask: { where: { userId: user.id } },
+        ...TaskService.withArchivedInclude(user.id),
+        ...TaskService.withWorkspaceInclude(user.id)
       },
       orderBy: TaskService.orderBy
     })
@@ -452,7 +501,7 @@ export class TaskService {
       task,
       task.workspace,
       user,
-      TaskService.getArchivedIdsMap(task.archivedUserAssigneeTask),
+      'personal',
       isArchived
     ))
   }
@@ -465,8 +514,7 @@ export class TaskService {
         task,
         task.workspace,
         user,
-        true,
-        TaskService.getArchivedIdsMap(task.archivedUserAssigneeTask),
+        'personal',
         isArchived
       ).map(row => ({
         ...row,
@@ -479,8 +527,8 @@ export class TaskService {
     const task = await this.prisma.task.findUnique({
       where: { id, deletedAt: null },
       include: {
-        ...TaskService.withWorkspaceInclude(user.id),
-        archivedWorkspaceAssigneeTask: true
+        ...TaskService.withArchivedInclude(user.id),
+        ...TaskService.withWorkspaceInclude(user.id)
       }
     })
 
@@ -492,7 +540,7 @@ export class TaskService {
       task,
       task.workspace,
       user,
-      TaskService.getArchivedIdsMap(task.archivedWorkspaceAssigneeTask),
+      'workspace',
       isArchived
     )
 
