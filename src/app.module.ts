@@ -30,6 +30,7 @@ import { SocketModule } from './socket/socket.module';
 import { TaskRunnerModule } from './task-runner/task-runner.module';
 import { WorkspaceRequestsModule } from './entities/workspace-requests/workspace-requests.module';
 import { UserViewedTasksModule } from './entities/user-viewed-tasks/user-viewed-tasks.module';
+import { UserWorkspaceEntriesModule } from './entities/user-workspace-entries/user-workspace-entries.module';
 
 // FIX Move to env
 export const openApiRoute = 'open-api'
@@ -74,7 +75,8 @@ export const openApiRoute = 'open-api'
     ArchivedUserAssigneeTaskModule,
     ArchivedWorkspaceAssigneeModule,
     UserViewModule,
-    UserViewedTasksModule
+    UserViewedTasksModule,
+    UserWorkspaceEntriesModule
   ],
   providers: [
     BIGuard,

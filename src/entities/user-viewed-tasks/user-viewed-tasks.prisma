@@ -2,12 +2,12 @@ model UserViewedTasks {
     userId Int  @map("user_id")
     taskId Int  @map("task_id")
     panelViewedAt DateTime? @map("panel_viewed_at")
-    tableViewedAt DateTime @map("table_viewed_at") @default(now())
 
     user User @relation(fields: [userId], references: [id])
     task Task @relation(fields: [taskId], references: [id])
 
     @@id([userId, taskId])
     @@map("user_viewed_tasks")
-    @@index([userId])
+    // @@index([userId, taskId]) 
+    // do we need also on task make the Index?
 }

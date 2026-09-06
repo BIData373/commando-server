@@ -1,22 +1,23 @@
 import { Controller, HttpCode, Patch, Query, Req } from '@nestjs/common';
-import { ApiNoContentResponse, ApiOperation } from '@nestjs/swagger';
+import { ApiNoContentResponse, ApiOperation, ApiQuery } from '@nestjs/swagger';
 import { HttpStatusCode } from 'axios';
 import { Request } from 'express';
-import { GetTaskOrWorkspaceIdDto } from './dto/request/get-task-or-workspace-id.dto';
 import { UserViewedTasksService } from './user-viewed-tasks.service';
+import { GetViewerTaskIdFieldDto } from '../task/dto/request/get-task-id-field.dto';
 
 @Controller('user-viewed-tasks')
 export class UserViewedTasksController {
     constructor(private readonly userViewedMessagesService: UserViewedTasksService) { }
 
-    @ApiOperation({ operationId: 'viewMessages' })
+    @ApiOperation({ operationId: 'viewTasks' })
+    @ApiQuery({ type: GetViewerTaskIdFieldDto })
     @Patch()
     @HttpCode(HttpStatusCode.NoContent)
     @ApiNoContentResponse()
-    async viewMessages(
+    async viewTasks(
         @Req() { user }: Request,
-        @Query() { taskId, workspaceId }: GetTaskOrWorkspaceIdDto,
+        @Query() { taskId }: GetViewerTaskIdFieldDto,
     ) {
-        return await this.userViewedMessagesService.viewMessages(user.id, taskId, workspaceId);
+        return await this.userViewedMessagesService.viewTasks(user.id, taskId);
     }
 }

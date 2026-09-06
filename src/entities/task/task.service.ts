@@ -20,10 +20,9 @@ type AssigneeStatusEntity = Prisma.AssigneeTaskStatusGetPayload<AssigneeStatusIn
 
 type TaskInclude = Prisma.TaskGetPayload<{
   include: {
-    assigneeStatuses: AssigneeStatusInclude, source: true, tags: true, messages: true, status: true, userViewedTasks: true
+    assigneeStatuses: AssigneeStatusInclude, source: true, tags: true, messages: true, status: true, userViewedTasks: true, workspace: { include: { userWorkspaceEntries: true } }
   }
 }>
-
 
 @Injectable()
 export class TaskService {
@@ -95,6 +94,7 @@ export class TaskService {
       ...TaskService.baseInclude(),
       workspace: {
         include: {
+          ...(userId && { userWorkspaceEntries: { where: { userId } } }),
           permissions: userId
             ? { where: { userId } }
             : true
@@ -191,7 +191,7 @@ export class TaskService {
         TaskService.formatAssigneeStatus(workspace, user, archivedIds, originalTask.archivedAt, assigneeStatus)
       ),
       workspace: TaskService.formatTaskWorkspace(workspace, user),
-      ...TaskService.formatUserViewedTask(originalTask),
+      ...TaskService.formatUserViewedTask(originalTask, user),
     }]
   }
 
@@ -307,8 +307,9 @@ export class TaskService {
       },
       include: {
         ...TaskService.baseInclude(),
+        workspace: { include: { userWorkspaceEntries: { where: { userId } } } },
         archivedWorkspaceAssigneeTask: true,
-        userViewedTasks: { where: { userId } }
+        userViewedTasks: { where: { userId } },
       },
       orderBy: TaskService.orderBy
     })
@@ -330,21 +331,24 @@ export class TaskService {
     return `${taskId}${TaskService.TASK_ROW_ID_SEPARATOR}${assigneeId}`
   }
 
-  static formatUserViewedTask({ messages, userViewedTasks, createdAt }: TaskInclude) {
+  static formatUserViewedTask(
+    { messages, userViewedTasks, workspace, createdAt }: TaskInclude,
+    user: User,
+  ) {
+    const [userWorkspaceEntrie] = workspace.userWorkspaceEntries
     const [viewedTask] = userViewedTasks
     const [lastMessage] = messages
-    const viewedInTable = viewedTask != null && createdAt <= viewedTask.tableViewedAt
 
     const viewedMessages = lastMessage == null || (
       viewedTask?.panelViewedAt != null &&
       lastMessage.createdAt <= viewedTask.panelViewedAt
     )
 
-    return {
-      viewedInTable,
-      viewedMessages,
-      lastMessage
-    }
+    const viewedWorksapceInTable = !!userWorkspaceEntrie && createdAt <= userWorkspaceEntrie.enteredAt
+    const viewedPersonalInTable = user?.personalAreaEnteredAt !== null && createdAt <= user.personalAreaEnteredAt
+    const viewedInTable = viewedWorksapceInTable || viewedPersonalInTable || viewedTask?.panelViewedAt != null
+
+    return { viewedInTable, viewedMessages, lastMessage }
   }
 
   static extractTaskToRows<TTask extends TaskInclude>(
@@ -364,7 +368,7 @@ export class TaskService {
 
     const fields = {
       ...taskFields,
-      ...TaskService.formatUserViewedTask(task)
+      ...TaskService.formatUserViewedTask(task, user)
     }
 
     if (!onlyUserRows && assigneeStatuses.length === 0) {
@@ -423,6 +427,7 @@ export class TaskService {
       },
       include: {
         ...TaskService.baseInclude(),
+        workspace: { include: { userWorkspaceEntries: { where: { userId } } } },
         archivedWorkspaceAssigneeTask: true,
         userViewedTasks: { where: { userId } }
       },

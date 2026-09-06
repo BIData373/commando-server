@@ -1,10 +1,12 @@
 model User {
   id  Int    @id @default(autoincrement())
   upn String @unique
+  personalAreaEnteredAt DateTime? @map("personal_area_entered_at")
 
   /// [UserInfo]
   info Json?
 
+  userWorkspaceEntries UserWorkspaceEntries[]
   userViewedTasks UserViewedTasks[]
   archivedUserAssigneeTask ArchivedUserAssigneeTask[]
   assignees   Assignee[]    @relation("assignee_users")

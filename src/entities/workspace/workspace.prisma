@@ -18,6 +18,7 @@ model Workspace {
   pikudId Int   @map("pikud_id")
   pikud   Pikud @relation(fields: [pikudId], references: [id])
 
+  userWorkspaceEntries UserWorkspaceEntries[]
   tags              Tag[]
   tasks             Task[]
   workspaceStatuses WorkspaceStatus[]
