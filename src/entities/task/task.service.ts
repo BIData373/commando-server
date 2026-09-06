@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common'
-import { keyBy, mapValues } from 'lodash'
+import { keyBy, mapValues, range } from 'lodash'
 import { chatUrl, notificationTemplate, vectorUrl } from '../../common/consts/env'
 import { renderTemplate } from '../../common/functions/template'
 import { PrismaService } from '../../common/prisma.service'
@@ -228,38 +228,92 @@ export class TaskService {
     })
   }
 
+  // Reserves `count` serial ids for a workspace and returns them in order.
+  // The bump-and-read is one atomic `UPDATE ... RETURNING`, so it takes a row lock on the
+  // workspace and two concurrent creates queue instead of racing for the same number.
+  // Must run inside the same transaction as the task create — otherwise a rolled-back create
+  // burns a number.
+  // Raw rather than `tx.workspace.update` on purpose: Prisma would fire Workspace's `@updatedAt`
+  // and rewrite the workspace's audit timestamp every time a task is created, with no matching
+  // `updatedBy` to explain it.
+  static async reserveSerialIdsTx(tx: Prisma.TransactionClient, workspaceId: number, count: number = 1) {
+    if (count < 1) return []
+
+    const [{ lastTaskId }] = await tx.$queryRaw<{ lastTaskId: number }[]>`
+      UPDATE "workspaces"
+      SET "last_task_id" = "last_task_id" + ${count}
+      WHERE "id" = ${workspaceId}
+      RETURNING "last_task_id" AS "lastTaskId"
+    `
+
+    return range(lastTaskId - count + 1, lastTaskId + 1)
+  }
+
+  // Reads the workspace's serial id counter without bumping it, for callers that number their tasks
+  // inline and write the counter forward with `bumpSerialIds` once the create lands.
+  // Prefer `reserveSerialIdsTx` wherever a transaction is available: here the read and the bump are
+  // separate statements, so two concurrent creates in the same workspace can read the same number
+  // and collide on `@@unique([workspaceId, serialId])`.
+  async getLastSerialId(workspaceId: number) {
+    const { lastTaskId } = await this.prisma.workspace.findUniqueOrThrow({
+      where: { id: workspaceId },
+      select: { lastTaskId: true }
+    })
+
+    return lastTaskId
+  }
+
+  // Moves the workspace's serial id counter forward by `count`, for tasks numbered off a
+  // `getLastSerialId` read. Written as `+ count` rather than an absolute set so a bump that landed
+  // in between is carried forward instead of overwritten.
+  // Raw for the same reason as `reserveSerialIdsTx` — `workspace.update` would rewrite `updatedAt`.
+  async bumpSerialIds(workspaceId: number, count: number) {
+    if (count < 1) return
+
+    await this.prisma.$executeRaw`
+      UPDATE "workspaces"
+      SET "last_task_id" = "last_task_id" + ${count}
+      WHERE "id" = ${workspaceId}
+    `
+  }
+
   async create(
     { tags, workspaceId, sourceId, assignees, context, ...dto }: CreateTaskDto,
     userId: number
   ) {
     const [notStartedStatus] = await this.findDefaultStatusInWorkspaces(workspaceId)
 
-    const createdTask = await this.prisma.task.create({
-      data: {
-        ...dto,
-        createdBy: userId,
-        updatedBy: userId,
-        workspace: {
-          connect: { id: workspaceId }
-        },
-        status: {
-          connect: { id: notStartedStatus.id }
-        },
-        ...(typeof sourceId === 'number' && {
-          source: {
-            connect: {
-              id: sourceId
+    const createdTask = await this.prisma.$transaction(async tx => {
+      const [serialId] = await TaskService.reserveSerialIdsTx(tx, workspaceId)
+
+      return await tx.task.create({
+        data: {
+          ...dto,
+          serialId,
+          createdBy: userId,
+          updatedBy: userId,
+          workspace: {
+            connect: { id: workspaceId }
+          },
+          status: {
+            connect: { id: notStartedStatus.id }
+          },
+          ...(typeof sourceId === 'number' && {
+            source: {
+              connect: {
+                id: sourceId
+              }
             }
-          }
-        }),
-        ...(assignees?.length && {
-          assigneeStatuses: taskAssigneeStatusesCreateArgs(assignees, notStartedStatus.id)
-        }),
-        ...(tags && {
-          tags: tagsConnectOrCreateArgs(tags, workspaceId, userId)
-        })
-      },
-      include: TaskService.withWorkspaceInclude(userId)
+          }),
+          ...(assignees?.length && {
+            assigneeStatuses: taskAssigneeStatusesCreateArgs(assignees, notStartedStatus.id)
+          }),
+          ...(tags && {
+            tags: tagsConnectOrCreateArgs(tags, workspaceId, userId)
+          })
+        },
+        include: TaskService.withWorkspaceInclude(userId)
+      })
     })
 
     if (assignees?.length) {

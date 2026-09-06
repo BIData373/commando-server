@@ -99,10 +99,16 @@ export class WorkspaceService {
     });
   }
 
+  // Workspace is soft-deleted, so the DB-level `onDelete: Cascade` on Permission never fires.
+  // Permission has no soft-delete columns, so its rows are dropped here instead.
   async remove(id: number, deletedBy: number) {
-    return await this.prisma.workspace.update({
-      where: { id },
-      data: { deletedAt: new Date(), deletedBy },
+    return await this.prisma.$transaction(async tx => {
+      await tx.permission.deleteMany({ where: { workspaceId: id } });
+
+      return await tx.workspace.update({
+        where: { id },
+        data: { deletedAt: new Date(), deletedBy },
+      });
     });
   }
 }
