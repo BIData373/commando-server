@@ -1,22 +1,22 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
-import { countBy, flatMap, intersection, map, uniq } from 'lodash';
-import { chatUrl, discussionNotificationTemplate, vectorUrl } from '../../common/consts/env';
-import { decodeMulterFilename } from '../../common/functions/string';
-import { renderTemplate } from '../../common/functions/template';
-import { PrismaService } from '../../common/prisma.service';
-import { SocketGateway } from '../../socket/socket.gateway';
-import { SocketEventType } from '../../socket/types/socket-event-type.enum';
-import { TaskRunnerService } from '../../task-runner/task-runner.service';
-import { DeadlineType, ExtractionStatus, Prisma, Source, Task, TaskCreationType, User, Workspace } from '../../types/prisma';
-import { S3Service } from '../s3/s3.service';
-import { MessageRelayService } from '../services/message-relay.service';
-import { tagsConnectOrCreateArgs, tagsSetOrCreateArgs } from '../tag/functions/tag-args';
-import { taskAssigneeStatusesCreateArgs } from '../task/functions/task-args';
-import { TaskService } from '../task/task.service';
-import { CreateSourceDto } from './dto/request/create-source.dto';
-import { GetAIExtractionCallbackDto } from './dto/request/get-ai-extraction-callback.dto';
-import { UpdateSourceDto } from './dto/request/update-source.dto';
-import { SourceDto } from './dto/response/source.dto';
+import { BadRequestException, Injectable } from '@nestjs/common'
+import { countBy, flatMap, intersection, map, uniq } from 'lodash'
+import { chatUrl, discussionNotificationTemplate, vectorUrl } from '../../common/consts/env'
+import { decodeMulterFilename } from '../../common/functions/string'
+import { renderTemplate } from '../../common/functions/template'
+import { PrismaService } from '../../common/prisma.service'
+import { SocketGateway } from '../../socket/socket.gateway'
+import { SocketEventType } from '../../socket/types/socket-event-type.enum'
+import { TaskRunnerService } from '../../task-runner/task-runner.service'
+import { DeadlineType, ExtractionStatus, Prisma, Source, Task, TaskCreationType, User, Workspace } from '../../types/prisma'
+import { S3Service } from '../s3/s3.service'
+import { MessageRelayService } from '../services/message-relay.service'
+import { tagsConnectOrCreateArgs, tagsSetOrCreateArgs } from '../tag/functions/tag-args'
+import { taskAssigneeStatusesCreateArgs } from '../task/functions/task-args'
+import { TaskService } from '../task/task.service'
+import { CreateSourceDto } from './dto/request/create-source.dto'
+import { GetAIExtractionCallbackDto } from './dto/request/get-ai-extraction-callback.dto'
+import { UpdateSourceDto } from './dto/request/update-source.dto'
+import { SourceDto } from './dto/response/source.dto'
 
 @Injectable()
 export class SourceService {
@@ -32,44 +32,36 @@ export class SourceService {
     private readonly messageRelayService: MessageRelayService,
   ) { }
 
-    async sendTaskCreatedNotifications(
-           { title: workspaceTitle, chatNotification, mailNotification }: Workspace,
-      sourceName: string,
-      recipients: string[],
-      count: number,
-      date?: Date
-    ) {
-      const title = `קיבלת הנחיות חדשות מאת: ${workspaceTitle}`
-      const tasksUrl = `${vectorUrl}/personal/tasks`
-      const source = `מתוך דיון: ${sourceName} ${date?.toLocaleDateString() ?? ''}`
+  async sendTaskCreatedNotifications(
+    { title: workspaceTitle, chatNotification, mailNotification }: Workspace,
+    sourceName: string,
+    recipients: string[],
+    count: number,
+    date?: Date
+  ) {
+    const title = `קיבלת הנחיות חדשות מאת: ${workspaceTitle}`
+    const tasksUrl = `${vectorUrl}/personal/tasks`
+    const source = `מתוך דיון: ${sourceName} ${date?.toLocaleDateString() ?? ''}`
 
-      if (chatNotification) {
-        const chatMessage = `${source}, נוצרו ${count} הנחיות באחריותך\n
+    if (chatNotification) {
+      const chatMessage = `${source}, נוצרו ${count} הנחיות באחריותך\n
          לצפייה בהנחיות: ${tasksUrl}`
-        await this.messageRelayService.sendNotification(
-          recipients,
-          'chat',
-          title,
-          chatMessage
-        )
-      }
-      if (mailNotification) {
-        const html = renderTemplate(discussionNotificationTemplate!, {
-          workspaceName: workspaceTitle,
-          source,
-          count,
-          tasksUrl,
-          vectorUrl: vectorUrl,
-          chatUrl: chatUrl,
-        })
-        await this.messageRelayService.sendNotification(
-          recipients,
-          'mail',
-          title,
-          html
-        )
-      }
+
+      await this.messageRelayService.sendNotification(recipients, title, chatMessage, 'chat')
     }
+    if (mailNotification) {
+      const html = renderTemplate(discussionNotificationTemplate!, {
+        workspaceName: workspaceTitle,
+        source,
+        count,
+        tasksUrl,
+        vectorUrl: vectorUrl,
+        chatUrl: chatUrl,
+      })
+
+      await this.messageRelayService.sendNotification(recipients, title, html, 'mail')
+    }
+  }
 
   async create(
     { tags, tasks, workspaceId, context, aiExtraction, draft, ...dto }: CreateSourceDto,
@@ -122,7 +114,7 @@ export class SourceService {
         updatedBy: userId
       },
       include: SourceService.include
-    });
+    })
 
     // The counter is written forward only once the tasks are actually in — a failed create leaves it
     // untouched instead of burning the numbers.
@@ -133,7 +125,7 @@ export class SourceService {
     }
 
     this.sendNotificationsForNewTasks((tasks ?? []).map(t => map(t.assignees ?? [], 'id')), workspaceId, dto.name, dto.date)
-      .catch(e => console.error('Failed to send task created notifications:', e));
+      .catch(e => console.error('Failed to send task created notifications:', e))
 
     return source
   }
@@ -147,8 +139,8 @@ export class SourceService {
     date?: Date
   ) {
     // Collect all unique assignee IDs across all tasks
-    const assigneeIds = uniq(flatMap(taskAssigneeIds));
-    if (!assigneeIds.length) return;
+    const assigneeIds = uniq(flatMap(taskAssigneeIds))
+    if (!assigneeIds.length) return
 
     // Fetch workspace notification settings and assignee-to-user mappings in parallel
     const [workspace, assigneesWithUsers] = await this.prisma.$transaction([
@@ -159,43 +151,43 @@ export class SourceService {
         where: { id: { in: assigneeIds } },
         select: { id: true, users: { select: { upn: true } } }
       })
-    ]);
+    ])
 
     // Map each assignee ID to its linked user UPNs
     const upnsByAssigneeId = new Map(
       assigneesWithUsers.map(a => [a.id, a.users.map(u => u.upn)])
-    );
+    )
 
     // Count unique tasks per user — uniq ensures a user with multiple assignees on the same task counts once
     const tasksPerUser = countBy(
       flatMap(taskAssigneeIds, assignees =>
         uniq(flatMap(assignees, id => upnsByAssigneeId.get(id) ?? []))
       )
-    );
+    )
 
     // Send all notifications in parallel — one per user
     await Promise.all(
       Object.entries(tasksPerUser).map(([upn, count]) =>
         this.sendTaskCreatedNotifications(workspace, sourceName, [upn], count, date)
       )
-    );
+    )
   }
 
   async findInWorkspace(workspaceId: number): Promise<Prisma.SourceGetPayload<{ include: typeof SourceService.include }>[]> {
     return await this.prisma.source.findMany({
       where: { workspaceId, deletedAt: null, draft: false },
       include: SourceService.include
-    });
+    })
   }
 
   async findOne(id: number, user: User) {
     const source = await this.prisma.source.findUnique({
       where: { id, deletedAt: null },
       include: SourceService.include
-    });
+    })
 
     if (!source) {
-      return null;
+      return null
     }
 
     const workspace = await this.prisma.workspace.findUniqueOrThrow({
@@ -205,7 +197,7 @@ export class SourceService {
 
     const tasks = await this.taskService.findFormattedBySource(source.id, workspace, user)
 
-    return { ...source, tasks };
+    return { ...source, tasks }
   }
 
   async findOneAndEmit(id: number, user: User, urlName: string, event: SocketEventType) {
@@ -221,20 +213,20 @@ export class SourceService {
     updatedBy: number,
     file?: Express.Multer.File
   ) {
-    let attachmentKey: string | null | undefined;
-    let attachmentName: string | null | undefined;
+    let attachmentKey: string | null | undefined
+    let attachmentName: string | null | undefined
 
     if (file) {
       if (source?.attachmentKey) {
-        await this.s3.delete(source.attachmentKey);
+        await this.s3.delete(source.attachmentKey)
       }
 
-      attachmentKey = await this.s3.upload(file, 'sources');
-      attachmentName = decodeMulterFilename(file.originalname);
+      attachmentKey = await this.s3.upload(file, 'sources')
+      attachmentName = decodeMulterFilename(file.originalname)
     } else if (deleteAttachment && source?.attachmentKey) {
-      await this.s3.delete(source.attachmentKey);
-      attachmentKey = null;
-      attachmentName = null;
+      await this.s3.delete(source.attachmentKey)
+      attachmentKey = null
+      attachmentName = null
     }
 
     if (aiExtraction) {
@@ -254,7 +246,7 @@ export class SourceService {
         })
       },
       include: SourceService.include
-    });
+    })
   }
 
   async extract(source: Source): Promise<SourceDto> {
@@ -279,7 +271,7 @@ export class SourceService {
       where: { id },
       data: { deletedAt: new Date(), deletedBy },
       include: SourceService.include
-    });
+    })
   }
 
   async processAiResult(source: Source, dto: GetAIExtractionCallbackDto) {
@@ -375,7 +367,7 @@ export class SourceService {
       this.sendNotificationsForNewTasks(
         aiTasks.map(t => intersection(t.assigneeIds, validIds)),
         source.workspaceId, source.name, source.date ?? undefined
-      ).catch((e: Error) => console.error('Failed to send AI task created notifications:', e));
+      ).catch((e: Error) => console.error('Failed to send AI task created notifications:', e))
     }
 
     return await this.findOneAndEmit(source.id, user, workspace.urlName, SocketEventType.TASK_EXTRACTION_FINISHED)
