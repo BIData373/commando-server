@@ -80,10 +80,12 @@ export class SourceService {
     const attachmentName = file ? decodeMulterFilename(file.originalname) : undefined
 
     let notStartedStatusId: number | undefined
+    let lastSerialId = 0
 
     if (tasks?.length) {
       const [notStartedStatus] = await this.taskService.findDefaultStatusInWorkspaces(workspaceId)
       notStartedStatusId = notStartedStatus.id
+      lastSerialId = await this.taskService.getLastSerialId(workspaceId)
     }
 
     const source = await this.prisma.source.create({
@@ -99,8 +101,9 @@ export class SourceService {
         })),
         ...(tasks !== undefined && ({
           tasks: {
-            create: tasks.map(({ assignees, tags: taskTags, ...taskDto }) => ({
+            create: tasks.map(({ assignees, tags: taskTags, ...taskDto }, index) => ({
               ...taskDto,
+              serialId: lastSerialId + index + 1,
               workspaceId,
               statusId: notStartedStatusId!,
               creationType: TaskCreationType.HUMAN,
@@ -120,6 +123,10 @@ export class SourceService {
       },
       include: SourceService.include
     });
+
+    // The counter is written forward only once the tasks are actually in — a failed create leaves it
+    // untouched instead of burning the numbers.
+    await this.taskService.bumpSerialIds(workspaceId, tasks?.length ?? 0)
 
     if (aiExtraction) {
       this.taskRunner.sendTask('vector.process_document', [source.id])
@@ -314,12 +321,19 @@ export class SourceService {
       // Sequential transaction so the tasks land in the order the AI returned them and a partial write
       // is impossible. Postgres aborts the whole transaction on the first failing statement, so this is
       // all-or-nothing by design — there is no per-task recovery to be had here.
-      createdTasks = await this.prisma.$transaction(
-        aiTasks.map(({ title, deadlineType, deadlineDate, assigneeIds: taskAssigneeIds }) => {
+      // The whole batch's serial ids are reserved up front in one counter bump, so the numbers stay
+      // contiguous and in AI order rather than interleaving with a concurrent manual create.
+      createdTasks = await this.prisma.$transaction(async tx => {
+        const serialIds = await TaskService.reserveSerialIdsTx(tx, source.workspaceId, aiTasks.length)
+
+        const tasks: Task[] = []
+
+        for (const [index, { title, deadlineType, deadlineDate, assigneeIds: taskAssigneeIds }] of aiTasks.entries()) {
           const validTaskAssigneeIds = intersection(taskAssigneeIds, validIds)
 
-          return this.prisma.task.create({
+          tasks.push(await tx.task.create({
             data: {
+              serialId: serialIds[index],
               title,
               deadlineType: deadlineType ?? DeadlineType.DATE,
               dueDate: deadlineDate ? new Date(deadlineDate) : undefined,
@@ -338,9 +352,11 @@ export class SourceService {
                 }
               })
             }
-          })
-        })
-      )
+          }))
+        }
+
+        return tasks
+      })
     } catch (e) {
       console.log('Failed to Create AI Tasks: ', e)
       // The extraction itself still finishes — it just finishes without tasks

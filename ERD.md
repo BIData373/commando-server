@@ -164,6 +164,7 @@ COMPLETED COMPLETED
 
   "tasks" {
     Int id "🗝️"
+    Int serial_id 
     String title 
     String description "❓"
     Boolean flagged 
@@ -219,6 +220,7 @@ COMPLETED COMPLETED
     Boolean assignee_status_editable 
     Boolean chat_notification 
     Boolean mail_notification 
+    Int last_task_id 
     DateTime created_at 
     Int created_by 
     DateTime updated_at 

@@ -1,5 +1,8 @@
 model Task {
   id           Int              @id @default(autoincrement())
+  // Per-workspace running number, allocated from Workspace.lastTaskId. Unique within a
+  // workspace but not globally — use `id` for anything that has to be globally unique.
+  serialId     Int              @map("serial_id")
   title        String
   description  String?          @db.Text
   flagged      Boolean          @default(false)
@@ -33,6 +36,7 @@ model Task {
   messages         Message[]
   history          TaskHistory[]
 
+  @@unique([workspaceId, serialId])
   @@map("tasks")
 }
 
