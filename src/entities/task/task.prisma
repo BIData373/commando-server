@@ -26,6 +26,7 @@ model Task {
   statusId Int              @map("status_id")
   status   WorkspaceStatus  @relation(fields: [statusId], references: [id])
 
+  userViewedTasks UserViewedTasks[]
   archivedWorkspaceAssigneeTask ArchivedWorkspaceAssigneeTask[]
   archivedUserAssigneeTask ArchivedUserAssigneeTask[]
   tags             Tag[]                @relation("tasks_tags")

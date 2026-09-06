@@ -1,0 +1,11 @@
+model UserWorkspaceEntries {
+    userId Int @map("user_id")
+    workspaceId Int @map("workspace_id")
+    enteredAt DateTime @map("entered_at") @default(now())
+
+    user User @relation(fields: [userId], references: [id])
+    workspace Workspace @relation(fields: [workspaceId], references: [id])
+
+    @@id([userId, workspaceId])
+    @@map("user_workspace_entries")
+}
