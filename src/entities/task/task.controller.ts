@@ -1,19 +1,19 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req, UseInterceptors } from '@nestjs/common';
-import { ApiBody, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery } from '@nestjs/swagger';
-import { TransformPlainToInstance } from 'class-transformer';
-import { Request } from 'express';
-import { CopyDtosInRequest } from '../../common/interceptors/copy-dtos-in-request.interceptor';
-import { GetViewerWorkspaceIdFieldDto } from '../workspace/dto/request/get-workspace-id-field.dto';
-import { CreateTaskDto } from './dto/request/create-task.dto';
-import { GetManagerTaskIdDto, GetViewerTaskIdDto } from './dto/request/get-task-id.dto';
-import { ListTaskRowsQueryDto } from './dto/request/list-task-rows.dto';
-import { UpdateTaskDto } from './dto/request/update-task.dto';
-import { TaskRowWithWorkspaceDto } from './dto/response/task-row-with-workspace.dto';
-import { TaskRowDto } from './dto/response/task-row.dto';
-import { TaskWithWorkspaceDto } from './dto/response/task-with-workspace.dto';
-import { TaskDto } from './dto/response/task.dto';
-import { TaskService } from './task.service';
-import { GetFilterIsArchived } from '../user/dto/request/get-filter-is-arcived.dto';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req, UseInterceptors } from '@nestjs/common'
+import { ApiBody, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery } from '@nestjs/swagger'
+import { TransformPlainToInstance } from 'class-transformer'
+import { Request } from 'express'
+import { CopyDtosInRequest } from '../../common/interceptors/copy-dtos-in-request.interceptor'
+import { GetViewerWorkspaceIdFieldDto } from '../workspace/dto/request/get-workspace-id-field.dto'
+import { CreateTaskDto } from './dto/request/create-task.dto'
+import { GetManagerTaskIdDto, GetViewerTaskIdDto } from './dto/request/get-task-id.dto'
+import { ListTaskRowsQueryDto } from './dto/request/list-task-rows.dto'
+import { UpdateTaskDto } from './dto/request/update-task.dto'
+import { TaskRowWithWorkspaceDto } from './dto/response/task-row-with-workspace.dto'
+import { TaskRowDto } from './dto/response/task-row.dto'
+import { TaskWithWorkspaceDto } from './dto/response/task-with-workspace.dto'
+import { TaskDto } from './dto/response/task.dto'
+import { TaskService } from './task.service'
+import { GetFilterIsArchived } from '../user/dto/request/get-filter-is-arcived.dto'
 
 @Controller('task')
 export class TaskController {
@@ -29,7 +29,7 @@ export class TaskController {
     @Req() { user }: Request,
     @Body() dto: CreateTaskDto
   ) {
-    return await this.taskService.create(dto, user.id);
+    return await this.taskService.create(dto, user.id)
   }
 
   @ApiOperation({ operationId: 'listTasks' })
@@ -42,7 +42,7 @@ export class TaskController {
     @Query() { context: { workspace, user } }: GetViewerWorkspaceIdFieldDto,
     @Query() { isArchived }: GetFilterIsArchived
   ) {
-    return await this.taskService.findInWorkspaceFormatted(workspace, user, isArchived);
+    return await this.taskService.findInWorkspaceFormatted(workspace, user, isArchived)
   }
 
   @ApiOperation({ operationId: 'listTaskRows' })
@@ -54,7 +54,7 @@ export class TaskController {
     @Query() { context: { workspace, user } }: GetViewerWorkspaceIdFieldDto,
     @Query() { isArchived }: GetFilterIsArchived
   ) {
-    return await this.taskService.findRowsInWorkspace(workspace, user, isArchived);
+    return await this.taskService.findRowsInWorkspace(workspace, user, isArchived)
   }
 
   @ApiOperation({ operationId: 'listPersonalTasks' })
@@ -66,7 +66,7 @@ export class TaskController {
     @Req() { user }: Request,
     @Query() { isArchived }: GetFilterIsArchived
   ) {
-    return await this.taskService.findPersonalFormatted(user, isArchived);
+    return await this.taskService.findPersonalFormatted(user, isArchived)
   }
 
   @ApiOperation({ operationId: 'listPersonalTaskRows' })
@@ -78,20 +78,18 @@ export class TaskController {
     @Req() { user }: Request,
     @Query() { isArchived }: GetFilterIsArchived
   ) {
-    return await this.taskService.findPersonalRows(user, isArchived);
+    return await this.taskService.findPersonalRows(user, isArchived)
   }
 
   @ApiOperation({ operationId: 'getTask' })
   @ApiParam({ name: 'id', type: Number })
-  @ApiQuery({ type: GetFilterIsArchived })
   @Get(':id')
   @ApiOkResponse({ type: TaskWithWorkspaceDto })
   @TransformPlainToInstance(TaskWithWorkspaceDto)
   async findOne(
     @Param() { id, context: { user } }: GetViewerTaskIdDto,
-    @Query() { isArchived }: GetFilterIsArchived
   ) {
-    return await this.taskService.findOne(id, user, isArchived);
+    return await this.taskService.findOne(id, user)
   }
 
   // FIX Add to history
@@ -109,7 +107,7 @@ export class TaskController {
     @Param() { context: { task } }: GetManagerTaskIdDto,
     @Body() dto: UpdateTaskDto
   ) {
-    return await this.taskService.update(task, dto, user.id);
+    return await this.taskService.update(task, dto, user.id)
   }
 
   // FIX Add to history
@@ -122,6 +120,6 @@ export class TaskController {
     @Req() { user }: Request,
     @Param() { id }: GetManagerTaskIdDto
   ) {
-    return await this.taskService.remove(id, user.id);
+    return await this.taskService.remove(id, user.id)
   }
 }

@@ -11,14 +11,18 @@ export class AssigneeStatusDto {
 
     @ExposeProperty({ type: WorkspaceStatusDto })
     @Type(() => WorkspaceStatusDto)
-    status: WorkspaceStatusDto;
+    status: WorkspaceStatusDto
 
     @ExposeProperty()
     description: string
 
     @ExposeProperty({ type: Date, nullable: true })
     @Type(() => Date)
-    archivedAt: Date | null
+    personalArchivedAt: Date | null
+
+    @ExposeProperty({ type: Date, nullable: true })
+    @Type(() => Date)
+    workspaceArchivedAt: Date | null
 
     @ExposeProperty()
     editable: boolean
