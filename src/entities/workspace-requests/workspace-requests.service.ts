@@ -46,7 +46,7 @@ export class WorkspaceRequestsService {
     const chatTitleMessage = `*בקשה לפתיחת סביבה חדשה בווקטור נקלטה*`
 
     const createdByUrl = WorkspaceRequestsService.formatDirectChatUrl(user.upn)
-    const managers = details.managers.map(manager => `*${WorkspaceRequestsService.formatDirectChatUrl(manager)}*`).join('\n')
+    const managers = details.managers.map(manager => `*$[${manager}](${WorkspaceRequestsService.formatDirectChatUrl(manager)})*`).join('\n')
 
     const chatBodyMessage = `מספר בקשה: *${response.id}*
 
