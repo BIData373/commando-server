@@ -1,5 +1,5 @@
 import { Controller, HttpCode, Patch, Query, Req } from '@nestjs/common';
-import { ApiNoContentResponse, ApiOperation, ApiQuery } from '@nestjs/swagger';
+import { ApiNoContentResponse, ApiOperation } from '@nestjs/swagger';
 import { HttpStatusCode } from 'axios';
 import { UserWorkspaceEntriesService } from './user-workspace-entries.service';
 import { GetOptionalViewerWorkspaceIdFieldDto } from '../workspace/dto/request/get-workspace-id-field.dto';
@@ -10,7 +10,6 @@ export class UserWorkspaceEntriesController {
   constructor(private readonly userWorkspaceEntriesService: UserWorkspaceEntriesService) { }
 
   @ApiOperation({ operationId: 'updateUserEntrie' })
-  @ApiQuery({ type: GetOptionalViewerWorkspaceIdFieldDto })
   @Patch()
   @HttpCode(HttpStatusCode.NoContent)
   @ApiNoContentResponse()

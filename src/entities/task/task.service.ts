@@ -18,9 +18,15 @@ type AssigneeStatusInclude = {
 
 type AssigneeStatusEntity = Prisma.AssigneeTaskStatusGetPayload<AssigneeStatusInclude>
 
+type WorkspaceInclude = {
+  include: { userWorkspaceEntries: true }
+}
+
 type TaskInclude = Prisma.TaskGetPayload<{
   include: {
-    assigneeStatuses: AssigneeStatusInclude, source: true, tags: true, messages: true, status: true, userViewedTasks: true, workspace: { include: { userWorkspaceEntries: true } }
+    assigneeStatuses: AssigneeStatusInclude,
+    source: true, tags: true, messages: true, status: true, userViewedTasks: true,
+    workspace: WorkspaceInclude,
   }
 }>
 
