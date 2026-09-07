@@ -523,7 +523,7 @@ export class TaskService {
     )
   }
 
-  async findOne(id: number, user: User, isArchived?: boolean) {
+  async findOne(id: number, user: User) {
     const task = await this.prisma.task.findUnique({
       where: { id, deletedAt: null },
       include: {
@@ -540,8 +540,7 @@ export class TaskService {
       task,
       task.workspace,
       user,
-      'workspace',
-      isArchived
+      'workspace'
     )
 
     return formatted ?? null
