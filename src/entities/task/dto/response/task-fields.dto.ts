@@ -59,4 +59,10 @@ export class TaskFieldsDto extends IdMetaFieldsDto {
 
   @ExposeProperty()
   editable: boolean;
+
+  @ExposeProperty()
+  viewedInTable: boolean;
+
+  @ExposeProperty()
+  viewedMessages: boolean;
 }

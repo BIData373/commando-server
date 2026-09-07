@@ -31,9 +31,10 @@ export class MessageController {
   @ApiOkResponse({ type: [MessageDto] })
   @TransformPlainToInstance(MessageDto)
   async findInTask(
+    @Req() { user }: Request,
     @Query() { taskId }: GetViewerTaskIdFieldDto
   ) {
-    return await this.messageService.findInTask(taskId);
+    return await this.messageService.findInTask(taskId, user.id);
   }
 
   @ApiOperation({ operationId: 'getMessage' })
@@ -42,9 +43,10 @@ export class MessageController {
   @ApiOkResponse({ type: MessageDto })
   @TransformPlainToInstance(MessageDto)
   async findOne(
+    @Req() { user }: Request,
     @Param() { id }: GetViewerMessageIdDto
   ) {
-    return await this.messageService.findOne(id);
+    return await this.messageService.findOne(id, user.id);
   }
 
   @ApiOperation({ operationId: 'updateMessage' })

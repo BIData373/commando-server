@@ -18,6 +18,8 @@ type AssigneeStatusInclude = {
 
 type AssigneeStatusEntity = Prisma.AssigneeTaskStatusGetPayload<AssigneeStatusInclude>
 
+type WorkspaceInclude = { include: { userWorkspaceVisits: true } }
+
 type TaskIncludePayload = Prisma.TaskGetPayload<{
   include: {
     assigneeStatuses: AssigneeStatusInclude,
@@ -26,10 +28,11 @@ type TaskIncludePayload = Prisma.TaskGetPayload<{
     messages: true,
     status: true,
     archivedWorkspaceAssigneeTask: true,
-    archivedUserAssigneeTask: true
+    archivedUserAssigneeTask: true,
+    workspace: WorkspaceInclude,
+    userViewedTasks: true
   }
 }>
-
 
 @Injectable()
 export class TaskService {
@@ -99,11 +102,13 @@ export class TaskService {
       ...TaskService.baseInclude,
       workspace: {
         include: {
+          ...(userId && { userWorkspaceVisits: true }),
           permissions: userId
             ? { where: { userId } }
             : true
         }
-      }
+      },
+      userViewedTasks: { where: { userId } },
     } satisfies Prisma.TaskInclude
   }
 
@@ -191,7 +196,7 @@ export class TaskService {
     archiveLocation: 'workspace' | 'personal',
     isArchived?: boolean
   ) {
-    const { assigneeStatuses, messages, status, ...rest } = originalTask
+    const { assigneeStatuses, status, ...rest } = originalTask
 
     const workspaceArchiveMap = TaskService.getArchivedIdsMap(originalTask.archivedWorkspaceAssigneeTask)
     const personalArchiveMap = TaskService.getArchivedIdsMap(originalTask.archivedWorkspaceAssigneeTask)
@@ -226,7 +231,7 @@ export class TaskService {
         )
       ),
       workspace: TaskService.formatTaskWorkspace(workspace, user),
-      lastMessage: messages[0]
+      ...TaskService.formatUserViewedTask(originalTask, user),
     }]
   }
 
@@ -336,7 +341,10 @@ export class TaskService {
         workspaceId: workspace.id,
         ...TaskService.commonWhere
       },
-      include: TaskService.withArchivedInclude(user.id),
+      include: {
+        ...TaskService.withArchivedInclude(user.id),
+        ...TaskService.withWorkspaceInclude(user.id)
+      },
       orderBy: TaskService.orderBy
     })
   }
@@ -361,6 +369,26 @@ export class TaskService {
     return `${taskId}${TaskService.TASK_ROW_ID_SEPARATOR}${assigneeId}`
   }
 
+  static formatUserViewedTask(
+    { messages, userViewedTasks, workspace, createdAt }: TaskIncludePayload,
+    user: User,
+  ) {
+    const [latestWorkspaceEntry] = workspace.userWorkspaceVisits
+    const [viewedTask] = userViewedTasks
+    const [lastMessage] = messages
+
+    const viewedMessages = lastMessage == null || (
+      viewedTask?.viewedAt != null &&
+      lastMessage.createdAt <= viewedTask.viewedAt
+    )
+
+    const viewedInWorkspaceTable = !!latestWorkspaceEntry && createdAt <= latestWorkspaceEntry.visitedAt
+    const viewedInPersonalTable = user?.personalAreaEnteredAt !== null && createdAt <= user.personalAreaEnteredAt
+    const viewedInTable = viewedInWorkspaceTable || viewedInPersonalTable || viewedTask?.viewedAt != null
+
+    return { viewedInTable, viewedMessages, lastMessage }
+  }
+
   static extractTaskToRows<TTask extends TaskIncludePayload>(
     task: TTask,
     workspace: WorkspaceWithPermissions,
@@ -383,7 +411,7 @@ export class TaskService {
 
     const fields = {
       ...taskFields,
-      lastMessage: messages[0]
+      ...TaskService.formatUserViewedTask(task, user)
     }
 
     if (isWorkspace && assigneeStatuses.length === 0) {
@@ -456,7 +484,10 @@ export class TaskService {
         sourceId,
         deletedAt: null
       },
-      include: TaskService.withArchivedInclude(userId),
+      include: {
+        ...TaskService.withArchivedInclude(userId),
+        ...TaskService.withWorkspaceInclude(userId)
+      },
       orderBy: { id: 'asc' }
     })
   }
@@ -488,7 +519,7 @@ export class TaskService {
       },
       include: {
         ...TaskService.withArchivedInclude(user.id),
-        ...TaskService.withWorkspaceInclude(user.id)
+        ...TaskService.withWorkspaceInclude(user.id),
       },
       orderBy: TaskService.orderBy
     })
