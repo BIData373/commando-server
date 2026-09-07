@@ -4,10 +4,6 @@ import { Prisma } from '../../types/prisma';
 import { CreateMessageDto } from './dto/request/create-message.dto';
 import { UpdateMessageDto } from './dto/request/update-message.dto';
 
-type MessageInclude = Prisma.MessageGetPayload<{
-  include: { user: true, task: { select: { id: true } } }
-}>
-
 @Injectable()
 export class MessageService {
   static readonly include = {
@@ -43,7 +39,7 @@ export class MessageService {
   }
 
   async findInTask(taskId: number, userId: number) {
-    const message = await this.viewedTaskModel(null, userId, taskId)
+    const message = await this.markTaskAsViewed(null, userId, taskId)
     return await message.findMany({
       where: { taskId, deletedAt: null },
       include: MessageService.include,
@@ -52,7 +48,7 @@ export class MessageService {
   }
 
   async findOne(id: number, userId: number) {
-    const message = await this.viewedTaskModel(id, userId)
+    const message = await this.markTaskAsViewed(id, userId)
     return await message.findUnique({
       where: { id, deletedAt: null },
       include: MessageService.include
@@ -60,24 +56,23 @@ export class MessageService {
   }
 
   async update(id: number, dto: UpdateMessageDto, updatedBy: number) {
-    const message = await this.viewedTaskModel(id, updatedBy)
-    return await message.update({
-      where: { id },
-      data: { ...dto, updatedBy },
-      include: MessageService.include
-    })
+    return await this.updateMessage(id, updatedBy, { ...dto, updatedBy });
   }
 
   async remove(id: number, deletedBy: number) {
-    const message = await this.viewedTaskModel(id, deletedBy);
-    return await message.update({
-      where: { id },
-      data: { deletedAt: new Date(), deletedBy },
-      include: MessageService.include
-    })
+    return await this.updateMessage(id, deletedBy, { deletedAt: new Date(), deletedBy });
   }
 
-  private async viewedTaskModel(
+  async updateMessage(id: number, userId: number, data: Prisma.MessageUpdateInput) {
+    const message = await this.markTaskAsViewed(id, userId);
+    return await message.update({
+      where: { id },
+      data,
+      include: MessageService.include
+    });
+  }
+
+  private async markTaskAsViewed(
     id: number | null,
     userId: number,
     taskId?: number
@@ -87,10 +82,10 @@ export class MessageService {
         userId,
         task: (taskId ? { id: taskId } : { messages: { some: { id: id! } } })
       },
-      select: { panelViewedAt: true }
+      select: { viewedAt: true }
     });
 
-    const viewedAt = viewedTask?.panelViewedAt ?? null;
+    const viewedAt = viewedTask?.viewedAt ?? null;
     return this.prisma.$extends({
       result: {
         message: {

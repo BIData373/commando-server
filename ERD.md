@@ -207,7 +207,7 @@ COMPLETED COMPLETED
   "user_viewed_tasks" {
     Int user_id 
     Int task_id 
-    DateTime panel_viewed_at "❓"
+    DateTime viewed_at "❓"
     }
   
 
@@ -219,10 +219,10 @@ COMPLETED COMPLETED
     }
   
 
-  "user_workspace_entries" {
+  "user_workspace_visits" {
     Int user_id 
     Int workspace_id 
-    DateTime entered_at 
+    DateTime visited_at 
     }
   
 
@@ -299,8 +299,8 @@ COMPLETED COMPLETED
     "user_viewed_tasks" }o--|| tasks : "task"
     "user_views" }o--|| users : "user"
     "user_views" }o--|o workspaces : "workspace"
-    "user_workspace_entries" }o--|| users : "user"
-    "user_workspace_entries" }o--|| workspaces : "workspace"
+    "user_workspace_visits" }o--|| users : "user"
+    "user_workspace_visits" }o--|| workspaces : "workspace"
     "workspaces" }o--|| pikuds : "pikud"
     "workspace_requests" |o--|| "WorkspaceRequestStatus" : "enum:status"
     "workspace_statuses" |o--|| "WorkspaceStatusType" : "enum:status_type"

@@ -9,7 +9,7 @@ import { Request } from 'express';
 export class UserWorkspaceEntriesController {
   constructor(private readonly userWorkspaceEntriesService: UserWorkspaceEntriesService) { }
 
-  @ApiOperation({ operationId: 'updateUserEntrie' })
+  @ApiOperation({ operationId: 'upsertUserWorkspaceVisit' })
   @Patch()
   @HttpCode(HttpStatusCode.NoContent)
   @ApiNoContentResponse()

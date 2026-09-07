@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common'
-import { biChatChannelName, chatUrl, projectChatUrl } from '../../common/consts/env'
+import { biChatChannelName, chatChannel, chatUrl, chatChannelUrl, redPhone } from '../../common/consts/env'
 import { PrismaService } from '../../common/prisma.service'
 import { PermissionType, Prisma, User, WorkspaceRequest, WorkspaceRequestStatus } from '../../types/prisma'
 import { MessageRelayService } from '../services/message-relay.service'
@@ -24,7 +24,9 @@ export class WorkspaceRequestsService {
     return { ...workspaceRequest, ...details }
   }
 
-
+  static formatDirectChatUrl(upn: string) {
+    return new URL(`/direct/${encodeURIComponent(upn)}`, chatUrl!).href
+  }
 
   async create(
     { context, ...details }: CreateWorkspaceRequestDto,
@@ -40,22 +42,34 @@ export class WorkspaceRequestsService {
 
     const response = WorkspaceRequestsService.formatWorkspaceRequest(workspaceRequest)
 
-    const createdByUrl = new URL(`/direct/${encodeURIComponent(user.upn)}`, chatUrl!).href
-    const chatTitleMessage = `בקשה לפתיחת סביבה חדשה נקלטה`
+
+    const chatTitleMessage = `*בקשה לפתיחת סביבה חדשה בווקטור נקלטה*`
+
+    const createdByUrl = WorkspaceRequestsService.formatDirectChatUrl(user.upn)
+    const managers = details.managers.map(manager => `*${WorkspaceRequestsService.formatDirectChatUrl(manager)}*`).join('\n')
+
     const chatBodyMessage = `מספר בקשה: *${response.id}*
+
 הבקשה נשלחה על ידי: *[${user.upn}](${createdByUrl}) - ${user.info?.name ?? 'חסר שם'}*
+
+מנהלים מבוקשים:
+${managers}
+
 שם סביבה: *${response.title}*`
 
     await this.messageRelayService.sendNotification([], chatTitleMessage, chatBodyMessage, 'chat', [biChatChannelName!])
-    const managerTitleMessage = `בקשה חדשה לפתיחת סביבה במערכת: ווקטור`
-    const managerBodyMessage = `מספר בקשה: *${response.id}*
-הבקשה נשלחה על ידי: *[${user.upn}](${createdByUrl}) - ${user.info?.name ?? 'חסר שם'}*
-שם סביבה: *${response.title}*
+
+
+    const managerTitleMessage = `*בקשה חדשה לפתיחת סביבה במערכת ווקטור*`
+
+    const managerBodyMessage = `${chatBodyMessage}
+
 נא לשים לב כי הסביבה תהיה זמינה רק* לאחר אישור של מנהלי המערכת*
-לפרטים נוספים לפנות בקבוצה בצא'ט המבצעי)(${projectChatUrl}) *681-7980*
+לפרטים נוספים לפנות בקבוצה בצא'ט המבצעי [${chatChannel}](${chatChannelUrl}), או לפנות אלינו במספר *${redPhone}*
     `
 
     await this.messageRelayService.sendNotification([user.upn], managerTitleMessage, managerBodyMessage, 'chat')
+
     return response
   }
 
@@ -92,9 +106,11 @@ export class WorkspaceRequestsService {
     for (const upn of managers) {
       const user = await UserService.upsertTx(tx, { upn })
 
+      const where = { userId: user.id, workspaceId: workspace.id }
+
       await tx.permission.upsert({
-        where: { userId_workspaceId: { userId: user.id, workspaceId: workspace.id } },
-        create: { userId: user.id, workspaceId: workspace.id, type: PermissionType.MANAGER },
+        where: { userId_workspaceId: where },
+        create: { ...where, type: PermissionType.MANAGER },
         update: { type: PermissionType.MANAGER }
       })
     }
@@ -142,8 +158,9 @@ export class WorkspaceRequestsService {
     if (isDecided) {
       const isApproved = workspaceRequest.status === WorkspaceRequestStatus.APPROVED
 
-      const titleMessage = `בקשה לפתיחת סביבה מספר ${workspaceRequest.id} ${isApproved ? 'אושרה' : 'נדחתה'}`
+      const titleMessage = `בקשה לפתיחת סביבה בווקטור מספר ${workspaceRequest.id} ${isApproved ? 'אושרה' : 'נדחתה'}`
       const bodyMessage = `שם סביבה: *${workspaceRequest.details.title}*
+
 ${isApproved
           ? 'הסביבה נפתחה במערכת ואתם מוגדרים כמנהלים שלה'
           : `סיבת הדחייה: *${workspaceRequest.declineMessage ?? 'לא צוינה'}*`}`

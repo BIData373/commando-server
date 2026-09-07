@@ -1,10 +1,10 @@
-import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { PrismaPg } from '@prisma/adapter-pg';
-import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
-import { PrismaClient } from '../types/prisma/client';
-import { saveDatabaseCertificates } from './functions/ssl';
+import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common'
+import { ConfigService } from '@nestjs/config'
+import { PrismaPg } from '@prisma/adapter-pg'
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
+import { Prisma, PrismaClient } from '../types/prisma/client'
+import { saveDatabaseCertificates } from './functions/ssl'
 
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
@@ -36,7 +36,13 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
         })
       })
 
-    super({ adapter, errorFormat: 'minimal' })
+    super({
+      adapter,
+      errorFormat: 'minimal',
+      transactionOptions: {
+        timeout: 10000,
+      }
+    })
   }
 
   async onModuleInit(): Promise<void> {

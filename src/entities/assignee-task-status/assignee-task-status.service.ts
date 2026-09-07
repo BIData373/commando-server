@@ -9,7 +9,7 @@ export class AssigneeTaskStatusService {
   static readonly include: Prisma.AssigneeTaskStatusInclude = {
     assignee: true,
     status: true,
-    task: { include: TaskService.baseInclude() }
+    task: { include: TaskService.baseInclude }
   }
 
   constructor(private readonly prisma: PrismaService) { }

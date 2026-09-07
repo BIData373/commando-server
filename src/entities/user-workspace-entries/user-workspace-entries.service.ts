@@ -9,7 +9,7 @@ export class UserWorkspaceEntriesService {
     const now = new Date()
 
     if (workspaceId) {
-      await this.prisma.userWorkspaceEntries.upsert({
+      await this.prisma.userWorkspaceVisits.upsert({
         where: { userId_workspaceId: { userId, workspaceId } },
         create: { userId, workspaceId, enteredAt: now },
         update: { enteredAt: now },

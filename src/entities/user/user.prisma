@@ -6,7 +6,7 @@ model User {
   /// [UserInfo]
   info Json?
 
-  userWorkspaceEntries UserWorkspaceEntries[]
+  userWorkspaceVisits UserWorkspaceVisits[]
   userViewedTasks UserViewedTasks[]
   archivedUserAssigneeTask ArchivedUserAssigneeTask[]
   assignees   Assignee[]    @relation("assignee_users")
