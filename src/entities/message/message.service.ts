@@ -19,7 +19,7 @@ export class MessageService {
   static readonly findManyOptions = {
     include: MessageService.include,
     orderBy: MessageService.orderBy
-  };
+  } satisfies Prisma.MessageFindManyArgs;
 
   constructor(private readonly prisma: PrismaService) { }
 
@@ -35,31 +35,21 @@ export class MessageService {
     });
   }
 
-  async findInTask(taskId: number) {
-    return await this.prisma.message.findMany({
-      where: { taskId, deletedAt: null },
-      ...MessageService.findManyOptions
-    });
-  }
-
   async findMessagesByFilter({
-    taskId,
-    taskIds,
-    workspaceId,
-    personal,
-    isArchived
+    isArchived,
+    ...dto
   }: ListMessagesQueryDto,
     userId: number
   ) {
-    const handlers: [boolean, Function][] = [
-      [!!taskId, () => this.findInTask(taskId!)],
-      [!!taskIds, () => this.findByTaskIds(taskIds!)],
-      [!!workspaceId, () => this.findInWorkspace(workspaceId!, isArchived)],
-      [!!personal, () => this.findPersonal(userId, isArchived)],
-    ];
+    const handlers = {
+      taskIds: () => this.findByTaskIds(dto.taskIds!),
+      workspaceId: () => this.findInWorkspace(dto.workspaceId!, isArchived),
+      personal: () => this.findPersonal(userId, isArchived),
+    } satisfies Record<keyof Omit<ListMessagesQueryDto, 'isArchived'>, () => Promise<Prisma.MessageGetPayload<typeof MessageService.findManyOptions>[]>>
 
-    const [, handler] = handlers.find(([value]) => value) ?? [];
-    return handler ? await handler() : [];
+    const keys = Object.keys(handlers) as (keyof typeof handlers)[];
+    const handlerKey = keys.find(k => Boolean(dto[k]));
+    return handlerKey ? await handlers[handlerKey]() : [];
   }
 
   async findByTaskIds(taskIds: number[]) {
@@ -103,15 +93,7 @@ export class MessageService {
   async findPersonal(userId: number, isArchived?: boolean) {
     const archiveWhere: Prisma.TaskWhereInput = {
       archivedUserAssigneeTask: isArchived ?
-        {
-          some: {
-            userId
-          }
-        } : {
-          none: {
-            userId
-          }
-        }
+        { some: { userId } } : { none: { userId } }
     };
     return await this.prisma.message.findMany({
       where: {

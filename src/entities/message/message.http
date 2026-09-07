@@ -28,13 +28,8 @@ Content-Type: application/json
 
 ?? status == 400
 
-### Get Messages — by single taskId
-GET {{baseUrl}}/message?taskId=460
-...headers
-?? status == 200
-
-### Get Messages — by multiple taskIds
-GET {{baseUrl}}/message?taskIds=402,467,404,460
+### Get Messages — by taskIds
+GET {{baseUrl}}/message?taskIds=402
 ...headers
 
 ?? status == 200
