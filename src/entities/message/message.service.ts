@@ -7,6 +7,7 @@ import { ListMessagesQueryDto } from './dto/request/list-messages-query.dto';
 import { UpdateMessageDto } from './dto/request/update-message.dto';
 
 type MessageFilterHandlerFunction = () => Promise<Prisma.MessageGetPayload<typeof MessageService.findManyOptions>[]>
+
 @Injectable()
 export class MessageService {
   static readonly include = {
