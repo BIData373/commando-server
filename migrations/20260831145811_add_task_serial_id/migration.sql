@@ -23,13 +23,13 @@ WHERE t."id" = numbered."id";
 ALTER TABLE "tasks" ALTER COLUMN "serial_id" SET NOT NULL;
 
 -- AlterTable: the counter each workspace hands numbers out from.
-ALTER TABLE "workspaces" ADD COLUMN "last_task_id" INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE "workspaces" ADD COLUMN "task_counter" INTEGER NOT NULL DEFAULT 0;
 
 -- Backfill the counter to the highest number already handed out, so the next task created
 -- continues the sequence instead of colliding with a backfilled row.
 -- Workspaces with no tasks keep the DEFAULT 0.
 UPDATE "workspaces" AS w
-SET "last_task_id" = highest."max_serial_id"
+SET "task_counter" = highest."max_serial_id"
 FROM (
   SELECT "workspace_id", MAX("serial_id") AS "max_serial_id"
   FROM "tasks"

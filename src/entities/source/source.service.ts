@@ -13,6 +13,7 @@ import { MessageRelayService } from '../services/message-relay.service'
 import { tagsConnectOrCreateArgs, tagsSetOrCreateArgs } from '../tag/functions/tag-args'
 import { taskAssigneeStatusesCreateArgs } from '../task/functions/task-args'
 import { TaskService } from '../task/task.service'
+import { WorkspaceService } from '../workspace/workspace.service'
 import { CreateSourceDto } from './dto/request/create-source.dto'
 import { GetAIExtractionCallbackDto } from './dto/request/get-ai-extraction-callback.dto'
 import { UpdateSourceDto } from './dto/request/update-source.dto'
@@ -72,53 +73,61 @@ export class SourceService {
     const attachmentName = file ? decodeMulterFilename(file.originalname) : undefined
 
     let notStartedStatusId: number | undefined
-    let lastSerialId = 0
+    const [notStartedStatus] = await this.taskService.findDefaultStatusInWorkspaces(workspaceId)
 
     if (tasks?.length) {
-      const [notStartedStatus] = await this.taskService.findDefaultStatusInWorkspaces(workspaceId)
       notStartedStatusId = notStartedStatus.id
-      lastSerialId = await this.taskService.getLastSerialId(workspaceId)
     }
 
-    const source = await this.prisma.source.create({
-      data: {
-        ...dto,
-        workspaceId,
-        attachmentKey,
-        attachmentName,
-        draft: aiExtraction || draft,
-        extractionStatus: aiExtraction ? ExtractionStatus.PENDING : undefined,
-        ...(tags !== undefined && ({
-          tags: tagsConnectOrCreateArgs(tags, workspaceId, userId)
-        })),
-        ...(tasks !== undefined && ({
-          tasks: {
-            create: tasks.map(({ assignees, tags: taskTags, ...taskDto }, index) => ({
-              ...taskDto,
-              serialId: lastSerialId + index + 1,
-              workspaceId,
-              statusId: notStartedStatusId!,
-              creationType: TaskCreationType.HUMAN,
-              createdBy: userId,
-              updatedBy: userId,
-              ...(assignees?.length && {
-                assigneeStatuses: taskAssigneeStatusesCreateArgs(assignees, notStartedStatusId!)
-              }),
-              ...(taskTags?.length && {
-                tags: tagsConnectOrCreateArgs(taskTags, workspaceId, userId)
-              })
-            }))
-          }
-        })),
-        createdBy: userId,
-        updatedBy: userId
-      },
-      include: SourceService.include
+    const source = await this.prisma.$transaction(async tx => {
+      // Read under a row lock inside the transaction so a concurrent create cannot hand out the
+      // same numbers between this read and the bump below.
+      const lastSerialId = tasks?.length
+        ? await TaskService.getLastSerialId(tx, workspaceId, true)
+        : 0
+
+      const created = await tx.source.create({
+        data: {
+          ...dto,
+          workspaceId,
+          attachmentKey,
+          attachmentName,
+          draft: aiExtraction || draft,
+          extractionStatus: aiExtraction ? ExtractionStatus.PENDING : undefined,
+          ...(tags !== undefined && ({
+            tags: tagsConnectOrCreateArgs(tags, workspaceId, userId)
+          })),
+          ...(tasks !== undefined && ({
+            tasks: {
+              create: tasks.map(({ assignees, tags: taskTags, ...taskDto }, index) => ({
+                ...taskDto,
+                serialId: lastSerialId + index + 1,
+                workspaceId,
+                statusId: notStartedStatusId!,
+                creationType: TaskCreationType.HUMAN,
+                createdBy: userId,
+                updatedBy: userId,
+                ...(assignees?.length && {
+                  assigneeStatuses: taskAssigneeStatusesCreateArgs(assignees, notStartedStatusId!)
+                }),
+                ...(taskTags?.length && {
+                  tags: tagsConnectOrCreateArgs(taskTags, workspaceId, userId)
+                })
+              }))
+            }
+          })),
+          createdBy: userId,
+          updatedBy: userId
+        },
+        include: SourceService.include
+      })
+
+      await WorkspaceService.bumpSerialIdsTx(tx, workspaceId, tasks?.length ?? 0)
+
+      return created
     })
 
-    // The counter is written forward only once the tasks are actually in — a failed create leaves it
-    // untouched instead of burning the numbers.
-    await this.taskService.bumpSerialIds(workspaceId, tasks?.length ?? 0)
+
 
     if (aiExtraction) {
       this.taskRunner.sendTask('vector.process_document', [source.id])
@@ -313,10 +322,10 @@ export class SourceService {
       // Sequential transaction so the tasks land in the order the AI returned them and a partial write
       // is impossible. Postgres aborts the whole transaction on the first failing statement, so this is
       // all-or-nothing by design — there is no per-task recovery to be had here.
-      // The whole batch's serial ids are reserved up front in one counter bump, so the numbers stay
-      // contiguous and in AI order rather than interleaving with a concurrent manual create.
+      // The counter is read once under a row lock and the whole batch is numbered off it, so the
+      // numbers stay contiguous and in AI order rather than interleaving with a concurrent create.
       createdTasks = await this.prisma.$transaction(async tx => {
-        const serialIds = await TaskService.reserveSerialIdsTx(tx, source.workspaceId, aiTasks.length)
+        const lastSerialId = await TaskService.getLastSerialId(tx, source.workspaceId, true)
 
         const tasks: Task[] = []
 
@@ -325,7 +334,7 @@ export class SourceService {
 
           tasks.push(await tx.task.create({
             data: {
-              serialId: serialIds[index],
+              serialId: lastSerialId + index + 1,
               title,
               deadlineType: deadlineType ?? DeadlineType.DATE,
               dueDate: deadlineDate ? new Date(deadlineDate) : undefined,
@@ -346,6 +355,8 @@ export class SourceService {
             }
           }))
         }
+
+        await WorkspaceService.bumpSerialIdsTx(tx, source.workspaceId, aiTasks.length)
 
         return tasks
       })

@@ -220,7 +220,7 @@ COMPLETED COMPLETED
     Boolean assignee_status_editable 
     Boolean chat_notification 
     Boolean mail_notification 
-    Int last_task_id 
+    Int task_counter 
     DateTime created_at 
     Int created_by 
     DateTime updated_at 

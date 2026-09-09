@@ -428,12 +428,12 @@ async function main() {
 
   console.log('* Creating Tasks')
   // Mirrors what TaskService.reserveSerialIdsTx does at runtime: hand each task the next number
-  // for its workspace, then leave Workspace.lastTaskId at the highest one issued.
-  const lastTaskIdByWorkspace: Record<number, number> = {};
+  // for its workspace, then leave Workspace.taskCounter at the highest one issued.
+  const taskCounterByWorkspace: Record<number, number> = {};
 
   for (const def of taskDefs) {
-    const serialId = (lastTaskIdByWorkspace[def.workspaceId] ?? 0) + 1;
-    lastTaskIdByWorkspace[def.workspaceId] = serialId;
+    const serialId = (taskCounterByWorkspace[def.workspaceId] ?? 0) + 1;
+    taskCounterByWorkspace[def.workspaceId] = serialId;
 
     await prisma.task.create({
       data: {
@@ -472,10 +472,10 @@ async function main() {
   }
 
   await Promise.all(
-    Object.entries(lastTaskIdByWorkspace).map(([workspaceId, lastTaskId]) =>
+    Object.entries(taskCounterByWorkspace).map(([workspaceId, taskCounter]) =>
       prisma.workspace.update({
         where: { id: Number(workspaceId) },
-        data: { lastTaskId }
+        data: { taskCounter }
       })
     )
   );
