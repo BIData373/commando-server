@@ -6,6 +6,7 @@ import { CreateMessageDto } from './dto/request/create-message.dto';
 import { ListMessagesQueryDto } from './dto/request/list-messages-query.dto';
 import { UpdateMessageDto } from './dto/request/update-message.dto';
 
+type MessageFilterHandlerFunction = () => Promise<Prisma.MessageGetPayload<typeof MessageService.findManyOptions>[]>
 @Injectable()
 export class MessageService {
   static readonly include = {
@@ -45,9 +46,9 @@ export class MessageService {
       taskIds: () => this.findByTaskIds(dto.taskIds!),
       workspaceId: () => this.findInWorkspace(dto.workspaceId!, isArchived),
       personal: () => this.findPersonal(userId, isArchived),
-    } satisfies Record<keyof typeof dto, () => Promise<Prisma.MessageGetPayload<typeof MessageService.findManyOptions>[]>>
+    } satisfies Record<keyof typeof dto, MessageFilterHandlerFunction>
 
-    const keys = Object.keys(handlers) as (keyof typeof handlers)[];
+    const keys = Object.keys(handlers) as (keyof typeof dto)[];
     const handlerKey = keys.find(k => Boolean(dto[k]));
     return handlerKey ? await handlers[handlerKey]() : [];
   }
