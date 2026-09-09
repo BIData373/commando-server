@@ -1,8 +1,12 @@
 import { Injectable } from '@nestjs/common';
+
 import { PrismaService } from '../../common/prisma.service';
 import { Prisma } from '../../types/prisma';
 import { CreateMessageDto } from './dto/request/create-message.dto';
+import { ListMessagesQueryDto } from './dto/request/list-messages-query.dto';
 import { UpdateMessageDto } from './dto/request/update-message.dto';
+
+type MessageFilterHandlerFunction = () => Promise<Prisma.MessageGetPayload<typeof MessageService.findManyOptions>[]>
 
 @Injectable()
 export class MessageService {
@@ -13,6 +17,11 @@ export class MessageService {
   static readonly orderBy = {
     createdAt: 'desc'
   } satisfies Prisma.MessageOrderByWithRelationInput;
+
+  static readonly findManyOptions = {
+    include: MessageService.include,
+    orderBy: MessageService.orderBy
+  } satisfies Prisma.MessageFindManyArgs;
 
   constructor(private readonly prisma: PrismaService) { }
 
@@ -28,11 +37,87 @@ export class MessageService {
     });
   }
 
-  async findInTask(taskId: number) {
+  async findMessagesByFilter({
+    isArchived,
+    ...dto
+  }: ListMessagesQueryDto,
+    userId: number
+  ) {
+    const handlers = {
+      taskIds: () => this.findByTaskIds(dto.taskIds!),
+      workspaceId: () => this.findInWorkspace(dto.workspaceId!, isArchived),
+      personal: () => this.findPersonal(userId, isArchived),
+    } satisfies Record<keyof typeof dto, MessageFilterHandlerFunction>
+
+    const keys = Object.keys(handlers) as (keyof typeof dto)[];
+    const handlerKey = keys.find(k => Boolean(dto[k]));
+    return handlerKey ? await handlers[handlerKey]() : [];
+  }
+
+  async findByTaskIds(taskIds: number[]) {
     return await this.prisma.message.findMany({
-      where: { taskId, deletedAt: null },
-      include: MessageService.include,
-      orderBy: MessageService.orderBy
+      where: { taskId: { in: taskIds }, deletedAt: null },
+      ...MessageService.findManyOptions
+    });
+  }
+
+  async findInWorkspace(workspaceId: number, isArchived?: boolean) {
+    const archiveWhere: Prisma.TaskWhereInput = isArchived
+      ? {
+        OR: [
+          { archivedAt: { not: null } },
+          {
+            archivedWorkspaceAssigneeTask: {
+              some: {
+                assignee: {
+                  deletedAt: null
+                }
+              }
+            }
+          }
+        ]
+      }
+      : { archivedAt: null };
+
+    return await this.prisma.message.findMany({
+      where: {
+        deletedAt: null,
+        task: {
+          deletedAt: null,
+          workspaceId,
+          ...archiveWhere
+        }
+      },
+      ...MessageService.findManyOptions
+    });
+  }
+
+  async findPersonal(userId: number, isArchived?: boolean) {
+    const archiveWhere: Prisma.TaskWhereInput = {
+      archivedUserAssigneeTask: isArchived ?
+        { some: { userId } } : { none: { userId } }
+    };
+    return await this.prisma.message.findMany({
+      where: {
+        deletedAt: null,
+        task: {
+          deletedAt: null,
+          assigneeStatuses: {
+            some: {
+              assignee: {
+                deletedAt: null,
+                users: {
+                  some: {
+                    id: userId
+                  }
+                }
+              }
+            }
+          },
+          ...archiveWhere,
+        }
+      },
+      ...MessageService.findManyOptions
     });
   }
 
