@@ -73,15 +73,13 @@ export class SourceService {
     const attachmentName = file ? decodeMulterFilename(file.originalname) : undefined
 
     let notStartedStatusId: number | undefined
-    const [notStartedStatus] = await this.taskService.findDefaultStatusInWorkspaces(workspaceId)
 
     if (tasks?.length) {
+      const [notStartedStatus] = await this.taskService.findDefaultStatusInWorkspaces(workspaceId)
       notStartedStatusId = notStartedStatus.id
     }
 
     const source = await this.prisma.$transaction(async tx => {
-      // Read under a row lock inside the transaction so a concurrent create cannot hand out the
-      // same numbers between this read and the bump below.
       const lastSerialId = tasks?.length
         ? await TaskService.getLastSerialId(tx, workspaceId, true)
         : 0

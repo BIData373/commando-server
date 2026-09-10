@@ -52,26 +52,20 @@ export class WorkspaceService {
     });
   }
 
-  // Moves the workspace's task counter forward by `count`, for tasks numbered off a read of
-  // `taskCounter`. Written as `+ count` rather than an absolute set so a bump that landed in
-  // between is carried forward instead of overwritten.
-  // Raw rather than `tx.workspace.update` on purpose: Prisma would fire Workspace's `@updatedAt`
-  // and rewrite the workspace's audit timestamp every time a task is created, with no matching
-  // `updatedBy` to explain it.
-  // Must run inside the same transaction as the task create so a rolled-back create does not
-  // burn the numbers.
+
   static async bumpSerialIdsTx(
     tx: Prisma.TransactionClient,
     workspaceId: number,
     count: number
   ) {
-    if (count < 1) return;
+    if (count < 1) {
+      return;
+    }
 
-    await tx.$executeRaw`
-      UPDATE "workspaces"
-      SET "task_counter" = "task_counter" + ${count}
-      WHERE "id" = ${workspaceId}
-    `;
+    await tx.workspace.update({
+      where: { id: workspaceId },
+      data: { taskCounter: { increment: count } }
+    });
   }
 
   async create(dto: CreateWorkspaceDto, userId: number) {
