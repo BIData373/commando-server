@@ -8,6 +8,7 @@ import { ArchivedWorkspaceAssigneeService } from '../archived-workspace-assignee
 import { MessageRelayService } from '../services/message-relay.service'
 import { tagsConnectOrCreateArgs, tagsSetOrCreateArgs } from '../tag/functions/tag-args'
 import { WorkspaceWithPermissions } from '../workspace/types/workspace-with-permission.type'
+import { WorkspaceService } from '../workspace/workspace.service'
 import { CreateTaskDto } from './dto/request/create-task.dto'
 import { UpdateTaskDto } from './dto/request/update-task.dto'
 import { taskAssigneeStatusesCreateArgs } from './functions/task-args'
@@ -265,38 +266,63 @@ export class TaskService {
     })
   }
 
+
+  static async getLastSerialId(
+    tx: Prisma.TransactionClient,
+    workspaceId: number,
+    forUpdate: boolean = false
+  ) {
+    const [{ taskCounter }] = await tx.$queryRaw<{ taskCounter: number }[]>`
+      SELECT "task_counter" AS "taskCounter"
+      FROM "workspaces"
+      WHERE "id" = ${workspaceId}
+      ${forUpdate ? Prisma.sql`FOR UPDATE` : Prisma.empty}
+    `
+
+    return taskCounter
+  }
+
   async create(
     { tags, workspaceId, sourceId, assignees, context, ...dto }: CreateTaskDto,
     userId: number
   ) {
     const [notStartedStatus] = await this.findDefaultStatusInWorkspaces(workspaceId)
 
-    const createdTask = await this.prisma.task.create({
-      data: {
-        ...dto,
-        createdBy: userId,
-        updatedBy: userId,
-        workspace: {
-          connect: { id: workspaceId }
-        },
-        status: {
-          connect: { id: notStartedStatus.id }
-        },
-        ...(typeof sourceId === 'number' && {
-          source: {
-            connect: {
-              id: sourceId
+    const createdTask = await this.prisma.$transaction(async tx => {
+      const lastSerialId = await TaskService.getLastSerialId(tx, workspaceId, true)
+
+      const task = await tx.task.create({
+        data: {
+          ...dto,
+          serialId: lastSerialId + 1,
+          createdBy: userId,
+          updatedBy: userId,
+          workspace: {
+            connect: { id: workspaceId }
+          },
+          status: {
+            connect: { id: notStartedStatus.id }
+          },
+          ...(typeof sourceId === 'number' && {
+            source: {
+              connect: {
+                id: sourceId
+              }
             }
-          }
-        }),
-        ...(assignees?.length && {
-          assigneeStatuses: taskAssigneeStatusesCreateArgs(assignees, notStartedStatus.id)
-        }),
-        ...(tags && {
-          tags: tagsConnectOrCreateArgs(tags, workspaceId, userId)
-        })
-      },
-      include: TaskService.withWorkspaceInclude(userId)
+          }),
+          ...(assignees?.length && {
+            assigneeStatuses: taskAssigneeStatusesCreateArgs(assignees, notStartedStatus.id)
+          }),
+          ...(tags && {
+            tags: tagsConnectOrCreateArgs(tags, workspaceId, userId)
+          })
+        },
+        include: TaskService.withWorkspaceInclude(userId)
+      })
+
+      await WorkspaceService.bumpSerialIdsTx(tx, workspaceId, 1)
+
+      return task
     })
 
     if (assignees?.length) {

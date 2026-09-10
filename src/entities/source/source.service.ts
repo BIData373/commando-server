@@ -13,6 +13,7 @@ import { MessageRelayService } from '../services/message-relay.service'
 import { tagsConnectOrCreateArgs, tagsSetOrCreateArgs } from '../tag/functions/tag-args'
 import { taskAssigneeStatusesCreateArgs } from '../task/functions/task-args'
 import { TaskService } from '../task/task.service'
+import { WorkspaceService } from '../workspace/workspace.service'
 import { CreateSourceDto } from './dto/request/create-source.dto'
 import { GetAIExtractionCallbackDto } from './dto/request/get-ai-extraction-callback.dto'
 import { UpdateSourceDto } from './dto/request/update-source.dto'
@@ -78,40 +79,53 @@ export class SourceService {
       notStartedStatusId = notStartedStatus.id
     }
 
-    const source = await this.prisma.source.create({
-      data: {
-        ...dto,
-        workspaceId,
-        attachmentKey,
-        attachmentName,
-        draft: aiExtraction || draft,
-        extractionStatus: aiExtraction ? ExtractionStatus.PENDING : undefined,
-        ...(tags !== undefined && ({
-          tags: tagsConnectOrCreateArgs(tags, workspaceId, userId)
-        })),
-        ...(tasks !== undefined && ({
-          tasks: {
-            create: tasks.map(({ assignees, tags: taskTags, ...taskDto }) => ({
-              ...taskDto,
-              workspaceId,
-              statusId: notStartedStatusId!,
-              creationType: TaskCreationType.HUMAN,
-              createdBy: userId,
-              updatedBy: userId,
-              ...(assignees?.length && {
-                assigneeStatuses: taskAssigneeStatusesCreateArgs(assignees, notStartedStatusId!)
-              }),
-              ...(taskTags?.length && {
-                tags: tagsConnectOrCreateArgs(taskTags, workspaceId, userId)
-              })
-            }))
-          }
-        })),
-        createdBy: userId,
-        updatedBy: userId
-      },
-      include: SourceService.include
+    const source = await this.prisma.$transaction(async tx => {
+      const lastSerialId = tasks?.length
+        ? await TaskService.getLastSerialId(tx, workspaceId, true)
+        : 0
+
+      const created = await tx.source.create({
+        data: {
+          ...dto,
+          workspaceId,
+          attachmentKey,
+          attachmentName,
+          draft: aiExtraction || draft,
+          extractionStatus: aiExtraction ? ExtractionStatus.PENDING : undefined,
+          ...(tags !== undefined && ({
+            tags: tagsConnectOrCreateArgs(tags, workspaceId, userId)
+          })),
+          ...(tasks !== undefined && ({
+            tasks: {
+              create: tasks.map(({ assignees, tags: taskTags, ...taskDto }, index) => ({
+                ...taskDto,
+                serialId: lastSerialId + index + 1,
+                workspaceId,
+                statusId: notStartedStatusId!,
+                creationType: TaskCreationType.HUMAN,
+                createdBy: userId,
+                updatedBy: userId,
+                ...(assignees?.length && {
+                  assigneeStatuses: taskAssigneeStatusesCreateArgs(assignees, notStartedStatusId!)
+                }),
+                ...(taskTags?.length && {
+                  tags: tagsConnectOrCreateArgs(taskTags, workspaceId, userId)
+                })
+              }))
+            }
+          })),
+          createdBy: userId,
+          updatedBy: userId
+        },
+        include: SourceService.include
+      })
+
+      await WorkspaceService.bumpSerialIdsTx(tx, workspaceId, tasks?.length ?? 0)
+
+      return created
     })
+
+
 
     if (aiExtraction) {
       this.taskRunner.sendTask('vector.process_document', [source.id])
@@ -306,12 +320,19 @@ export class SourceService {
       // Sequential transaction so the tasks land in the order the AI returned them and a partial write
       // is impossible. Postgres aborts the whole transaction on the first failing statement, so this is
       // all-or-nothing by design — there is no per-task recovery to be had here.
-      createdTasks = await this.prisma.$transaction(
-        aiTasks.map(({ title, deadlineType, deadlineDate, assigneeIds: taskAssigneeIds }) => {
+      // The counter is read once under a row lock and the whole batch is numbered off it, so the
+      // numbers stay contiguous and in AI order rather than interleaving with a concurrent create.
+      createdTasks = await this.prisma.$transaction(async tx => {
+        const lastSerialId = await TaskService.getLastSerialId(tx, source.workspaceId, true)
+
+        const tasks: Task[] = []
+
+        for (const [index, { title, deadlineType, deadlineDate, assigneeIds: taskAssigneeIds }] of aiTasks.entries()) {
           const validTaskAssigneeIds = intersection(taskAssigneeIds, validIds)
 
-          return this.prisma.task.create({
+          tasks.push(await tx.task.create({
             data: {
+              serialId: lastSerialId + index + 1,
               title,
               deadlineType: deadlineType ?? DeadlineType.DATE,
               dueDate: deadlineDate ? new Date(deadlineDate) : undefined,
@@ -330,9 +351,13 @@ export class SourceService {
                 }
               })
             }
-          })
-        })
-      )
+          }))
+        }
+
+        await WorkspaceService.bumpSerialIdsTx(tx, source.workspaceId, aiTasks.length)
+
+        return tasks
+      })
     } catch (e) {
       console.log('Failed to Create AI Tasks: ', e)
       // The extraction itself still finishes — it just finishes without tasks

@@ -1,13 +1,13 @@
-import { Injectable } from '@nestjs/common'
-import { biChatChannelName, chatChannel, chatUrl, chatChannelUrl, redPhone } from '../../common/consts/env'
-import { PrismaService } from '../../common/prisma.service'
-import { PermissionType, Prisma, User, WorkspaceRequest, WorkspaceRequestStatus } from '../../types/prisma'
-import { MessageRelayService } from '../services/message-relay.service'
-import { UserService } from '../user/user.service'
-import { CreateWorkspaceDto } from '../workspace/dto/request/create-workspace.dto'
-import { WorkspaceService } from '../workspace/workspace.service'
-import { CreateWorkspaceRequestDto } from './dto/request/create-workspace-request.dto'
-import { UpdateWorkspaceRequestDto } from './dto/request/update-workspace-request.dto'
+import { Injectable } from '@nestjs/common';
+import { biChatChannelName, chatChannel, chatChannelUrl, chatUrl, redPhone } from '../../common/consts/env';
+import { PrismaService } from '../../common/prisma.service';
+import { PermissionType, Prisma, User, WorkspaceRequest, WorkspaceRequestStatus } from '../../types/prisma';
+import { MessageRelayService } from '../services/message-relay.service';
+import { UserService } from '../user/user.service';
+import { CreateWorkspaceDto } from '../workspace/dto/request/create-workspace.dto';
+import { WorkspaceService } from '../workspace/workspace.service';
+import { CreateWorkspaceRequestDto } from './dto/request/create-workspace-request.dto';
+import { UpdateWorkspaceRequestDto } from './dto/request/update-workspace-request.dto';
 
 @Injectable()
 export class WorkspaceRequestsService {
