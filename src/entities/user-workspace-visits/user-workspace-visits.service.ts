@@ -2,10 +2,10 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../common/prisma.service';
 
 @Injectable()
-export class UserWorkspaceEntriesService {
+export class UserWorkspaceVisitsService {
   constructor(private readonly prisma: PrismaService) { }
 
-  async updateUserEntrie(userId: number, workspaceId?: number) {
+  async updateUserVisit(userId: number, workspaceId?: number) {
     const now = new Date()
 
     if (workspaceId) {
