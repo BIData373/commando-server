@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { keyBy, mapValues } from 'lodash'
-import { chatUrl, notificationTemplate, vectorUrl } from '../../common/consts/env'
+import { chatUrl, invalidationDays, notificationTemplate, vectorUrl } from '../../common/consts/env'
 import { renderTemplate } from '../../common/functions/template'
 import { PrismaService } from '../../common/prisma.service'
 import { ArchivedUserAssigneeTask, ArchivedWorkspaceAssigneeTask, PermissionType, Prisma, Task, User } from '../../types/prisma'
@@ -11,6 +11,8 @@ import { WorkspaceWithPermissions } from '../workspace/types/workspace-with-perm
 import { CreateTaskDto } from './dto/request/create-task.dto'
 import { UpdateTaskDto } from './dto/request/update-task.dto'
 import { taskAssigneeStatusesCreateArgs } from './functions/task-args'
+import dayjs from 'dayjs';
+
 
 type AssigneeStatusInclude = {
   include: { assignee: { include: { users: true } }; status: true }
@@ -30,7 +32,12 @@ type TaskIncludePayload = Prisma.TaskGetPayload<{
     archivedWorkspaceAssigneeTask: true,
     archivedUserAssigneeTask: true,
     workspace: WorkspaceInclude,
-    userViewedTasks: true
+    userViewedTasks: true,
+    _count: {
+      select: {
+        assigneeStatuses: true
+      }
+    }
   }
 }>
 
@@ -102,13 +109,24 @@ export class TaskService {
       ...TaskService.baseInclude,
       workspace: {
         include: {
-          ...(userId && { userWorkspaceVisits: true }),
+          ...(userId && { userWorkspaceVisits: { where: { userId } } }),
           permissions: userId
             ? { where: { userId } }
             : true
         }
       },
       userViewedTasks: { where: { userId } },
+      _count: {
+        select: {
+          assigneeStatuses: {
+            where: {
+              assignee: {
+                users: { some: { id: userId } }
+              }
+            }
+          }
+        }
+      }
     } satisfies Prisma.TaskInclude
   }
 
@@ -132,9 +150,9 @@ export class TaskService {
     workspaceArchivedIds: Record<number, Date | undefined>,
     personalArchivedIds: Record<number, Date | undefined>,
     wholeTaskArchivedAt: Date | null,
-    assigneeStatus?: AssigneeStatusEntity
+    isAssigned: boolean,
+    assigneeStatus?: AssigneeStatusEntity,
   ) {
-    const isAssigned = assigneeStatus?.assignee?.users?.some(u => u.id === user.id)
 
     const workspaceArchivedAt = (assigneeStatus && workspaceArchivedIds[assigneeStatus.assigneeId])
       ?? wholeTaskArchivedAt
@@ -207,6 +225,7 @@ export class TaskService {
     if (!activeAssignees) {
       return []
     }
+    const isAssigned = originalTask._count.assigneeStatuses > 0
 
     return [{
       ...rest,
@@ -217,7 +236,8 @@ export class TaskService {
           user,
           workspaceArchiveMap,
           personalArchiveMap,
-          originalTask.archivedAt
+          originalTask.archivedAt,
+          isAssigned
         )
       ),
       assigneeStatuses: activeAssignees.map(assigneeStatus =>
@@ -227,11 +247,12 @@ export class TaskService {
           workspaceArchiveMap,
           personalArchiveMap,
           originalTask.archivedAt,
+          isAssigned,
           assigneeStatus
         )
       ),
       workspace: TaskService.formatTaskWorkspace(workspace, user),
-      ...TaskService.formatUserViewedTask(originalTask, user),
+      ...TaskService.formatUserViewedTask(originalTask, user, isAssigned),
     }]
   }
 
@@ -343,7 +364,7 @@ export class TaskService {
       },
       include: {
         ...TaskService.withArchivedInclude(user.id),
-        ...TaskService.withWorkspaceInclude(user.id)
+        ...TaskService.withWorkspaceInclude(user.id),
       },
       orderBy: TaskService.orderBy
     })
@@ -372,19 +393,22 @@ export class TaskService {
   static formatUserViewedTask(
     { messages, userViewedTasks, workspace, createdAt }: TaskIncludePayload,
     user: User,
+    isAssigned: boolean
   ) {
+    const now = dayjs()
+
     const [latestWorkspaceEntry] = workspace.userWorkspaceVisits
     const [viewedTask] = userViewedTasks
     const [lastMessage] = messages
 
-    const viewedMessages = lastMessage == null || (
+    const viewedMessages = lastMessage == null || now.diff(dayjs(lastMessage.createdAt), 'days') >= invalidationDays || (
       viewedTask?.viewedAt != null &&
       lastMessage.createdAt <= viewedTask.viewedAt
     )
 
     const viewedInWorkspaceTable = !!latestWorkspaceEntry && createdAt <= latestWorkspaceEntry.visitedAt
-    const viewedInPersonalTable = user?.personalAreaEnteredAt !== null && createdAt <= user.personalAreaEnteredAt
-    const viewedInTable = viewedInWorkspaceTable || viewedInPersonalTable || viewedTask?.viewedAt != null
+    const viewedInPersonalTable = isAssigned && user?.personalAreaEnteredAt !== null && createdAt <= user.personalAreaEnteredAt
+    const viewedInTable = now.diff(dayjs(createdAt), 'days') >= invalidationDays || viewedInWorkspaceTable || viewedInPersonalTable || viewedTask?.viewedAt != null
 
     return { viewedInTable, viewedMessages, lastMessage }
   }
@@ -409,9 +433,11 @@ export class TaskService {
       return []
     }
 
+    const isAssigned = task._count.assigneeStatuses > 0
+
     const fields = {
       ...taskFields,
-      ...TaskService.formatUserViewedTask(task, user)
+      ...TaskService.formatUserViewedTask(task, user, isAssigned)
     }
 
     if (isWorkspace && assigneeStatuses.length === 0) {
@@ -422,7 +448,8 @@ export class TaskService {
           user,
           workspaceArchiveMap,
           personalArchiveMap,
-          task.archivedAt
+          task.archivedAt,
+          isAssigned,
         ),
         otherAssignees: [],
         rowKey: TaskService.formatTaskRowId(taskFields.id),
@@ -437,7 +464,8 @@ export class TaskService {
         workspaceArchiveMap,
         personalArchiveMap,
         task.archivedAt,
-        assigneeStatus
+        isAssigned,
+        assigneeStatus,
       )
     )
 

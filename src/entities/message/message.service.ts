@@ -31,8 +31,8 @@ export class MessageService {
     const now = new Date()
     await this.prisma.userViewedTasks.upsert({
       where: { userId_taskId: { userId, taskId: dto.taskId } },
-      create: { userId, taskId: dto.taskId, panelViewedAt: now },
-      update: { panelViewedAt: now },
+      create: { userId, taskId: dto.taskId },
+      update: { viewedAt: now },
     });
 
     return { ...message, viewed: true }

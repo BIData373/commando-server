@@ -6,12 +6,10 @@ export class UserViewedTasksService {
     constructor(private readonly prisma: PrismaService) { }
 
     async viewTasks(userId: number, taskId: number) {
-        const now = new Date();
-
         await this.prisma.userViewedTasks.upsert({
             where: { userId_taskId: { userId, taskId } },
-            create: { userId, taskId, panelViewedAt: now },
-            update: { panelViewedAt: now },
+            create: { userId, taskId },
+            update: { viewedAt: new Date() },
         });
     }
 

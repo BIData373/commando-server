@@ -110,7 +110,17 @@ export class SourceService {
         createdBy: userId,
         updatedBy: userId
       },
-      include: SourceService.include
+      include: {
+        ...SourceService.include,
+        tasks: { select: { id: true }}
+      }
+    })
+
+    await this.prisma.userViewedTasks.createMany({
+      data: source.tasks.map(t => ({
+        taskId: t.id,
+        userId,
+      }))
     })
 
     if (aiExtraction) {

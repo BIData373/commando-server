@@ -207,7 +207,7 @@ COMPLETED COMPLETED
   "user_viewed_tasks" {
     Int user_id 
     Int task_id 
-    DateTime viewed_at "❓"
+    DateTime viewed_at 
     }
   
 

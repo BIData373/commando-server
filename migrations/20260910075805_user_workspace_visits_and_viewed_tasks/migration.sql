@@ -5,7 +5,7 @@ ALTER TABLE "users" ADD COLUMN     "personal_area_entered_at" TIMESTAMP(3);
 CREATE TABLE "user_viewed_tasks" (
     "user_id" INTEGER NOT NULL,
     "task_id" INTEGER NOT NULL,
-    "viewed_at" TIMESTAMP(3),
+    "viewed_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "user_viewed_tasks_pkey" PRIMARY KEY ("user_id","task_id")
 );
