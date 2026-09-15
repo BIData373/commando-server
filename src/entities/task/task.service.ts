@@ -416,25 +416,31 @@ export class TaskService {
     return `${taskId}${TaskService.TASK_ROW_ID_SEPARATOR}${assigneeId}`
   }
 
+  static isTimePassed(createdAt: Date) {
+    const now = dayjs()
+    return now.diff(dayjs(createdAt), 'days') >= invalidationDays
+  }
+
   static formatUserViewedTask(
     { messages, userViewedTasks, workspace, createdAt }: TaskIncludePayload,
     user: User,
     isAssigned: boolean
   ) {
-    const now = dayjs()
 
     const [latestWorkspaceEntry] = workspace.userWorkspaceVisits
     const [viewedTask] = userViewedTasks
     const [lastMessage] = messages
 
-    const viewedMessages = lastMessage == null || now.diff(dayjs(lastMessage.createdAt), 'days') >= invalidationDays || (
-      viewedTask?.viewedAt != null &&
+    const isTaskOpened = viewedTask?.viewedAt != null
+
+    const viewedMessages = lastMessage == null || TaskService.isTimePassed(lastMessage.createdAt) || (
+      isTaskOpened &&
       lastMessage.createdAt <= viewedTask.viewedAt
     )
 
     const viewedInWorkspaceTable = !!latestWorkspaceEntry && createdAt <= latestWorkspaceEntry.visitedAt
     const viewedInPersonalTable = isAssigned && user?.personalAreaEnteredAt !== null && createdAt <= user.personalAreaEnteredAt
-    const viewedInTable = now.diff(dayjs(createdAt), 'days') >= invalidationDays || viewedInWorkspaceTable || viewedInPersonalTable || viewedTask?.viewedAt != null
+    const viewedInTable = TaskService.isTimePassed(createdAt) || viewedInWorkspaceTable || viewedInPersonalTable || isTaskOpened
 
     return { viewedInTable, viewedMessages, lastMessage }
   }

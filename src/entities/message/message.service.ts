@@ -65,7 +65,7 @@ export class MessageService {
   }
 
   async findByTaskIds(taskIds: number[], userId: number,) {
-    const message = await this.getIsMessageViewed(null, userId, taskIds)
+    const message = await this.getIsMessageViewedExtension(null, userId, taskIds)
     return await message.findMany({
       where: { taskId: { in: taskIds }, deletedAt: null },
       ...MessageService.findManyOptions
@@ -133,23 +133,20 @@ export class MessageService {
   }
 
   async findOne(id: number, userId: number) {
-    const message = await this.getIsMessageViewed(id, userId)
+    const message = await this.getIsMessageViewedExtension(id, userId)
     return await message.findUnique({
       where: { id, deletedAt: null },
       include: MessageService.include
     })
   }
 
-  async update(id: number, dto: UpdateMessageDto, updatedBy: number) {
-    return await this.updateMessage(id, updatedBy, { ...dto, updatedBy });
-  }
 
   async remove(id: number, deletedBy: number) {
     return await this.updateMessage(id, deletedBy, { deletedAt: new Date(), deletedBy });
   }
 
   async updateMessage(id: number, userId: number, data: Prisma.MessageUpdateInput) {
-    const message = await this.getIsMessageViewed(id, userId);
+    const message = await this.getIsMessageViewedExtension(id, userId);
     return await message.update({
       where: { id },
       data,
@@ -157,7 +154,7 @@ export class MessageService {
     });
   }
 
-  async getIsMessageViewed(
+  async getIsMessageViewedExtension(
     id: number | null,
     userId: number,
     taskIds?: number[]
