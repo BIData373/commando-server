@@ -20,4 +20,7 @@ export class AssigneeTaskStatusDto {
 
   @ExposeProperty()
   description: string;
+
+  @ExposeProperty()
+  updatedAt: Date;
 }

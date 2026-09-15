@@ -95,6 +95,12 @@ COMPLETED COMPLETED
     Int task_id 
     Int assignee_id 
     Int status_id 
+    DateTime created_at 
+    Int created_by 
+    DateTime updated_at 
+    Int updated_by 
+    DateTime deleted_at "❓"
+    Int deleted_by "❓"
     String description "❓"
     }
   
