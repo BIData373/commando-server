@@ -117,7 +117,10 @@ export class SourceService {
           createdBy: userId,
           updatedBy: userId
         },
-        include: SourceService.include
+        include: {
+          ...SourceService.include,
+          tasks: true
+        }
       })
 
       await WorkspaceService.bumpSerialIdsTx(tx, workspaceId, tasks?.length ?? 0)
@@ -125,6 +128,12 @@ export class SourceService {
       return created
     })
 
+    await this.prisma.userViewedTasks.createMany({
+      data: source.tasks.map(t => ({
+        taskId: t.id,
+        userId,
+      }))
+    })
 
 
     if (aiExtraction) {

@@ -82,3 +82,5 @@ export const chatChannel = process.env.VITE_CHAT_CHANNEL
 export const chatChannelUrl = chatUrl && chatChannel
   ? new URL(`/channel/${chatChannel}`, chatUrl).href
   : undefined
+
+export const invalidationDays = Number(process.env.TASK_INVALIDATION_DAYS) || 30
