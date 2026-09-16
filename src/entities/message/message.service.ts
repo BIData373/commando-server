@@ -131,18 +131,18 @@ export class MessageService {
     });
   }
 
-  async update(id: number, dto: UpdateMessageDto, updatedBy: number) {
+  async update(id: number, dto: UpdateMessageDto, updatedById: number) {
     return await this.prisma.message.update({
       where: { id },
-      data: { ...dto, updatedById: updatedBy },
+      data: { ...dto, updatedById },
       include: MessageService.include
     });
   }
 
-  async remove(id: number, deletedBy: number) {
+  async remove(id: number, deletedById: number) {
     return await this.prisma.message.update({
       where: { id },
-      data: { deletedAt: new Date(), deletedById: deletedBy },
+      data: { deletedAt: new Date(), deletedById },
       include: MessageService.include
     });
   }

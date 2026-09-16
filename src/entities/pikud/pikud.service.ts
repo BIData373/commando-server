@@ -39,18 +39,18 @@ export class PikudService {
     });
   }
 
-  async update(id: number, dto: UpdatePikudDto, updatedBy: number) {
+  async update(id: number, dto: UpdatePikudDto, updatedById: number) {
     return await this.prisma.pikud.update({
       where: { id },
-      data: { ...dto, updatedById: updatedBy },
+      data: { ...dto, updatedById },
       include: PikudService.include
     });
   }
 
-  async remove(id: number, deletedBy: number) {
+  async remove(id: number, deletedById: number) {
     return await this.prisma.pikud.update({
       where: { id },
-      data: { deletedAt: new Date(), deletedById: deletedBy },
+      data: { deletedAt: new Date(), deletedById },
       include: PikudService.include
     });
   }

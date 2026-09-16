@@ -297,20 +297,12 @@ export class TaskService {
         data: {
           ...dto,
           serialId: lastSerialId + 1,
-          createdBy: { connect: { id: userId } },
-          updatedBy: { connect: { id: userId } },
-          workspace: {
-            connect: { id: workspaceId }
-          },
-          status: {
-            connect: { id: notStartedStatus.id }
-          },
+          createdById: userId,
+          updatedById: userId,
+          workspaceId,
+          statusId: notStartedStatus.id,
           ...(typeof sourceId === 'number' && {
-            source: {
-              connect: {
-                id: sourceId
-              }
-            }
+            sourceId
           }),
           ...(assignees?.length && {
             assigneeStatuses: taskAssigneeStatusesCreateArgs(assignees, notStartedStatus.id)

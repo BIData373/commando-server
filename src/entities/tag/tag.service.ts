@@ -38,10 +38,10 @@ export class TagService {
     });
   }
 
-  async update(id: number, dto: UpdateTagDto, updatedBy: number) {
+  async update(id: number, dto: UpdateTagDto, updatedById: number) {
     return await this.prisma.tag.update({
       where: { id },
-      data: { ...dto, updatedById: updatedBy },
+      data: { ...dto, updatedById },
       include: TagService.include
     });
   }

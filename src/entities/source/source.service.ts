@@ -226,7 +226,7 @@ export class SourceService {
     { id, workspaceId, ...source }: Source,
     // TODO - fix
     { tags, tasks, context, deleteAttachment, workspaceId: _, aiExtraction, draft, ...dto }: UpdateSourceDto,
-    updatedBy: number,
+    updatedById: number,
     file?: Express.Multer.File
   ) {
     let attachmentKey: string | null | undefined
@@ -255,10 +255,10 @@ export class SourceService {
         ...dto,
         attachmentKey,
         attachmentName,
-        updatedById: updatedBy,
+        updatedById,
         draft: aiExtraction || draft,
         ...(tags !== undefined && {
-          tags: tagsSetOrCreateArgs(tags, workspaceId, updatedBy)
+          tags: tagsSetOrCreateArgs(tags, workspaceId, updatedById)
         })
       },
       include: SourceService.include
@@ -282,10 +282,10 @@ export class SourceService {
     return updatedSource
   }
 
-  async remove(id: number, deletedBy: number) {
+  async remove(id: number, deletedById: number) {
     return await this.prisma.source.update({
       where: { id },
-      data: { deletedAt: new Date(), deletedById: deletedBy },
+      data: { deletedAt: new Date(), deletedById },
       include: SourceService.include
     })
   }
