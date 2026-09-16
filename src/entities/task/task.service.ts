@@ -450,9 +450,11 @@ export class TaskService {
       : formattedActiveAssignees
 
     return assigneeStatusesForRows
-      .map(({ assigneeId, statusId, taskId, ...assigneeStatusFields }) => ({
+      .map(({ assigneeId, statusId, taskId, createdAt, createdBy, updatedAt, updatedBy, ...assigneeStatusFields }) => ({
         ...fields,
         ...assigneeStatusFields,
+        // A row is one assignee's view of the task, so its last-touched time is the status's, not the task's
+        updatedAt,
         rowKey: TaskService.formatTaskRowId(taskFields.id, assigneeStatusFields?.assignee?.id),
         otherAssignees: formattedAssigneeStatuses.filter(current => current.assigneeId !== assigneeId)
       }))
@@ -617,12 +619,15 @@ export class TaskService {
       ? { connect: { id: statusId } }
       : undefined
 
-    const assigneeStatuses = assignees && {
-      deleteMany: !hasAssignees
-        ? {}
-        : {
-          assigneeId: { notIn: assignees.map(a => a.id) }
-        },
+    const assigneeStatuses = {
+      updateMany: { where: {}, data: { updatedBy } },
+      ...(assignees && {
+        deleteMany: !hasAssignees
+          ? {}
+          : {
+            assigneeId: { notIn: assignees.map(a => a.id) }
+          }
+      }),
       ...(hasAssignees && {
         upsert: assignees.map(({
           id: assigneeId,
