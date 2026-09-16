@@ -10,13 +10,18 @@ model Source {
   workspaceId Int       @map("workspace_id")
   workspace   Workspace @relation(fields: [workspaceId], references: [id])
 
-  // Meta Fields
   createdAt DateTime  @default(now()) @map("created_at")
-  createdBy Int       @map("created_by")
   updatedAt DateTime  @updatedAt @map("updated_at")
-  updatedBy Int       @map("updated_by")
   deletedAt DateTime? @map("deleted_at")
-  deletedBy Int?      @map("deleted_by")
+
+  createdById Int  @map("created_by")
+  createdBy   User @relation("source_created_by", fields: [createdById], references: [id])
+
+  updatedById Int  @map("updated_by")
+  updatedBy   User @relation("source_updated_by", fields: [updatedById], references: [id])
+
+  deletedById Int? @map("deleted_by")
+  deletedBy   User? @relation("source_deleted_by", fields: [deletedById], references: [id])
 
   tasks Task[]
 

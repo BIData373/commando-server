@@ -12,7 +12,9 @@ type MessageFilterHandlerFunction = () => Promise<Prisma.MessageGetPayload<typeo
 export class MessageService {
   static readonly include = {
     user: true,
-    task: { select: { id: true } }
+    createdBy: true,
+    updatedBy: true,
+    deletedBy: true
   } satisfies Prisma.MessageInclude;
 
   static readonly orderBy = {
@@ -31,8 +33,8 @@ export class MessageService {
       data: {
         ...dto,
         userId,
-        createdBy: userId,
-        updatedBy: userId
+        createdById: userId,
+        updatedById: userId
       },
       include: MessageService.include
     });
