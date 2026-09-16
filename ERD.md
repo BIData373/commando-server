@@ -99,8 +99,6 @@ COMPLETED COMPLETED
     Int created_by 
     DateTime updated_at 
     Int updated_by 
-    DateTime deleted_at "❓"
-    Int deleted_by "❓"
     String description "❓"
     }
   

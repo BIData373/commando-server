@@ -1,6 +1,7 @@
-import { Body, Controller, Delete, Get, Param, Put, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Put, Query, Req } from '@nestjs/common';
 import { ApiBody, ApiOkResponse, ApiOperation, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { TransformPlainToInstance } from 'class-transformer';
+import { Request } from 'express';
 import { GetManagerAssigneeIdFieldDto } from '../assignee/dto/request/get-assignee-id-field.dto';
 import { GetManagerTaskIdFieldDto, GetViewerTaskIdFieldDto } from '../task/dto/request/get-task-id-field.dto';
 import { AssigneeTaskStatusService } from './assignee-task-status.service';
@@ -29,9 +30,10 @@ export class AssigneeTaskStatusController {
   @ApiOkResponse({ type: AssigneeTaskStatusDto })
   @TransformPlainToInstance(AssigneeTaskStatusDto)
   async upsert(
+    @Req() { user }: Request,
     @Body() dto: UpdateAssigneeTaskStatusDto
   ) {
-    return await this.assigneeTaskStatusService.upsert(dto);
+    return await this.assigneeTaskStatusService.upsert(dto, user.id);
   }
 
   @ApiOperation({ operationId: 'deleteAssigneeTaskStatus' })

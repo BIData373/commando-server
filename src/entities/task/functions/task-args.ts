@@ -9,12 +9,15 @@ import { GetTaskAssigneeDto } from "../dto/request/get-task-assignee.dto";
 
 export const taskAssigneeStatusesCreateArgs = (
     assignees: GetTaskAssigneeDto[],
-    statusId: number
+    statusId: number,
+    userId: number
 ) => ({
     create: assignees.map(({ id, description }) => ({
         assigneeId: id,
         description,
-        statusId
+        statusId,
+        createdBy: userId,
+        updatedBy: userId
     }))
 } satisfies Prisma.AssigneeTaskStatusCreateNestedManyWithoutTaskInput)
 

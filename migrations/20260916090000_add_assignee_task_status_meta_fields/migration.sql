@@ -4,9 +4,7 @@ ALTER TABLE "assignee_task_statuses"
   ADD COLUMN "created_at" TIMESTAMP(3),
   ADD COLUMN "created_by" INTEGER,
   ADD COLUMN "updated_at" TIMESTAMP(3),
-  ADD COLUMN "updated_by" INTEGER,
-  ADD COLUMN "deleted_at" TIMESTAMP(3),
-  ADD COLUMN "deleted_by" INTEGER;
+  ADD COLUMN "updated_by" INTEGER;
 
 -- Backfill from the parent task. A status row has no audit history of its own yet, so the
 -- task's is the best available record of when and by whom it came to exist.
@@ -15,9 +13,7 @@ SET
   "created_at" = t."created_at",
   "created_by" = t."created_by",
   "updated_at" = t."updated_at",
-  "updated_by" = t."updated_by",
-  "deleted_at" = t."deleted_at",
-  "deleted_by" = t."deleted_by"
+  "updated_by" = t."updated_by"
 FROM "tasks" AS t
 WHERE s."task_id" = t."id";
 

@@ -18,14 +18,14 @@ export class AssigneeTaskStatusService {
     return await this.prisma.assigneeTaskStatus.findMany({ where: { taskId } });
   }
 
-  async upsert({ taskId, assigneeId, context, ...dto }: UpdateAssigneeTaskStatusDto) {
+  async upsert({ taskId, assigneeId, context, ...dto }: UpdateAssigneeTaskStatusDto, userId: number) {
     return await this.prisma.$transaction(async tx => {
       await TaskService.clearWholeTaskArchiveTx(tx, taskId)
 
       return await tx.assigneeTaskStatus.upsert({
         where: { taskId_assigneeId: { taskId, assigneeId } },
-        create: { taskId, assigneeId, ...dto },
-        update: { taskId, assigneeId, ...dto },
+        create: { taskId, assigneeId, ...dto, createdBy: userId, updatedBy: userId },
+        update: { taskId, assigneeId, ...dto, updatedBy: userId },
         include: AssigneeTaskStatusService.include
       });
     })
