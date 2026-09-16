@@ -11,7 +11,10 @@ type MessageFilterHandlerFunction = () => Promise<Prisma.MessageGetPayload<typeo
 @Injectable()
 export class MessageService {
   static readonly include = {
-    user: true
+    user: true,
+    createdBy: true,
+    updatedBy: true,
+    deletedBy: true
   } satisfies Prisma.MessageInclude;
 
   static readonly orderBy = {
@@ -30,8 +33,8 @@ export class MessageService {
       data: {
         ...dto,
         userId,
-        createdBy: userId,
-        updatedBy: userId
+        createdById: userId,
+        updatedById: userId
       },
       include: MessageService.include
     });
@@ -128,18 +131,18 @@ export class MessageService {
     });
   }
 
-  async update(id: number, dto: UpdateMessageDto, updatedBy: number) {
+  async update(id: number, dto: UpdateMessageDto, updatedById: number) {
     return await this.prisma.message.update({
       where: { id },
-      data: { ...dto, updatedBy },
+      data: { ...dto, updatedById },
       include: MessageService.include
     });
   }
 
-  async remove(id: number, deletedBy: number) {
+  async remove(id: number, deletedById: number) {
     return await this.prisma.message.update({
       where: { id },
-      data: { deletedAt: new Date(), deletedBy },
+      data: { deletedAt: new Date(), deletedById },
       include: MessageService.include
     });
   }

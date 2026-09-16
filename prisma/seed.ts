@@ -50,20 +50,20 @@ async function main() {
   console.log('* Creating Pikuds')
   // ── Pikud ─────────────────────────────────────────────────────────────────
   const pikud = await prisma.pikud.create({
-    data: { name: 'פיקוד מרכז', createdBy: u1.id, updatedBy: u1.id },
+    data: { name: 'פיקוד מרכז', createdById: u1.id, updatedById: u1.id },
   });
 
   console.log('* Creating Workspaces')
   // ── Workspaces ────────────────────────────────────────────────────────────
   const [ws1, ws2, ws3] = await Promise.all([
     prisma.workspace.create({
-      data: { title: 'מפקדת חטיבה', urlName: 'hativa', pikudId: pikud.id, createdBy: u1.id, updatedBy: u1.id },
+      data: { title: 'מפקדת חטיבה', urlName: 'hativa', pikudId: pikud.id, createdById: u1.id, updatedById: u1.id },
     }),
     prisma.workspace.create({
-      data: { title: 'מערך תקשו"ב', urlName: 'techshuv', pikudId: pikud.id, createdBy: u2.id, updatedBy: u2.id },
+      data: { title: 'מערך תקשו"ב', urlName: 'techshuv', pikudId: pikud.id, createdById: u2.id, updatedById: u2.id },
     }),
     prisma.workspace.create({
-      data: { title: 'מערך לוגיסטי', urlName: 'logistics', pikudId: pikud.id, createdBy: u3.id, updatedBy: u3.id },
+      data: { title: 'מערך לוגיסטי', urlName: 'logistics', pikudId: pikud.id, createdById: u3.id, updatedById: u3.id },
     }),
   ]);
 
@@ -88,16 +88,16 @@ async function main() {
   // ── Assignees ─────────────────────────────────────────────────────────────
   const [a1, a2, a3, a4, a5, a6, a7, a8] = await Promise.all([
     // workspace 1
-    prisma.assignee.create({ data: { name: 'מחלקת מבצעים', color: '#3B82F6', workspaceId: ws1.id, createdBy: u1.id, updatedBy: u1.id, users: { connect: [{ id: u1.id }, { id: u2.id }] } } }),
-    prisma.assignee.create({ data: { name: 'צוות לוגיסטיקה', color: '#10B981', workspaceId: ws1.id, createdBy: u1.id, updatedBy: u1.id, users: { connect: [{ id: u3.id }, { id: u4.id }] } } }),
-    prisma.assignee.create({ data: { name: 'קצינת מודיעין', color: '#F59E0B', workspaceId: ws1.id, createdBy: u1.id, updatedBy: u1.id, users: { connect: [{ id: u5.id }] } } }),
-    prisma.assignee.create({ data: { name: "פלוגה א'", color: '#EF4444', workspaceId: ws1.id, createdBy: u1.id, updatedBy: u1.id, users: { connect: [{ id: u4.id }, { id: u6.id }] } } }),
-    prisma.assignee.create({ data: { name: 'קצין קשר', color: '#8B5CF6', workspaceId: ws1.id, createdBy: u1.id, updatedBy: u1.id, users: { connect: [{ id: u5.id }, { id: u6.id }] } } }),
-    prisma.assignee.create({ data: { name: 'מפקדת הגדוד', color: '#EC4899', workspaceId: ws1.id, createdBy: u1.id, updatedBy: u1.id, users: { connect: [{ id: u1.id }, { id: u2.id }, { id: u3.id }] } } }),
+    prisma.assignee.create({ data: { name: 'מחלקת מבצעים', color: '#3B82F6', workspaceId: ws1.id, createdById: u1.id, updatedById: u1.id, users: { connect: [{ id: u1.id }, { id: u2.id }] } } }),
+    prisma.assignee.create({ data: { name: 'צוות לוגיסטיקה', color: '#10B981', workspaceId: ws1.id, createdById: u1.id, updatedById: u1.id, users: { connect: [{ id: u3.id }, { id: u4.id }] } } }),
+    prisma.assignee.create({ data: { name: 'קצינת מודיעין', color: '#F59E0B', workspaceId: ws1.id, createdById: u1.id, updatedById: u1.id, users: { connect: [{ id: u5.id }] } } }),
+    prisma.assignee.create({ data: { name: "פלוגה א'", color: '#EF4444', workspaceId: ws1.id, createdById: u1.id, updatedById: u1.id, users: { connect: [{ id: u4.id }, { id: u6.id }] } } }),
+    prisma.assignee.create({ data: { name: 'קצין קשר', color: '#8B5CF6', workspaceId: ws1.id, createdById: u1.id, updatedById: u1.id, users: { connect: [{ id: u5.id }, { id: u6.id }] } } }),
+    prisma.assignee.create({ data: { name: 'מפקדת הגדוד', color: '#EC4899', workspaceId: ws1.id, createdById: u1.id, updatedById: u1.id, users: { connect: [{ id: u1.id }, { id: u2.id }, { id: u3.id }] } } }),
     // workspace 2
-    prisma.assignee.create({ data: { name: 'צוות פיתוח', color: '#06B6D4', workspaceId: ws2.id, createdBy: u2.id, updatedBy: u2.id, users: { connect: [{ id: u2.id }, { id: u4.id }, { id: u5.id }] } } }),
+    prisma.assignee.create({ data: { name: 'צוות פיתוח', color: '#06B6D4', workspaceId: ws2.id, createdById: u2.id, updatedById: u2.id, users: { connect: [{ id: u2.id }, { id: u4.id }, { id: u5.id }] } } }),
     // workspace 3
-    prisma.assignee.create({ data: { name: 'צוות לוגיסטי', color: '#F97316', workspaceId: ws3.id, createdBy: u3.id, updatedBy: u3.id, users: { connect: [{ id: u3.id }, { id: u6.id }] } } }),
+    prisma.assignee.create({ data: { name: 'צוות לוגיסטי', color: '#F97316', workspaceId: ws3.id, createdById: u3.id, updatedById: u3.id, users: { connect: [{ id: u3.id }, { id: u6.id }] } } }),
   ]);
 
   console.log('* Creating Permissions')
@@ -125,13 +125,13 @@ async function main() {
   console.log('* Creating Tags')
   // ── Tags ──────────────────────────────────────────────────────────────────
   const [tBudget, tHR, tIT, tOps, tField, tDev, tQA] = await Promise.all([
-    prisma.tag.create({ data: { name: 'תקציב', workspaceId: ws1.id, createdBy: u1.id, updatedBy: u1.id } }),
-    prisma.tag.create({ data: { name: 'כ"א', workspaceId: ws1.id, createdBy: u1.id, updatedBy: u1.id } }),
-    prisma.tag.create({ data: { name: 'תקשו"ב', workspaceId: ws1.id, createdBy: u1.id, updatedBy: u1.id } }),
-    prisma.tag.create({ data: { name: 'מבצעים', workspaceId: ws1.id, createdBy: u1.id, updatedBy: u1.id } }),
-    prisma.tag.create({ data: { name: 'פקש"ש', workspaceId: ws1.id, createdBy: u1.id, updatedBy: u1.id } }),
-    prisma.tag.create({ data: { name: 'פיתוח', workspaceId: ws2.id, createdBy: u2.id, updatedBy: u2.id } }),
-    prisma.tag.create({ data: { name: 'בקרה', workspaceId: ws2.id, createdBy: u2.id, updatedBy: u2.id } }),
+    prisma.tag.create({ data: { name: 'תקציב', workspaceId: ws1.id, createdById: u1.id, updatedById: u1.id } }),
+    prisma.tag.create({ data: { name: 'כ"א', workspaceId: ws1.id, createdById: u1.id, updatedById: u1.id } }),
+    prisma.tag.create({ data: { name: 'תקשו"ב', workspaceId: ws1.id, createdById: u1.id, updatedById: u1.id } }),
+    prisma.tag.create({ data: { name: 'מבצעים', workspaceId: ws1.id, createdById: u1.id, updatedById: u1.id } }),
+    prisma.tag.create({ data: { name: 'פקש"ש', workspaceId: ws1.id, createdById: u1.id, updatedById: u1.id } }),
+    prisma.tag.create({ data: { name: 'פיתוח', workspaceId: ws2.id, createdById: u2.id, updatedById: u2.id } }),
+    prisma.tag.create({ data: { name: 'בקרה', workspaceId: ws2.id, createdById: u2.id, updatedById: u2.id } }),
   ]);
 
   console.log('* Creating Sources')
@@ -140,23 +140,23 @@ async function main() {
     src01, src02, src03, src04, src05, src06, src07, src08, src09,
     src10, src11, src12, src13, src14, src15, src16, src17,
   ] = await Promise.all([
-    prisma.source.create({ data: { date: new Date(), name: 'ישיבת הנהלה', draft: false, workspaceId: ws1.id, createdBy: u1.id, updatedBy: u1.id } }),
-    prisma.source.create({ data: { date: new Date(), name: 'דיון עם סמנכ"ל טכנולוגיה', draft: false, workspaceId: ws1.id, createdBy: u1.id, updatedBy: u1.id } }),
-    prisma.source.create({ data: { date: new Date(), name: 'ישיבת הנהלה', draft: false, workspaceId: ws1.id, createdBy: u2.id, updatedBy: u2.id } }),
-    prisma.source.create({ data: { date: new Date(), name: 'ישיבת שיווק', draft: false, workspaceId: ws1.id, createdBy: u3.id, updatedBy: u3.id } }),
-    prisma.source.create({ data: { date: new Date(), name: 'ישיבת דירקטוריון', draft: false, workspaceId: ws1.id, createdBy: u1.id, updatedBy: u1.id } }),
-    prisma.source.create({ data: { date: new Date(), name: 'החלטת הנהלה', draft: false, workspaceId: ws1.id, createdBy: u1.id, updatedBy: u1.id } }),
-    prisma.source.create({ data: { date: new Date(), name: 'ועדת ביקורת', draft: true, workspaceId: ws1.id, createdBy: u2.id, updatedBy: u2.id } }),
-    prisma.source.create({ data: { date: new Date(), name: 'דוח תקלות ינואר', draft: false, workspaceId: ws1.id, createdBy: u2.id, updatedBy: u2.id } }),
-    prisma.source.create({ data: { date: new Date(), name: 'ישיבת הנהלה', draft: false, workspaceId: ws1.id, createdBy: u1.id, updatedBy: u1.id } }),
-    prisma.source.create({ data: { date: new Date(), name: 'מחלקת רכש', draft: false, workspaceId: ws1.id, createdBy: u4.id, updatedBy: u4.id } }),
-    prisma.source.create({ data: { date: new Date(), name: 'מחלקת משאבי אנוש', draft: true, workspaceId: ws1.id, createdBy: u3.id, updatedBy: u3.id } }),
-    prisma.source.create({ data: { date: new Date(), name: 'ישיבת דירקטוריון', draft: false, workspaceId: ws1.id, createdBy: u1.id, updatedBy: u1.id } }),
-    prisma.source.create({ data: { date: new Date(), name: 'Sprint Planning', draft: false, workspaceId: ws2.id, createdBy: u2.id, updatedBy: u2.id } }),
-    prisma.source.create({ data: { date: new Date(), name: 'Retro', draft: false, workspaceId: ws2.id, createdBy: u2.id, updatedBy: u2.id } }),
-    prisma.source.create({ data: { date: new Date(), name: 'Sprint Planning', draft: true, workspaceId: ws2.id, createdBy: u2.id, updatedBy: u2.id } }),
-    prisma.source.create({ data: { date: new Date(), name: 'ישיבת שיווק', draft: false, workspaceId: ws3.id, createdBy: u3.id, updatedBy: u3.id } }),
-    prisma.source.create({ data: { date: new Date(), name: 'ישיבת הנהלה', draft: false, workspaceId: ws3.id, createdBy: u3.id, updatedBy: u3.id } }),
+    prisma.source.create({ data: { date: new Date(), name: 'ישיבת הנהלה', draft: false, workspaceId: ws1.id, createdById: u1.id, updatedById: u1.id } }),
+    prisma.source.create({ data: { date: new Date(), name: 'דיון עם סמנכ"ל טכנולוגיה', draft: false, workspaceId: ws1.id, createdById: u1.id, updatedById: u1.id } }),
+    prisma.source.create({ data: { date: new Date(), name: 'ישיבת הנהלה', draft: false, workspaceId: ws1.id, createdById: u2.id, updatedById: u2.id } }),
+    prisma.source.create({ data: { date: new Date(), name: 'ישיבת שיווק', draft: false, workspaceId: ws1.id, createdById: u3.id, updatedById: u3.id } }),
+    prisma.source.create({ data: { date: new Date(), name: 'ישיבת דירקטוריון', draft: false, workspaceId: ws1.id, createdById: u1.id, updatedById: u1.id } }),
+    prisma.source.create({ data: { date: new Date(), name: 'החלטת הנהלה', draft: false, workspaceId: ws1.id, createdById: u1.id, updatedById: u1.id } }),
+    prisma.source.create({ data: { date: new Date(), name: 'ועדת ביקורת', draft: true, workspaceId: ws1.id, createdById: u2.id, updatedById: u2.id } }),
+    prisma.source.create({ data: { date: new Date(), name: 'דוח תקלות ינואר', draft: false, workspaceId: ws1.id, createdById: u2.id, updatedById: u2.id } }),
+    prisma.source.create({ data: { date: new Date(), name: 'ישיבת הנהלה', draft: false, workspaceId: ws1.id, createdById: u1.id, updatedById: u1.id } }),
+    prisma.source.create({ data: { date: new Date(), name: 'מחלקת רכש', draft: false, workspaceId: ws1.id, createdById: u4.id, updatedById: u4.id } }),
+    prisma.source.create({ data: { date: new Date(), name: 'מחלקת משאבי אנוש', draft: true, workspaceId: ws1.id, createdById: u3.id, updatedById: u3.id } }),
+    prisma.source.create({ data: { date: new Date(), name: 'ישיבת דירקטוריון', draft: false, workspaceId: ws1.id, createdById: u1.id, updatedById: u1.id } }),
+    prisma.source.create({ data: { date: new Date(), name: 'Sprint Planning', draft: false, workspaceId: ws2.id, createdById: u2.id, updatedById: u2.id } }),
+    prisma.source.create({ data: { date: new Date(), name: 'Retro', draft: false, workspaceId: ws2.id, createdById: u2.id, updatedById: u2.id } }),
+    prisma.source.create({ data: { date: new Date(), name: 'Sprint Planning', draft: true, workspaceId: ws2.id, createdById: u2.id, updatedById: u2.id } }),
+    prisma.source.create({ data: { date: new Date(), name: 'ישיבת שיווק', draft: false, workspaceId: ws3.id, createdById: u3.id, updatedById: u3.id } }),
+    prisma.source.create({ data: { date: new Date(), name: 'ישיבת הנהלה', draft: false, workspaceId: ws3.id, createdById: u3.id, updatedById: u3.id } }),
   ]);
 
   const RANDOM_DESCRIPTIONS = [
@@ -191,7 +191,7 @@ async function main() {
       creationType: TaskCreationType.HUMAN,
       deadlineType: DeadlineType.ROLLING,
       dueDate: new Date('2026-03-01T00:00:00Z'),
-      workspaceId: ws1.id, sourceId: src01.id, createdBy: u1.id,
+      workspaceId: ws1.id, sourceId: src01.id, createdById: u1.id,
       tagIds: [tBudget.id, tHR.id],
       assignees: [
         { assigneeId: a1.id, statusType: WorkspaceStatusType.IN_PROGRESS },
@@ -204,7 +204,7 @@ async function main() {
       flagged: true,
       creationType: TaskCreationType.HUMAN,
       deadlineType: DeadlineType.IMMEDIATE,
-      workspaceId: ws1.id, sourceId: src02.id, createdBy: u1.id,
+      workspaceId: ws1.id, sourceId: src02.id, createdById: u1.id,
       tagIds: [tHR.id],
       assignees: [
         { assigneeId: a3.id, statusType: WorkspaceStatusType.NOT_STARTED },
@@ -217,7 +217,7 @@ async function main() {
       creationType: TaskCreationType.AI_HUMAN,
       deadlineType: DeadlineType.DATE,
       dueDate: new Date('2026-02-28T00:00:00Z'),
-      workspaceId: ws1.id, sourceId: src03.id, createdBy: u2.id,
+      workspaceId: ws1.id, sourceId: src03.id, createdById: u2.id,
       tagIds: [tIT.id, tField.id],
       assignees: [
         { assigneeId: a5.id, statusType: WorkspaceStatusType.IN_PROGRESS },
@@ -231,7 +231,7 @@ async function main() {
       creationType: TaskCreationType.HUMAN,
       deadlineType: DeadlineType.ROLLING,
       dueDate: new Date('2026-04-01T00:00:00Z'),
-      workspaceId: ws1.id, sourceId: src04.id, createdBy: u3.id,
+      workspaceId: ws1.id, sourceId: src04.id, createdById: u3.id,
       tagIds: [tOps.id],
       assignees: [
         { assigneeId: a2.id, statusType: WorkspaceStatusType.NOT_STARTED },
@@ -244,7 +244,7 @@ async function main() {
       creationType: TaskCreationType.AI,
       deadlineType: DeadlineType.DATE,
       dueDate: new Date('2026-01-15T00:00:00Z'),
-      workspaceId: ws1.id, sourceId: src05.id, createdBy: u1.id,
+      workspaceId: ws1.id, sourceId: src05.id, createdById: u1.id,
       tagIds: [],
       assignees: [
         { assigneeId: a1.id, statusType: WorkspaceStatusType.COMPLETED },
@@ -257,7 +257,7 @@ async function main() {
       creationType: TaskCreationType.HUMAN,
       deadlineType: DeadlineType.ROLLING,
       dueDate: new Date('2026-06-30T00:00:00Z'),
-      workspaceId: ws1.id, sourceId: src06.id, createdBy: u1.id,
+      workspaceId: ws1.id, sourceId: src06.id, createdById: u1.id,
       tagIds: [tBudget.id, tIT.id],
       assignees: [
         { assigneeId: a1.id, statusType: WorkspaceStatusType.NOT_STARTED },
@@ -272,7 +272,7 @@ async function main() {
       creationType: TaskCreationType.AI_HUMAN,
       deadlineType: DeadlineType.ROLLING,
       dueDate: new Date('2026-01-31T00:00:00Z'),
-      workspaceId: ws1.id, sourceId: src07.id, createdBy: u2.id,
+      workspaceId: ws1.id, sourceId: src07.id, createdById: u2.id,
       tagIds: [tBudget.id, tField.id],
       assignees: [
         { assigneeId: a5.id, statusType: WorkspaceStatusType.COMPLETED },
@@ -284,7 +284,7 @@ async function main() {
       flagged: true,
       creationType: TaskCreationType.HUMAN,
       deadlineType: DeadlineType.IMMEDIATE,
-      workspaceId: ws1.id, sourceId: src08.id, createdBy: u2.id,
+      workspaceId: ws1.id, sourceId: src08.id, createdById: u2.id,
       tagIds: [tIT.id],
       assignees: [
         { assigneeId: a4.id, statusType: WorkspaceStatusType.IN_PROGRESS },
@@ -298,7 +298,7 @@ async function main() {
       creationType: TaskCreationType.AI,
       deadlineType: DeadlineType.DATE,
       dueDate: new Date('2026-03-15T00:00:00Z'),
-      workspaceId: ws1.id, sourceId: src09.id, createdBy: u1.id,
+      workspaceId: ws1.id, sourceId: src09.id, createdById: u1.id,
       tagIds: [tBudget.id, tOps.id],
       assignees: [
         { assigneeId: a6.id, statusType: WorkspaceStatusType.NOT_STARTED },
@@ -311,7 +311,7 @@ async function main() {
       creationType: TaskCreationType.HUMAN,
       deadlineType: DeadlineType.ROLLING,
       dueDate: new Date('2026-02-10T00:00:00Z'),
-      workspaceId: ws1.id, sourceId: src10.id, createdBy: u4.id,
+      workspaceId: ws1.id, sourceId: src10.id, createdById: u4.id,
       tagIds: [tBudget.id],
       assignees: [
         { assigneeId: a2.id, statusType: WorkspaceStatusType.COMPLETED },
@@ -324,7 +324,7 @@ async function main() {
       creationType: TaskCreationType.AI_HUMAN,
       deadlineType: DeadlineType.ROLLING,
       dueDate: new Date('2026-03-31T00:00:00Z'),
-      workspaceId: ws1.id, sourceId: src11.id, createdBy: u3.id,
+      workspaceId: ws1.id, sourceId: src11.id, createdById: u3.id,
       tagIds: [tHR.id],
       assignees: [
         { assigneeId: a2.id, statusType: WorkspaceStatusType.IN_PROGRESS },
@@ -337,7 +337,7 @@ async function main() {
       flagged: false,
       creationType: TaskCreationType.AI,
       deadlineType: DeadlineType.ROLLING,
-      workspaceId: ws1.id, sourceId: src12.id, createdBy: u1.id,
+      workspaceId: ws1.id, sourceId: src12.id, createdById: u1.id,
       tagIds: [tBudget.id],
       assignees: [
         { assigneeId: a6.id, statusType: WorkspaceStatusType.NOT_STARTED },
@@ -350,7 +350,7 @@ async function main() {
       creationType: TaskCreationType.HUMAN,
       deadlineType: DeadlineType.DATE,
       dueDate: new Date('2026-03-01T00:00:00Z'),
-      workspaceId: ws2.id, sourceId: src13.id, createdBy: u2.id,
+      workspaceId: ws2.id, sourceId: src13.id, createdById: u2.id,
       tagIds: [tDev.id, tQA.id],
       assignees: [
         { assigneeId: a7.id, statusType: WorkspaceStatusType.IN_PROGRESS },
@@ -363,7 +363,7 @@ async function main() {
       creationType: TaskCreationType.AI,
       deadlineType: DeadlineType.ROLLING,
       dueDate: new Date('2026-03-10T00:00:00Z'),
-      workspaceId: ws2.id, sourceId: src14.id, createdBy: u2.id,
+      workspaceId: ws2.id, sourceId: src14.id, createdById: u2.id,
       tagIds: [tDev.id],
       assignees: [
         { assigneeId: a7.id, statusType: WorkspaceStatusType.NOT_STARTED },
@@ -375,7 +375,7 @@ async function main() {
       flagged: true,
       creationType: TaskCreationType.AI_HUMAN,
       deadlineType: DeadlineType.IMMEDIATE,
-      workspaceId: ws2.id, sourceId: src15.id, createdBy: u2.id,
+      workspaceId: ws2.id, sourceId: src15.id, createdById: u2.id,
       tagIds: [tDev.id, tQA.id],
       assignees: [
         { assigneeId: a7.id, statusType: WorkspaceStatusType.IN_PROGRESS },
@@ -388,7 +388,7 @@ async function main() {
       creationType: TaskCreationType.HUMAN,
       deadlineType: DeadlineType.ROLLING,
       dueDate: new Date('2026-03-20T00:00:00Z'),
-      workspaceId: ws3.id, sourceId: src16.id, createdBy: u3.id,
+      workspaceId: ws3.id, sourceId: src16.id, createdById: u3.id,
       tagIds: [],
       assignees: [
         { assigneeId: a8.id, statusType: WorkspaceStatusType.NOT_STARTED },
@@ -401,7 +401,7 @@ async function main() {
       creationType: TaskCreationType.AI_HUMAN,
       deadlineType: DeadlineType.DATE,
       dueDate: new Date('2026-02-15T00:00:00Z'),
-      workspaceId: ws3.id, sourceId: src17.id, createdBy: u3.id,
+      workspaceId: ws3.id, sourceId: src17.id, createdById: u3.id,
       tagIds: [],
       assignees: [
         { assigneeId: a8.id, statusType: WorkspaceStatusType.COMPLETED },
@@ -447,8 +447,8 @@ async function main() {
         workspaceId: def.workspaceId,
         sourceId: def.sourceId,
         statusId: statusIdByType[def.workspaceId][taskStatusType(def.assignees)],
-        createdBy: def.createdBy,
-        updatedBy: def.createdBy,
+        createdById: def.createdById,
+        updatedById: def.createdById,
         ...(def.tagIds.length > 0 && { tags: { connect: def.tagIds.map((id) => ({ id })) } }),
         assigneeStatuses: {
           create: def.assignees.map(({ assigneeId, statusType }) => ({
@@ -463,7 +463,7 @@ async function main() {
             field: 'task',
             value: def.title,
             workspaceId: def.workspaceId,
-            userId: def.createdBy,
+            userId: def.createdById,
           }
         }
       }

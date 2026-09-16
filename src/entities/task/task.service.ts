@@ -48,11 +48,6 @@ export class TaskService {
     createdAt: 'desc'
   } satisfies Prisma.TaskOrderByWithRelationInput;
 
-  constructor(
-    private readonly prisma: PrismaService,
-    private readonly messageRelayService: MessageRelayService
-  ) { }
-
   static readonly includeMessageCount: Prisma.TaskInclude = {
     _count: {
       select: {
@@ -65,6 +60,10 @@ export class TaskService {
     },
   }
 
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly messageRelayService: MessageRelayService
+  ) { }
   static readonly baseInclude = {
     tags: true,
     source: {
@@ -80,6 +79,9 @@ export class TaskService {
       take: 1,
     },
     ...TaskService.includeMessageCount,
+    createdBy: true,
+    updatedBy: true,
+    deletedBy: true,
     status: true,
     assigneeStatuses: {
       where: {
@@ -295,20 +297,12 @@ export class TaskService {
         data: {
           ...dto,
           serialId: lastSerialId + 1,
-          createdBy: userId,
-          updatedBy: userId,
-          workspace: {
-            connect: { id: workspaceId }
-          },
-          status: {
-            connect: { id: notStartedStatus.id }
-          },
+          createdById: userId,
+          updatedById: userId,
+          workspaceId,
+          statusId: notStartedStatus.id,
           ...(typeof sourceId === 'number' && {
-            source: {
-              connect: {
-                id: sourceId
-              }
-            }
+            sourceId
           }),
           ...(assignees?.length && {
             assigneeStatuses: taskAssigneeStatusesCreateArgs(assignees, notStartedStatus.id)
@@ -605,17 +599,13 @@ export class TaskService {
   async update(
     { id, workspaceId }: Task,
     { assignees, tags, context, sourceId, statusId, ...dto }: UpdateTaskDto,
-    updatedBy: number
+    updatedById: number
   ) {
     const hasAssignees = assignees !== undefined && assignees.length > 0
 
     const [notStartedStatus] = hasAssignees
       ? await this.findDefaultStatusInWorkspaces(workspaceId)
       : [null]
-
-    const status = statusId !== undefined
-      ? { connect: { id: statusId } }
-      : undefined
 
     const assigneeStatuses = assignees && {
       deleteMany: !hasAssignees
@@ -642,7 +632,7 @@ export class TaskService {
           }
         }))
       })
-    }
+    } satisfies Prisma.AssigneeTaskStatusUncheckedUpdateManyWithoutTaskNestedInput | undefined
 
     return await this.prisma.$transaction(async tx => {
       if (assignees !== undefined) {
@@ -653,21 +643,17 @@ export class TaskService {
         where: { id },
         data: {
           ...dto,
-          ...(sourceId !== undefined && {
-            source: sourceId === null
-              ? { disconnect: true }
-              : { connect: { id: sourceId } }
-          }),
-          status,
+          sourceId,
+          statusId,
           assigneeStatuses,
           // A task is archived as a whole only while nobody is assigned to it
           ...(hasAssignees && { archivedAt: null }),
           ...(tags !== undefined && {
-            tags: tagsSetOrCreateArgs(tags, workspaceId, updatedBy)
+            tags: tagsSetOrCreateArgs(tags, workspaceId, updatedById)
           }),
-          updatedBy
+          updatedById
         },
-        include: TaskService.withWorkspaceInclude(updatedBy)
+        include: TaskService.withWorkspaceInclude(updatedById)
       })
     })
   }
@@ -675,7 +661,7 @@ export class TaskService {
   async remove(id: number, deletedBy: number) {
     return await this.prisma.task.update({
       where: { id },
-      data: { deletedAt: new Date(), deletedBy },
+      data: { deletedAt: new Date(), deletedById: deletedBy },
       include: TaskService.withWorkspaceInclude(deletedBy)
     })
   }
