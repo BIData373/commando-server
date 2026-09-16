@@ -113,7 +113,7 @@ export class AssigneeService {
     )
   }
 
-  async remove(id: number, deletedBy: number) {
+  async remove(id: number, deletedById: number) {
     return await this.prisma.$transaction(async tx => {
       await tx.archivedUserAssigneeTask.deleteMany({ where: { assigneeId: id } })
 
@@ -121,7 +121,7 @@ export class AssigneeService {
 
       return await tx.assignee.update({
         where: { id },
-        data: { deletedAt: new Date(), deletedBy },
+        data: { deletedAt: new Date(), deletedById },
         include: AssigneeService.include
       })
     })
