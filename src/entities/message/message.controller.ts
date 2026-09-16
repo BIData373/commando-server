@@ -61,7 +61,7 @@ export class MessageController {
     @Param() { id }: GetManagerMessageIdDto,
     @Body() dto: UpdateMessageDto
   ) {
-    return await this.messageService.updateMessage(id, user.id, { ...dto, updatedBy: user.id });
+    return await this.messageService.updateMessage(id, user.id, { ...dto, updatedById: user.id });
   }
 
   @ApiOperation({ operationId: 'deleteMessage' })

@@ -4,7 +4,6 @@ import { PrismaService } from '../../common/prisma.service';
 import { Prisma } from '../../types/prisma';
 import { CreateMessageDto } from './dto/request/create-message.dto';
 import { ListMessagesQueryDto } from './dto/request/list-messages-query.dto';
-import { UpdateMessageDto } from './dto/request/update-message.dto';
 
 type MessageFilterHandlerFunction = () => Promise<Prisma.MessageGetPayload<typeof MessageService.findManyOptions>[]>
 
@@ -143,11 +142,11 @@ export class MessageService {
   }
 
 
-  async remove(id: number, deletedBy: number) {
-    return await this.updateMessage(id, deletedBy, { deletedAt: new Date(), deletedBy });
+  async remove(id: number, deletedById: number) {
+    return await this.updateMessage(id, deletedById, { deletedAt: new Date(), deletedById });
   }
 
-  async updateMessage(id: number, userId: number, data: Prisma.MessageUpdateInput) {
+  async updateMessage(id: number, userId: number, data: Prisma.MessageUncheckedUpdateInput) {
     const message = await this.getIsMessageViewedExtension(id, userId);
     return await message.update({
       where: { id },
