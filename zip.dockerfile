@@ -10,7 +10,7 @@ RUN chmod -R 777 $APP_DIR
 
 ADD . .
 
-RUN npm install --verbose
+RUN npm install
 
 RUN cp -a . /tmp/archive
 

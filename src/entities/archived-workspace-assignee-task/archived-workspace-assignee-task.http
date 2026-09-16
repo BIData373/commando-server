@@ -1,15 +1,118 @@
 # @import ../../../global.http
 
-PATCH {{baseUrl}}/archived-workspace-assignee-task/1?assigneeId=5
+### Create Assignee — archived by assignee
+POST {{baseUrl}}/assignee
+...headers
+
+{
+  "name": "Archive Target",
+  "color": "#E53935",
+  "workspaceId": {{workspaceId}},
+  "users": []
+}
+
+{{@response
+  exports.archiveAssigneeId = response.parsedBody.id;
+}}
+
+?? status == 201
+
+### Create Task — with an assignee
+POST {{baseUrl}}/task
+...headers
+
+{
+  "title": "Workspace archive - assigned",
+  "flagged": false,
+  "deadlineType": "IMMEDIATE",
+  "workspaceId": {{workspaceId}},
+  "assignees": [{ "id": {{archiveAssigneeId}} }],
+  "tags": []
+}
+
+{{@response
+  exports.assignedTaskId = response.parsedBody.id;
+}}
+
+?? status == 201
+
+### Create Task — with no assignees
+POST {{baseUrl}}/task
+...headers
+
+{
+  "title": "Workspace archive - unassigned",
+  "flagged": false,
+  "deadlineType": "IMMEDIATE",
+  "workspaceId": {{workspaceId}},
+  "assignees": [],
+  "tags": []
+}
+
+{{@response
+  exports.unassignedTaskId = response.parsedBody.id;
+}}
+
+?? status == 201
+
+### Toggle Workspace Task Archive — non-manager (expect 403)
+PATCH {{baseUrl}}/archived-workspace-assignee-task?taskId={{assignedTaskId}}&assigneeId={{archiveAssigneeId}}
 ...headers
 requestusername: s111111
 is-bi: false
 
 ?? status == 403
 
-PATCH {{baseUrl}}/archived-workspace-assignee-task/1?assigneeId=5
+### Toggle Workspace Task Archive — missing taskId (expect 400)
+PATCH {{baseUrl}}/archived-workspace-assignee-task?assigneeId={{archiveAssigneeId}}
 ...headers
-requestusername: yael
-is-bi: false
 
-?? status == 2xx
+?? status == 400
+
+### Toggle Workspace Task Archive — archive assignee
+PATCH {{baseUrl}}/archived-workspace-assignee-task?taskId={{assignedTaskId}}&assigneeId={{archiveAssigneeId}}
+...headers
+
+?? status == 204
+
+### Toggle Workspace Task Archive — unarchive assignee
+PATCH {{baseUrl}}/archived-workspace-assignee-task?taskId={{assignedTaskId}}&assigneeId={{archiveAssigneeId}}
+...headers
+
+?? status == 204
+
+### Toggle Workspace Task Archive — whole task while it has assignees (expect 400)
+PATCH {{baseUrl}}/archived-workspace-assignee-task?taskId={{assignedTaskId}}
+...headers
+
+?? status == 400
+
+### Toggle Workspace Task Archive — archive whole unassigned task
+PATCH {{baseUrl}}/archived-workspace-assignee-task?taskId={{unassignedTaskId}}
+...headers
+
+?? status == 204
+
+### Toggle Workspace Task Archive — unarchive whole unassigned task
+PATCH {{baseUrl}}/archived-workspace-assignee-task?taskId={{unassignedTaskId}}
+...headers
+
+?? status == 204
+
+### Delete Task — assigned
+DELETE {{baseUrl}}/task/{{assignedTaskId}}
+...headers
+
+?? status == 200
+
+### Delete Task — unassigned
+DELETE {{baseUrl}}/task/{{unassignedTaskId}}
+...headers
+
+?? status == 200
+
+### Delete Assignee
+DELETE {{baseUrl}}/assignee/{{archiveAssigneeId}}
+...headers
+
+?? status == 200

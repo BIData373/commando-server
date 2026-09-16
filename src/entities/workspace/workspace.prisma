@@ -7,6 +7,11 @@ model Workspace {
   chatNotification       Boolean @default(false) @map("chat_notification")
   mailNotification       Boolean @default(false) @map("mail_notification")
 
+  // Counter for Task.serialId. Bumped atomically on every task create — never decremented,
+  // so a deleted task's number is retired rather than handed out again.
+  taskCounter Int @default(0) @map("task_counter")
+
+  // Meta Fields
   createdAt DateTime  @default(now()) @map("created_at")
   updatedAt DateTime  @updatedAt @map("updated_at")
   deletedAt DateTime? @map("deleted_at")

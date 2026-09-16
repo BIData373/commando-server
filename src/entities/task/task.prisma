@@ -1,5 +1,6 @@
 model Task {
   id           Int              @id @default(autoincrement())
+  serialId     Int              @map("serial_id")
   title        String
   description  String?          @db.Text
   flagged      Boolean          @default(false)
@@ -7,6 +8,7 @@ model Task {
   dueDate      DateTime?        @map("due_date")
   notes        String?
   creationType TaskCreationType @default(HUMAN) @map("creation_type")
+  archivedAt   DateTime?        @map("archived_at")
 
   createdAt DateTime  @default(now()) @map("created_at")
   updatedAt DateTime  @updatedAt @map("updated_at")
@@ -27,6 +29,9 @@ model Task {
   sourceId Int?    @map("source_id")
   source   Source? @relation(fields: [sourceId], references: [id])
 
+  statusId Int              @map("status_id")
+  status   WorkspaceStatus  @relation(fields: [statusId], references: [id])
+
   archivedWorkspaceAssigneeTask ArchivedWorkspaceAssigneeTask[]
   archivedUserAssigneeTask      ArchivedUserAssigneeTask[]
   tags                          Tag[]                           @relation("tasks_tags")
@@ -34,6 +39,7 @@ model Task {
   messages                      Message[]
   history                       TaskHistory[]
 
+  @@unique([workspaceId, serialId])
   @@map("tasks")
 }
 

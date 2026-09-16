@@ -62,7 +62,7 @@ COMPLETED COMPLETED
     Int id "🗝️"
     Int user_id 
     Int task_id 
-    Int assignee_id "❓"
+    Int assignee_id 
     DateTime created_at 
     }
   
@@ -70,7 +70,7 @@ COMPLETED COMPLETED
   "archived_workspace_assignee_task" {
     Int id "🗝️"
     Int task_id 
-    Int assignee_id "❓"
+    Int assignee_id 
     DateTime created_at 
     }
   
@@ -164,6 +164,7 @@ COMPLETED COMPLETED
 
   "tasks" {
     Int id "🗝️"
+    Int serial_id 
     String title 
     String description "❓"
     Boolean flagged 
@@ -171,6 +172,7 @@ COMPLETED COMPLETED
     DateTime due_date "❓"
     String notes "❓"
     TaskCreationType creation_type 
+    DateTime archived_at "❓"
     DateTime created_at 
     DateTime updated_at 
     DateTime deleted_at "❓"
@@ -179,6 +181,7 @@ COMPLETED COMPLETED
     Int deleted_by "❓"
     Int workspace_id 
     Int source_id "❓"
+    Int status_id 
     }
   
 
@@ -217,6 +220,7 @@ COMPLETED COMPLETED
     Boolean assignee_status_editable 
     Boolean chat_notification 
     Boolean mail_notification 
+    Int task_counter 
     DateTime created_at 
     DateTime updated_at 
     DateTime deleted_at "❓"
@@ -251,9 +255,9 @@ COMPLETED COMPLETED
   
     "archived_user_assignee_task" }o--|| tasks : "task"
     "archived_user_assignee_task" }o--|| users : "user"
-    "archived_user_assignee_task" }o--|o assignees : "assignee"
+    "archived_user_assignee_task" }o--|| assignees : "assignee"
     "archived_workspace_assignee_task" }o--|| tasks : "task"
-    "archived_workspace_assignee_task" }o--|o assignees : "assignee"
+    "archived_workspace_assignee_task" }o--|| assignees : "assignee"
     "assignees" }o--|| workspaces : "workspace"
     "assignees" }o--|| users : "createdBy"
     "assignees" }o--|| users : "updatedBy"
@@ -290,6 +294,7 @@ COMPLETED COMPLETED
     "tasks" }o--|o users : "deletedBy"
     "tasks" }o--|| workspaces : "workspace"
     "tasks" }o--|o sources : "source"
+    "tasks" }o--|| workspace_statuses : "status"
     "tasks_history" |o--|| "HistoryAction" : "enum:action"
     "tasks_history" }o--|| tasks : "task"
     "tasks_history" }o--|| workspaces : "workspace"

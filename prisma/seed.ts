@@ -173,6 +173,15 @@ async function main() {
   ];
   const randomDesc = () => RANDOM_DESCRIPTIONS[Math.floor(Math.random() * RANDOM_DESCRIPTIONS.length)];
 
+  // Task.statusId is its own column, but the seed derives it from the assignee statuses so the data
+  // stays coherent: all done → COMPLETED, none started → NOT_STARTED, anything mixed → IN_PROGRESS.
+  const taskStatusType = (assignees: { statusType: WorkspaceStatusType }[]) => {
+    if (assignees.length === 0) return WorkspaceStatusType.NOT_STARTED;
+    if (assignees.every((a) => a.statusType === WorkspaceStatusType.COMPLETED)) return WorkspaceStatusType.COMPLETED;
+    if (assignees.every((a) => a.statusType === WorkspaceStatusType.NOT_STARTED)) return WorkspaceStatusType.NOT_STARTED;
+    return WorkspaceStatusType.IN_PROGRESS;
+  };
+
   // ── Tasks + AssigneeTaskStatus + TaskHistory ───────────────────────────────
   const taskDefs = [
     {
@@ -418,9 +427,17 @@ async function main() {
   }
 
   console.log('* Creating Tasks')
+  // Mirrors what TaskService.reserveSerialIdsTx does at runtime: hand each task the next number
+  // for its workspace, then leave Workspace.taskCounter at the highest one issued.
+  const taskCounterByWorkspace: Record<number, number> = {};
+
   for (const def of taskDefs) {
+    const serialId = (taskCounterByWorkspace[def.workspaceId] ?? 0) + 1;
+    taskCounterByWorkspace[def.workspaceId] = serialId;
+
     await prisma.task.create({
       data: {
+        serialId,
         title: def.title,
         description: def.description,
         flagged: def.flagged,
@@ -429,6 +446,7 @@ async function main() {
         ...(def.dueDate && { dueDate: def.dueDate }),
         workspaceId: def.workspaceId,
         sourceId: def.sourceId,
+        statusId: statusIdByType[def.workspaceId][taskStatusType(def.assignees)],
         createdBy: def.createdBy,
         updatedBy: def.createdBy,
         ...(def.tagIds.length > 0 && { tags: { connect: def.tagIds.map((id) => ({ id })) } }),
@@ -452,6 +470,15 @@ async function main() {
     });
 
   }
+
+  await Promise.all(
+    Object.entries(taskCounterByWorkspace).map(([workspaceId, taskCounter]) =>
+      prisma.workspace.update({
+        where: { id: Number(workspaceId) },
+        data: { taskCounter }
+      })
+    )
+  );
 
   const totalAssigneeStatuses = taskDefs.reduce((s, d) => s + d.assignees.length, 0);
   console.log(`✅ Done — seeded:

@@ -1,27 +1,20 @@
-import { Controller, HttpCode, Param, Patch, Query, UseInterceptors } from '@nestjs/common';
-import { ApiNoContentResponse, ApiOperation, ApiParam } from '@nestjs/swagger';
-import { HttpStatusCode } from 'axios';
-import { CopyDtosInRequest } from '../../common/interceptors/copy-dtos-in-request.interceptor';
-import { GetOptionalManagerTaskAssigneeIdFieldDto } from '../assignee/dto/request/get-assignee-id-field.dto';
-import { GetManagerTaskIdDto } from '../task/dto/request/get-task-id.dto';
-import { ArchivedWorkspaceAssigneeService } from './archived-workspace-assignee-task.service';
+import { Controller, HttpCode, Patch, Query } from '@nestjs/common'
+import { ApiNoContentResponse, ApiOperation } from '@nestjs/swagger'
+import { HttpStatusCode } from 'axios'
+import { ArchivedWorkspaceAssigneeService } from './archived-workspace-assignee-task.service'
+import { ToggleWorkspaceArchiveDto } from './dto/request/toggle-workspace-archive.dto'
 
 @Controller('archived-workspace-assignee-task')
 export class ArchivedWorkspaceAssigneeController {
   constructor(private readonly workspaceTaskArchivesService: ArchivedWorkspaceAssigneeService) { }
 
   @ApiOperation({ operationId: 'toggleWorkspaceTaskArchive' })
-  @ApiParam({ name: 'id', type: Number })
-  @UseInterceptors(
-    CopyDtosInRequest<GetOptionalManagerTaskAssigneeIdFieldDto, GetManagerTaskIdDto>({ from: 'params.id', to: 'query.context.task', dto: GetManagerTaskIdDto })
-  )
-  @Patch(':id')
+  @Patch()
   @HttpCode(HttpStatusCode.NoContent)
   @ApiNoContentResponse()
   async toggleWorkspace(
-    @Param() { context: { task } }: GetManagerTaskIdDto,
-    @Query() { assigneeId }: GetOptionalManagerTaskAssigneeIdFieldDto
+    @Query() { taskId, assigneeId }: ToggleWorkspaceArchiveDto
   ) {
-    return await this.workspaceTaskArchivesService.toggle(task.id, assigneeId)
+    return await this.workspaceTaskArchivesService.toggle(taskId, assigneeId)
   }
 }

@@ -2,12 +2,12 @@ model ArchivedUserAssigneeTask {
     id     Int @id @default(autoincrement())
     userId Int @map("user_id")
     taskId Int @map("task_id")
-    assigneeId Int? @map("assignee_id")
+    assigneeId Int @map("assignee_id")
     createdAt DateTime @default(now()) @map("created_at")
 
     task Task @relation(fields: [taskId], references: [id])
     user User @relation(fields: [userId], references: [id])
-    assignee Assignee? @relation(fields: [assigneeId], references: [id])
+    assignee Assignee @relation(fields: [assigneeId], references: [id])
 
     @@unique([userId, taskId, assigneeId])
     @@map("archived_user_assignee_task")
