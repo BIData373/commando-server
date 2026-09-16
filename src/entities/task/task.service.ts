@@ -607,10 +607,6 @@ export class TaskService {
       ? await this.findDefaultStatusInWorkspaces(workspaceId)
       : [null]
 
-    const status = statusId !== undefined
-      ? { connect: { id: statusId } }
-      : undefined
-
     const assigneeStatuses = assignees && {
       deleteMany: !hasAssignees
         ? {}
@@ -636,7 +632,7 @@ export class TaskService {
           }
         }))
       })
-    }
+    } satisfies Prisma.AssigneeTaskStatusUncheckedUpdateManyWithoutTaskNestedInput | undefined
 
     return await this.prisma.$transaction(async tx => {
       if (assignees !== undefined) {
@@ -647,19 +643,15 @@ export class TaskService {
         where: { id },
         data: {
           ...dto,
-          ...(sourceId !== undefined && {
-            source: sourceId === null
-              ? { disconnect: true }
-              : { connect: { id: sourceId } }
-          }),
-          status,
+          sourceId,
+          statusId,
           assigneeStatuses,
           // A task is archived as a whole only while nobody is assigned to it
           ...(hasAssignees && { archivedAt: null }),
           ...(tags !== undefined && {
             tags: tagsSetOrCreateArgs(tags, workspaceId, updatedById)
           }),
-          updatedBy: { connect: { id: updatedById } }
+          updatedById
         },
         include: TaskService.withWorkspaceInclude(updatedById)
       })
