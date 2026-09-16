@@ -311,7 +311,7 @@ export class TaskService {
             }
           }),
           ...(assignees?.length && {
-            assigneeStatuses: taskAssigneeStatusesCreateArgs(assignees, notStartedStatus.id)
+            assigneeStatuses: taskAssigneeStatusesCreateArgs(assignees, notStartedStatus.id, userId)
           }),
           ...(tags && {
             tags: tagsConnectOrCreateArgs(tags, workspaceId, userId)
@@ -633,12 +633,15 @@ export class TaskService {
           create: {
             assigneeId,
             description,
-            statusId: assigneeStatusId ?? notStartedStatus!.id
+            statusId: assigneeStatusId ?? notStartedStatus!.id,
+            createdBy: updatedBy,
+            updatedBy
           },
           update: {
             assigneeId,
             description,
-            statusId: assigneeStatusId
+            statusId: assigneeStatusId,
+            updatedBy
           }
         }))
       })
