@@ -130,7 +130,7 @@ ${managers}
   async update(
     id: number,
     { context, status, declineMessage, ...details }: UpdateWorkspaceRequestDto,
-    updatedBy: number
+    updatedById: number
   ) {
     const current = await this.prisma.workspaceRequest.findUnique({ where: { id, deletedAt: null } })
 
@@ -148,7 +148,7 @@ ${managers}
 
     const workspaceRequest = await this.prisma.$transaction(async tx => {
       if (isDecided && status === WorkspaceRequestStatus.APPROVED) {
-        await WorkspaceRequestsService.approve(tx, current, updatedBy)
+        await WorkspaceRequestsService.approve(tx, current, updatedById)
       }
 
       return await tx.workspaceRequest.update({
@@ -159,7 +159,7 @@ ${managers}
           ...(Object.keys(details).length > 0 && {
             details: { ...current.details, ...details }
           }),
-          updatedById: updatedBy
+          updatedById
         },
         include: WorkspaceRequestsService.include
       });
@@ -181,10 +181,10 @@ ${isApproved
     return WorkspaceRequestsService.formatWorkspaceRequest(workspaceRequest)
   }
 
-  async remove(id: number, deletedBy: number) {
+  async remove(id: number, deletedById: number) {
     const workspaceRequest = await this.prisma.workspaceRequest.update({
       where: { id },
-      data: { deletedAt: new Date(), deletedById: deletedBy },
+      data: { deletedAt: new Date(), deletedById },
       include: WorkspaceRequestsService.include
     });
 

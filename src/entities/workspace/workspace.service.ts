@@ -116,10 +116,10 @@ export class WorkspaceService {
     });
   }
 
-  async update(id: number, { context, ...dto }: UpdateWorkspaceDto, updatedBy: number) {
+  async update(id: number, { context, ...dto }: UpdateWorkspaceDto, updatedById: number) {
     return await this.prisma.workspace.update({
       where: { id },
-      data: { ...dto, updatedById: updatedBy },
+      data: { ...dto, updatedById },
       include: WorkspaceService.include
     });
   }
