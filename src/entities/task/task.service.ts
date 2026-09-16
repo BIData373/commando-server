@@ -89,8 +89,9 @@ export class TaskService {
       },
       orderBy: { assigneeId: 'asc' },
       include: {
-        assignee: { include: { users: true } },
+        assignee: { include: { workspace:true, users: true } },
         status: true
+
       }
     }
   } satisfies Prisma.TaskInclude
