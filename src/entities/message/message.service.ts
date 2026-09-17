@@ -4,7 +4,6 @@ import { PrismaService } from '../../common/prisma.service';
 import { Prisma } from '../../types/prisma';
 import { CreateMessageDto } from './dto/request/create-message.dto';
 import { ListMessagesQueryDto } from './dto/request/list-messages-query.dto';
-import { UpdateMessageDto } from './dto/request/update-message.dto';
 
 type MessageFilterHandlerFunction = () => Promise<Prisma.MessageGetPayload<typeof MessageService.findManyOptions>[]>
 
@@ -29,7 +28,7 @@ export class MessageService {
   constructor(private readonly prisma: PrismaService) { }
 
   async create({ context, ...dto }: CreateMessageDto, userId: number) {
-    return await this.prisma.message.create({
+    const message = await this.prisma.message.create({
       data: {
         ...dto,
         userId,
@@ -38,6 +37,15 @@ export class MessageService {
       },
       include: MessageService.include
     });
+
+    const now = new Date()
+    await this.prisma.userViewedTasks.upsert({
+      where: { userId_taskId: { userId, taskId: dto.taskId } },
+      create: { userId, taskId: dto.taskId },
+      update: { viewedAt: now },
+    });
+
+    return { ...message, viewed: true }
   }
 
   async findMessagesByFilter({
@@ -47,7 +55,7 @@ export class MessageService {
     userId: number
   ) {
     const handlers = {
-      taskIds: () => this.findByTaskIds(dto.taskIds!),
+      taskIds: () => this.findByTaskIds(dto.taskIds!, userId),
       workspaceId: () => this.findInWorkspace(dto.workspaceId!, isArchived),
       personal: () => this.findPersonal(userId, isArchived),
     } satisfies Record<keyof typeof dto, MessageFilterHandlerFunction>
@@ -57,8 +65,9 @@ export class MessageService {
     return handlerKey ? await handlers[handlerKey]() : [];
   }
 
-  async findByTaskIds(taskIds: number[]) {
-    return await this.prisma.message.findMany({
+  async findByTaskIds(taskIds: number[], userId: number,) {
+    const message = await this.getIsMessageViewedExtension(null, userId, taskIds)
+    return await message.findMany({
       where: { taskId: { in: taskIds }, deletedAt: null },
       ...MessageService.findManyOptions
     });
@@ -124,26 +133,51 @@ export class MessageService {
     });
   }
 
-  async findOne(id: number) {
-    return await this.prisma.message.findUnique({
+  async findOne(id: number, userId: number) {
+    const message = await this.getIsMessageViewedExtension(id, userId)
+    return await message.findUnique({
       where: { id, deletedAt: null },
       include: MessageService.include
-    });
+    })
   }
 
-  async update(id: number, dto: UpdateMessageDto, updatedById: number) {
-    return await this.prisma.message.update({
-      where: { id },
-      data: { ...dto, updatedById },
-      include: MessageService.include
-    });
-  }
 
   async remove(id: number, deletedById: number) {
-    return await this.prisma.message.update({
+    return await this.updateMessage(id, deletedById, { deletedAt: new Date(), deletedById });
+  }
+
+  async updateMessage(id: number, userId: number, data: Prisma.MessageUncheckedUpdateInput) {
+    const message = await this.getIsMessageViewedExtension(id, userId);
+    return await message.update({
       where: { id },
-      data: { deletedAt: new Date(), deletedById },
+      data,
       include: MessageService.include
     });
+  }
+
+  async getIsMessageViewedExtension(
+    id: number | null,
+    userId: number,
+    taskIds?: number[]
+  ) {
+    const viewedTask = await this.prisma.userViewedTasks.findFirst({
+      where: {
+        userId,
+        task: (taskIds ? { id: { in: taskIds } } : { messages: { some: { id: id! } } })
+      },
+      select: { viewedAt: true }
+    });
+
+    const viewedAt = viewedTask?.viewedAt ?? null;
+    return this.prisma.$extends({
+      result: {
+        message: {
+          viewed: {
+            needs: { createdAt: true },
+            compute: (msg) => viewedAt !== null && viewedAt >= msg.createdAt,
+          }
+        }
+      }
+    }).message
   }
 }

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { keyBy, mapValues } from 'lodash'
-import { chatUrl, notificationTemplate, vectorUrl } from '../../common/consts/env'
+import { chatUrl, invalidationDays, notificationTemplate, vectorUrl } from '../../common/consts/env'
 import { renderTemplate } from '../../common/functions/template'
 import { PrismaService } from '../../common/prisma.service'
 import { ArchivedUserAssigneeTask, ArchivedWorkspaceAssigneeTask, PermissionType, Prisma, Task, User } from '../../types/prisma'
@@ -12,12 +12,16 @@ import { WorkspaceService } from '../workspace/workspace.service'
 import { CreateTaskDto } from './dto/request/create-task.dto'
 import { UpdateTaskDto } from './dto/request/update-task.dto'
 import { taskAssigneeStatusesCreateArgs } from './functions/task-args'
+import dayjs from 'dayjs';
+
 
 type AssigneeStatusInclude = {
   include: { assignee: { include: { users: true } }; status: true }
 }
 
 type AssigneeStatusEntity = Prisma.AssigneeTaskStatusGetPayload<AssigneeStatusInclude>
+
+type WorkspaceInclude = { include: { userWorkspaceVisits: true } }
 
 type TaskIncludePayload = Prisma.TaskGetPayload<{
   include: {
@@ -27,10 +31,16 @@ type TaskIncludePayload = Prisma.TaskGetPayload<{
     messages: true,
     status: true,
     archivedWorkspaceAssigneeTask: true,
-    archivedUserAssigneeTask: true
+    archivedUserAssigneeTask: true,
+    workspace: WorkspaceInclude,
+    userViewedTasks: true,
+    _count: {
+      select: {
+        assigneeStatuses: true
+      }
+    }
   }
 }>
-
 
 @Injectable()
 export class TaskService {
@@ -102,9 +112,22 @@ export class TaskService {
       ...TaskService.baseInclude,
       workspace: {
         include: {
+          ...(userId && { userWorkspaceVisits: { where: { userId } } }),
           permissions: userId
             ? { where: { userId } }
             : true
+        }
+      },
+      userViewedTasks: { where: { userId } },
+      _count: {
+        select: {
+          assigneeStatuses: {
+            where: {
+              assignee: {
+                users: { some: { id: userId } }
+              }
+            }
+          }
         }
       }
     } satisfies Prisma.TaskInclude
@@ -130,9 +153,9 @@ export class TaskService {
     workspaceArchivedIds: Record<number, Date | undefined>,
     personalArchivedIds: Record<number, Date | undefined>,
     wholeTaskArchivedAt: Date | null,
-    assigneeStatus?: AssigneeStatusEntity
+    isAssigned: boolean,
+    assigneeStatus?: AssigneeStatusEntity,
   ) {
-    const isAssigned = assigneeStatus?.assignee?.users?.some(u => u.id === user.id)
 
     const workspaceArchivedAt = (assigneeStatus && workspaceArchivedIds[assigneeStatus.assigneeId])
       ?? wholeTaskArchivedAt
@@ -194,7 +217,7 @@ export class TaskService {
     archiveLocation: 'workspace' | 'personal',
     isArchived?: boolean
   ) {
-    const { assigneeStatuses, messages, status, ...rest } = originalTask
+    const { assigneeStatuses, status, ...rest } = originalTask
 
     const workspaceArchiveMap = TaskService.getArchivedIdsMap(originalTask.archivedWorkspaceAssigneeTask)
     const personalArchiveMap = TaskService.getArchivedIdsMap(originalTask.archivedWorkspaceAssigneeTask)
@@ -205,6 +228,7 @@ export class TaskService {
     if (!activeAssignees) {
       return []
     }
+    const isAssigned = originalTask._count.assigneeStatuses > 0
 
     return [{
       ...rest,
@@ -215,7 +239,8 @@ export class TaskService {
           user,
           workspaceArchiveMap,
           personalArchiveMap,
-          originalTask.archivedAt
+          originalTask.archivedAt,
+          isAssigned
         )
       ),
       assigneeStatuses: activeAssignees.map(assigneeStatus =>
@@ -225,11 +250,12 @@ export class TaskService {
           workspaceArchiveMap,
           personalArchiveMap,
           originalTask.archivedAt,
+          isAssigned,
           assigneeStatus
         )
       ),
       workspace: TaskService.formatTaskWorkspace(workspace, user),
-      lastMessage: messages[0]
+      ...TaskService.formatUserViewedTask(originalTask, user, isAssigned),
     }]
   }
 
@@ -356,7 +382,10 @@ export class TaskService {
         workspaceId: workspace.id,
         ...TaskService.commonWhere
       },
-      include: TaskService.withArchivedInclude(user.id),
+      include: {
+        ...TaskService.withArchivedInclude(user.id),
+        ...TaskService.withWorkspaceInclude(user.id),
+      },
       orderBy: TaskService.orderBy
     })
   }
@@ -381,6 +410,35 @@ export class TaskService {
     return `${taskId}${TaskService.TASK_ROW_ID_SEPARATOR}${assigneeId}`
   }
 
+  static isTimePassed(createdAt: Date) {
+    const now = dayjs()
+    return now.diff(dayjs(createdAt), 'days') >= invalidationDays
+  }
+
+  static formatUserViewedTask(
+    { messages, userViewedTasks, workspace, createdAt }: TaskIncludePayload,
+    user: User,
+    isAssigned: boolean
+  ) {
+
+    const [latestWorkspaceEntry] = workspace.userWorkspaceVisits
+    const [viewedTask] = userViewedTasks
+    const [lastMessage] = messages
+
+    const isTaskOpened = viewedTask?.viewedAt != null
+
+    const viewedMessages = lastMessage == null || TaskService.isTimePassed(lastMessage.createdAt) || (
+      isTaskOpened &&
+      lastMessage.createdAt <= viewedTask.viewedAt
+    )
+
+    const viewedInWorkspaceTable = !!latestWorkspaceEntry && createdAt <= latestWorkspaceEntry.visitedAt
+    const viewedInPersonalTable = isAssigned && user?.personalAreaEnteredAt !== null && createdAt <= user.personalAreaEnteredAt
+    const viewedInTable = TaskService.isTimePassed(createdAt) || viewedInWorkspaceTable || viewedInPersonalTable || isTaskOpened
+
+    return { viewedInTable, viewedMessages, lastMessage }
+  }
+
   static extractTaskToRows<TTask extends TaskIncludePayload>(
     task: TTask,
     workspace: WorkspaceWithPermissions,
@@ -401,9 +459,11 @@ export class TaskService {
       return []
     }
 
+    const isAssigned = task._count.assigneeStatuses > 0
+
     const fields = {
       ...taskFields,
-      lastMessage: messages[0]
+      ...TaskService.formatUserViewedTask(task, user, isAssigned)
     }
 
     if (isWorkspace && assigneeStatuses.length === 0) {
@@ -414,7 +474,8 @@ export class TaskService {
           user,
           workspaceArchiveMap,
           personalArchiveMap,
-          task.archivedAt
+          task.archivedAt,
+          isAssigned,
         ),
         otherAssignees: [],
         rowKey: TaskService.formatTaskRowId(taskFields.id),
@@ -429,7 +490,8 @@ export class TaskService {
         workspaceArchiveMap,
         personalArchiveMap,
         task.archivedAt,
-        assigneeStatus
+        isAssigned,
+        assigneeStatus,
       )
     )
 
@@ -476,7 +538,10 @@ export class TaskService {
         sourceId,
         deletedAt: null
       },
-      include: TaskService.withArchivedInclude(userId),
+      include: {
+        ...TaskService.withArchivedInclude(userId),
+        ...TaskService.withWorkspaceInclude(userId)
+      },
       orderBy: { id: 'asc' }
     })
   }
@@ -508,7 +573,7 @@ export class TaskService {
       },
       include: {
         ...TaskService.withArchivedInclude(user.id),
-        ...TaskService.withWorkspaceInclude(user.id)
+        ...TaskService.withWorkspaceInclude(user.id),
       },
       orderBy: TaskService.orderBy
     })
