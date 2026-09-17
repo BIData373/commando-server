@@ -130,21 +130,22 @@ export class TaskService {
     workspaceArchivedIds: Record<number, Date | undefined>,
     personalArchivedIds: Record<number, Date | undefined>,
     wholeTaskArchivedAt: Date | null,
-    assigneeStatus?: AssigneeStatusEntity
+    isAssigned: boolean,
+    isWorkspaceArchive: boolean,
+    assigneeStatus?: AssigneeStatusEntity,
   ) {
-    const isAssigned = assigneeStatus?.assignee?.users?.some(u => u.id === user.id)
-
     const workspaceArchivedAt = (assigneeStatus && workspaceArchivedIds[assigneeStatus.assigneeId])
       ?? wholeTaskArchivedAt
       ?? null
-
     const personalArchivedAt = (assigneeStatus && personalArchivedIds[assigneeStatus.assigneeId]) ?? null
+      
+    const isTaskArchived = isWorkspaceArchive ? workspaceArchivedAt : (workspaceArchivedAt || personalArchivedAt)
 
     const editable = !!user.info?.isBI || (
       ((
         workspace.assigneeStatusEditable && isAssigned) ||
         workspace.permissions[0]?.type === PermissionType.MANAGER
-      ) && !(workspaceArchivedAt || personalArchivedAt)
+      ) && !isTaskArchived
     )
 
     return {
@@ -199,7 +200,8 @@ export class TaskService {
     const workspaceArchiveMap = TaskService.getArchivedIdsMap(originalTask.archivedWorkspaceAssigneeTask)
     const personalArchiveMap = TaskService.getArchivedIdsMap(originalTask.archivedWorkspaceAssigneeTask)
 
-    const archivedIds = archiveLocation === 'workspace' ? workspaceArchiveMap : personalArchiveMap
+    const isWorkspace = archiveLocation === 'workspace'
+    const archivedIds = isWorkspace ? workspaceArchiveMap : personalArchiveMap
 
     const activeAssignees = TaskService.filterByArchivedAssignee(originalTask, archivedIds, isArchived)
     if (!activeAssignees) {
@@ -215,7 +217,9 @@ export class TaskService {
           user,
           workspaceArchiveMap,
           personalArchiveMap,
-          originalTask.archivedAt
+          originalTask.archivedAt,
+          isAssigned,
+          isWorkspace
         )
       ),
       assigneeStatuses: activeAssignees.map(assigneeStatus =>
@@ -225,6 +229,8 @@ export class TaskService {
           workspaceArchiveMap,
           personalArchiveMap,
           originalTask.archivedAt,
+          isAssigned,
+          isWorkspace,
           assigneeStatus
         )
       ),
@@ -414,7 +420,9 @@ export class TaskService {
           user,
           workspaceArchiveMap,
           personalArchiveMap,
-          task.archivedAt
+          task.archivedAt,
+          isAssigned,
+          isWorkspace
         ),
         otherAssignees: [],
         rowKey: TaskService.formatTaskRowId(taskFields.id),
@@ -429,6 +437,8 @@ export class TaskService {
         workspaceArchiveMap,
         personalArchiveMap,
         task.archivedAt,
+        isAssigned,
+        isWorkspace,
         assigneeStatus
       )
     )
