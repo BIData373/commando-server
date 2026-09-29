@@ -5,16 +5,21 @@ model Message {
   userId Int @map("user_id")
   taskId Int @map("task_id")
 
-  user User @relation(fields: [userId], references: [id])
+  user User @relation("message_user", fields: [userId], references: [id])
   task Task @relation(fields: [taskId], references: [id])
 
-  // Meta Fields
   createdAt DateTime  @default(now()) @map("created_at")
-  createdBy Int       @map("created_by")
   updatedAt DateTime  @updatedAt @map("updated_at")
-  updatedBy Int       @map("updated_by")
   deletedAt DateTime? @map("deleted_at")
-  deletedBy Int?      @map("deleted_by")
+
+  createdById Int  @map("created_by")
+  createdBy   User @relation("message_created_by", fields: [createdById], references: [id])
+
+  updatedById Int  @map("updated_by")
+  updatedBy   User @relation("message_updated_by", fields: [updatedById], references: [id])
+
+  deletedById Int? @map("deleted_by")
+  deletedBy   User? @relation("message_deleted_by", fields: [deletedById], references: [id])
 
   @@map("messages")
 }

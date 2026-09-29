@@ -2,10 +2,14 @@ model Tag {
   id   Int    @id @default(autoincrement())
   name String
 
-  createdAt DateTime @default(now()) @map("created_at")
-  createdBy Int      @map("created_by")
-  updatedAt DateTime @updatedAt @map("updated_at")
-  updatedBy Int      @map("updated_by")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+
+  createdById Int  @map("created_by")
+  createdBy   User @relation("tag_created_by", fields: [createdById], references: [id])
+
+  updatedById Int  @map("updated_by")
+  updatedBy   User @relation("tag_updated_by", fields: [updatedById], references: [id])
 
   workspaceId Int       @map("workspace_id")
   workspace   Workspace @relation(fields: [workspaceId], references: [id])

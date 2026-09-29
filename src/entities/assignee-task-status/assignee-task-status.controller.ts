@@ -43,9 +43,10 @@ export class AssigneeTaskStatusController {
   @ApiOkResponse({ type: AssigneeTaskStatusDto })
   @TransformPlainToInstance(AssigneeTaskStatusDto)
   async remove(
+    @Req() { user }: Request,
     @Query() { taskId }: GetManagerTaskIdFieldDto,
     @Query() { assigneeId }: GetManagerAssigneeIdFieldDto
   ) {
-    return await this.assigneeTaskStatusService.remove(taskId, assigneeId);
+    return await this.assigneeTaskStatusService.remove(taskId, assigneeId, user.id);
   }
 }

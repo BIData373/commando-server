@@ -16,8 +16,8 @@ export const taskAssigneeStatusesCreateArgs = (
         assigneeId: id,
         description,
         statusId,
-        createdBy: userId,
-        updatedBy: userId
+        createdById: userId,
+        updatedById: userId
     }))
 } satisfies Prisma.AssigneeTaskStatusCreateNestedManyWithoutTaskInput)
 

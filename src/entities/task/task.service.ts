@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common'
-import { keyBy, mapValues } from 'lodash'
+import { keyBy, mapValues, maxBy } from 'lodash'
 import { chatUrl, notificationTemplate, vectorUrl } from '../../common/consts/env'
 import { renderTemplate } from '../../common/functions/template'
 import { PrismaService } from '../../common/prisma.service'
@@ -14,7 +14,7 @@ import { UpdateTaskDto } from './dto/request/update-task.dto'
 import { taskAssigneeStatusesCreateArgs } from './functions/task-args'
 
 type AssigneeStatusInclude = {
-  include: { assignee: { include: { users: true } }; status: true }
+  include: { assignee: { include: { users: true } }; status: true; createdBy: true; updatedBy: true }
 }
 
 type AssigneeStatusEntity = Prisma.AssigneeTaskStatusGetPayload<AssigneeStatusInclude>
@@ -22,6 +22,7 @@ type AssigneeStatusEntity = Prisma.AssigneeTaskStatusGetPayload<AssigneeStatusIn
 type TaskIncludePayload = Prisma.TaskGetPayload<{
   include: {
     assigneeStatuses: AssigneeStatusInclude,
+    updatedBy: true,
     source: true,
     tags: true,
     messages: true,
@@ -48,11 +49,6 @@ export class TaskService {
     createdAt: 'desc'
   } satisfies Prisma.TaskOrderByWithRelationInput;
 
-  constructor(
-    private readonly prisma: PrismaService,
-    private readonly messageRelayService: MessageRelayService
-  ) { }
-
   static readonly includeMessageCount: Prisma.TaskInclude = {
     _count: {
       select: {
@@ -65,6 +61,10 @@ export class TaskService {
     },
   }
 
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly messageRelayService: MessageRelayService
+  ) { }
   static readonly baseInclude = {
     tags: true,
     source: {
@@ -80,6 +80,9 @@ export class TaskService {
       take: 1,
     },
     ...TaskService.includeMessageCount,
+    createdBy: true,
+    updatedBy: true,
+    deletedBy: true,
     status: true,
     assigneeStatuses: {
       where: {
@@ -90,10 +93,21 @@ export class TaskService {
       orderBy: { assigneeId: 'asc' },
       include: {
         assignee: { include: { users: true } },
-        status: true
+        status: true,
+        createdBy: true,
+        updatedBy: true
       }
     }
   } satisfies Prisma.TaskInclude
+
+  // The task as a whole was last touched by whichever came last: an edit to the task itself or to one of its assignee statuses
+  static withLatestUpdate<TTask extends Pick<TaskIncludePayload, 'updatedAt' | 'updatedBy'> & {
+    assigneeStatuses: Pick<AssigneeStatusEntity, 'updatedAt' | 'updatedBy'>[]
+  }>(task: TTask) {
+    const { updatedAt, updatedBy } = maxBy([task, ...task.assigneeStatuses], 'updatedAt')!
+
+    return { ...task, updatedAt, updatedBy }
+  }
 
   static withWorkspaceInclude(userId?: number) {
     return {
@@ -192,7 +206,7 @@ export class TaskService {
     archiveLocation: 'workspace' | 'personal',
     isArchived?: boolean
   ) {
-    const { assigneeStatuses, messages, status, ...rest } = originalTask
+    const { assigneeStatuses, messages, status, ...rest } = TaskService.withLatestUpdate(originalTask)
 
     const workspaceArchiveMap = TaskService.getArchivedIdsMap(originalTask.archivedWorkspaceAssigneeTask)
     const personalArchiveMap = TaskService.getArchivedIdsMap(originalTask.archivedWorkspaceAssigneeTask)
@@ -295,20 +309,12 @@ export class TaskService {
         data: {
           ...dto,
           serialId: lastSerialId + 1,
-          createdBy: userId,
-          updatedBy: userId,
-          workspace: {
-            connect: { id: workspaceId }
-          },
-          status: {
-            connect: { id: notStartedStatus.id }
-          },
+          createdById: userId,
+          updatedById: userId,
+          workspaceId,
+          statusId: notStartedStatus.id,
           ...(typeof sourceId === 'number' && {
-            source: {
-              connect: {
-                id: sourceId
-              }
-            }
+            sourceId
           }),
           ...(assignees?.length && {
             assigneeStatuses: taskAssigneeStatusesCreateArgs(assignees, notStartedStatus.id, userId)
@@ -349,7 +355,7 @@ export class TaskService {
         recipients
       )
     }
-    return createdTask
+    return TaskService.withLatestUpdate(createdTask)
   }
 
   // FIX Dont include assignee users?
@@ -450,11 +456,12 @@ export class TaskService {
       : formattedActiveAssignees
 
     return assigneeStatusesForRows
-      .map(({ assigneeId, statusId, taskId, createdAt, createdBy, updatedAt, updatedBy, ...assigneeStatusFields }) => ({
+      .map(({ assigneeId, statusId, taskId, createdAt, createdBy, createdById, updatedAt, updatedBy, updatedById, ...assigneeStatusFields }) => ({
         ...fields,
         ...assigneeStatusFields,
-        // A row is one assignee's view of the task, so its last-touched time is the status's, not the task's
+        // A row is one assignee's view of the task, so its last update is the status's, not the task's
         updatedAt,
+        updatedBy,
         rowKey: TaskService.formatTaskRowId(taskFields.id, assigneeStatusFields?.assignee?.id),
         otherAssignees: formattedAssigneeStatuses.filter(current => current.assigneeId !== assigneeId)
       }))
@@ -575,10 +582,10 @@ export class TaskService {
   }
 
   // A task is archived as a whole only while nobody is assigned to it
-  static async clearWholeTaskArchiveTx(tx: Prisma.TransactionClient, taskId: number) {
+  static async clearWholeTaskArchiveTx(tx: Prisma.TransactionClient, taskId: number, updatedById: number) {
     await tx.task.updateMany({
       where: { id: taskId, archivedAt: { not: null } },
-      data: { archivedAt: null }
+      data: { archivedAt: null, updatedById }
     })
   }
 
@@ -607,7 +614,7 @@ export class TaskService {
   async update(
     { id, workspaceId }: Task,
     { assignees, tags, context, sourceId, statusId, ...dto }: UpdateTaskDto,
-    updatedBy: number
+    updatedById: number
   ) {
     const hasAssignees = assignees !== undefined && assignees.length > 0
 
@@ -615,19 +622,13 @@ export class TaskService {
       ? await this.findDefaultStatusInWorkspaces(workspaceId)
       : [null]
 
-    const status = statusId !== undefined
-      ? { connect: { id: statusId } }
-      : undefined
-
-    const assigneeStatuses = {
-      updateMany: { where: {}, data: { updatedBy } },
-      ...(assignees && {
-        deleteMany: !hasAssignees
-          ? {}
-          : {
-            assigneeId: { notIn: assignees.map(a => a.id) }
-          }
-      }),
+    // Only the statuses of the assignees sent are touched, so the others keep their own updatedAt/By
+    const assigneeStatuses = assignees && {
+      deleteMany: !hasAssignees
+        ? {}
+        : {
+          assigneeId: { notIn: assignees.map(a => a.id) }
+        },
       ...(hasAssignees && {
         upsert: assignees.map(({
           id: assigneeId,
@@ -639,52 +640,49 @@ export class TaskService {
             assigneeId,
             description,
             statusId: assigneeStatusId ?? notStartedStatus!.id,
-            createdBy: updatedBy,
-            updatedBy
+            createdById: updatedById,
+            updatedById
           },
           update: {
             assigneeId,
             description,
             statusId: assigneeStatusId,
-            updatedBy
+            updatedById
           }
         }))
       })
-    }
+    } satisfies Prisma.AssigneeTaskStatusUncheckedUpdateManyWithoutTaskNestedInput | undefined
 
     return await this.prisma.$transaction(async tx => {
       if (assignees !== undefined) {
         await TaskService.detachAssigneesTx(tx, id, assignees.map(a => a.id))
       }
 
-      return await tx.task.update({
+      const updatedTask = await tx.task.update({
         where: { id },
         data: {
           ...dto,
-          ...(sourceId !== undefined && {
-            source: sourceId === null
-              ? { disconnect: true }
-              : { connect: { id: sourceId } }
-          }),
-          status,
+          sourceId,
+          statusId,
           assigneeStatuses,
-          // A task is archived as a whole only while nobody is assigned to it
           ...(hasAssignees && { archivedAt: null }),
           ...(tags !== undefined && {
-            tags: tagsSetOrCreateArgs(tags, workspaceId, updatedBy)
+            tags: tagsSetOrCreateArgs(tags, workspaceId, updatedById)
           }),
-          updatedBy
+          updatedById
         },
-        include: TaskService.withWorkspaceInclude(updatedBy)
+        include: TaskService.withWorkspaceInclude(updatedById)
       })
+
+      return TaskService.withLatestUpdate(updatedTask)
     })
   }
 
-  async remove(id: number, deletedBy: number) {
+  async remove(id: number, deletedById: number) {
     return await this.prisma.task.update({
       where: { id },
-      data: { deletedAt: new Date(), deletedBy },
-      include: TaskService.withWorkspaceInclude(deletedBy)
+      data: { deletedAt: new Date(), deletedById, updatedById: deletedById },
+      include: TaskService.withWorkspaceInclude(deletedById)
     })
   }
 }

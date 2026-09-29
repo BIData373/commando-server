@@ -10,7 +10,10 @@ import { UpdateAssigneeDto } from './dto/request/update-assignee.dto'
 @Injectable()
 export class AssigneeService {
   static readonly include: Prisma.AssigneeInclude = {
-    users: true
+    users: true,
+    createdBy: true,
+    updatedBy: true,
+    deletedBy: true
   }
 
   static readonly includeMany: Prisma.AssigneeInclude = {
@@ -46,8 +49,8 @@ export class AssigneeService {
       return await tx.assignee.create({
         data: {
           ...dto,
-          createdBy: userId,
-          updatedBy: userId,
+          createdById: userId,
+          updatedById: userId,
           ...(users.length > 0 && {
             users: {
               connect: await AssigneeService.upsertUsersTx(tx, users)
@@ -83,7 +86,7 @@ export class AssigneeService {
         where: { id },
         data: {
           ...dto,
-          updatedBy,
+          updatedById: updatedBy,
           ...(users && {
             users: {
               set: [],
@@ -110,7 +113,7 @@ export class AssigneeService {
     )
   }
 
-  async remove(id: number, deletedBy: number) {
+  async remove(id: number, deletedById: number) {
     return await this.prisma.$transaction(async tx => {
       await tx.archivedUserAssigneeTask.deleteMany({ where: { assigneeId: id } })
 
@@ -118,7 +121,7 @@ export class AssigneeService {
 
       return await tx.assignee.update({
         where: { id },
-        data: { deletedAt: new Date(), deletedBy },
+        data: { deletedAt: new Date(), deletedById },
         include: AssigneeService.include
       })
     })

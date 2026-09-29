@@ -9,8 +9,8 @@ export const tagsConnectOrCreateArgs = (
     create: {
       name,
       workspaceId,
-      createdBy: userId,
-      updatedBy: userId
+      createdById: userId,
+      updatedById: userId
     },
     where: { name_workspaceId: { name, workspaceId } }
   }))
