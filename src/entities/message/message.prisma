@@ -21,5 +21,6 @@ model Message {
   deletedById Int? @map("deleted_by")
   deletedBy   User? @relation("message_deleted_by", fields: [deletedById], references: [id])
 
+  @@index([taskId, createdAt(sort: Desc)], where: { deletedAt: null })
   @@map("messages")
 }

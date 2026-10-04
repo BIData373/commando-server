@@ -40,6 +40,9 @@ model Task {
   history                       TaskHistory[]
 
   @@unique([workspaceId, serialId])
+  @@index([workspaceId, createdAt(sort: Desc)], where: { deletedAt: null })
+  @@index([sourceId])
+  @@index([statusId])
   @@map("tasks")
 }
 

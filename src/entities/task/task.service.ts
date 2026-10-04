@@ -81,7 +81,6 @@ export class TaskService {
     ...TaskService.includeMessageCount,
     createdBy: true,
     updatedBy: true,
-    deletedBy: true,
     status: true,
     assigneeStatuses: {
       where: {
@@ -100,6 +99,7 @@ export class TaskService {
   static withWorkspaceInclude(userId?: number) {
     return {
       ...TaskService.baseInclude,
+      deletedBy: true,
       workspace: {
         include: {
           permissions: userId
