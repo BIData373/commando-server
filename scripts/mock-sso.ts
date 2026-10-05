@@ -34,7 +34,7 @@ function setCors(req: IncomingMessage, res: ServerResponse) {
   res.setHeader("Access-Control-Allow-Origin", origin)
   res.setHeader("Access-Control-Allow-Credentials", "true")
   res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type")
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization")
 }
 
 const server = createServer((req, res) => {
@@ -48,10 +48,10 @@ const server = createServer((req, res) => {
 
   const url = new URL(req.url ?? "/", `http://localhost:${PORT}`)
 
-  if (req.method === "GET" && url.pathname === `${PREFIX}/cookies`) {
+  if (req.method === "GET" && url.pathname === `${PREFIX}/token`) {
     const token = issueToken()
     res.writeHead(200, { "Content-Type": "application/json" })
-    res.end(JSON.stringify({ ssoUser: token }))
+    res.end(JSON.stringify({ token }))
     return
   }
 

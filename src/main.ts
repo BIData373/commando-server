@@ -2,7 +2,6 @@ import { NestFactory } from '@nestjs/core';
 import { ExpressAdapter } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { useContainer } from 'class-validator';
-import cookieParser from 'cookie-parser';
 import express, { json, urlencoded } from 'express';
 import { Logger } from 'pino-nestjs';
 import 'reflect-metadata';
@@ -39,7 +38,7 @@ async function bootstrap() {
       .setTitle('Vector')
       .setDescription('The Vector API')
       .setVersion('1.0')
-      .addCookieAuth('ssoUser')
+      .addBearerAuth()
       .addApiKey({
         type: 'apiKey',
         name: staticTokenHeader,
@@ -60,8 +59,6 @@ async function bootstrap() {
       jsonDocumentUrl: `${openApiRoute}/json`,
     });
   }
-
-  app.use(cookieParser())
 
   app.use(json({ limit: '10mb' }));
   app.use(urlencoded({ extended: true, limit: '10mb' }));

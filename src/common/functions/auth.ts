@@ -27,7 +27,6 @@ export function verifySsoUser(ssoUser: string) {
 
 export function resolveUser(
   headers: IncomingHttpHeaders,
-  ssoUser: string | undefined,
 ): CreateUserDto {
   const hasStaticToken = (
     staticToken &&
@@ -45,6 +44,12 @@ export function resolveUser(
     }
   }
 
-  const info = verifySsoUser(ssoUser!)
+  const authorization = headers.authorization
+  if (!authorization?.startsWith('Bearer ')) {
+    throw new UnauthorizedException()
+  }
+
+  const token = authorization.slice(7)
+  const info = verifySsoUser(token)
   return { upn: info.upn, info }
 }

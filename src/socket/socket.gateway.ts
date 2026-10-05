@@ -1,6 +1,6 @@
 import { OnGatewayConnection, OnGatewayDisconnect, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets'
 import { Server, Socket } from 'socket.io'
-import { resolveUser } from '../common/functions/cookie'
+import { resolveUser } from '../common/functions/auth'
 import { PrismaService } from '../common/prisma.service'
 import { viewerTypes } from '../entities/permission/consts/permission-types'
 import { PermissionService } from '../entities/permission/permission.service'
@@ -23,7 +23,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const { auth, query } = socket.handshake
 
     try {
-      const user = resolveUser(auth, auth.ssoUser)
+      const user = resolveUser(auth)
 
       socket.data[SOCKET_UPN] = user.upn
 
