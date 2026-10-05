@@ -2,7 +2,7 @@ import { UnauthorizedException } from "@nestjs/common";
 import { JwtPayload, verify } from "jsonwebtoken";
 import { admin } from "../consts/admin";
 import { ssoClientSecret, ssoEnabled, staticToken } from "../consts/env";
-import { isBiHeader, requestUsernameHeader, staticTokenHeader } from "../consts/headers";
+import { bearerPrefix, isBiHeader, requestUsernameHeader, staticTokenHeader } from "../consts/headers";
 import { CreateUserDto } from "../../entities/user/dto/request/create-user.dto";
 import { GetUserInfoDto } from "../../entities/user/dto/request/get-user-info.dto";
 import { IncomingHttpHeaders } from "node:http";
@@ -45,11 +45,11 @@ export function resolveUser(
   }
 
   const authorization = headers.authorization
-  if (!authorization?.startsWith('Bearer ')) {
+  if (!authorization?.startsWith(bearerPrefix)) {
     throw new UnauthorizedException()
   }
 
-  const token = authorization.slice(7)
+  const token = authorization.slice(bearerPrefix.length)
   const info = verifySsoUser(token)
   return { upn: info.upn, info }
 }
