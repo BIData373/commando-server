@@ -1,5 +1,4 @@
--- AlterTable: audit fields on assignee statuses.
--- Added nullable so existing rows can be backfilled before the NOT NULL is enforced.
+-- AlterTable
 ALTER TABLE "assignee_task_statuses"
   ADD COLUMN "created_at" TIMESTAMP(3),
   ADD COLUMN "created_by" INTEGER,
@@ -17,12 +16,27 @@ SET
 FROM "tasks" AS t
 WHERE s."task_id" = t."id";
 
--- Now enforce the shape Prisma expects. `created_at` gets the DB default so `@default(now())`
--- holds for any row inserted without it; `updated_at` deliberately has none — `@updatedAt` is
--- written by Prisma Client on every create and update, not by Postgres.
+-- Make everything not null now
 ALTER TABLE "assignee_task_statuses"
   ALTER COLUMN "created_at" SET NOT NULL,
   ALTER COLUMN "created_at" SET DEFAULT CURRENT_TIMESTAMP,
   ALTER COLUMN "created_by" SET NOT NULL,
   ALTER COLUMN "updated_at" SET NOT NULL,
   ALTER COLUMN "updated_by" SET NOT NULL;
+  
+
+-- AddForeignKey
+ALTER TABLE "assignee_task_statuses"
+  ADD CONSTRAINT "assignee_task_statuses_created_by_fkey"
+  FOREIGN KEY ("created_by")
+  REFERENCES "users"("id")
+  ON DELETE RESTRICT
+  ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "assignee_task_statuses"
+  ADD CONSTRAINT "assignee_task_statuses_updated_by_fkey"
+  FOREIGN KEY ("updated_by")
+  REFERENCES "users"("id")
+  ON DELETE RESTRICT
+  ON UPDATE CASCADE;
