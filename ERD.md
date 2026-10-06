@@ -95,6 +95,10 @@ COMPLETED COMPLETED
     Int task_id 
     Int assignee_id 
     Int status_id 
+    DateTime created_at 
+    DateTime updated_at 
+    Int created_by 
+    Int updated_by 
     String description "❓"
     }
   
@@ -263,6 +267,8 @@ COMPLETED COMPLETED
     "assignees" }o--|| users : "updatedBy"
     "assignees" }o--|o users : "deletedBy"
     "assignees" o{--}o "users" : ""
+    "assignee_task_statuses" }o--|| users : "createdBy"
+    "assignee_task_statuses" }o--|| users : "updatedBy"
     "assignee_task_statuses" }o--|| tasks : "task"
     "assignee_task_statuses" }o--|| assignees : "assignee"
     "assignee_task_statuses" }o--|| workspace_statuses : "status"

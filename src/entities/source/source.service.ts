@@ -115,7 +115,7 @@ export class SourceService {
                 createdById: userId,
                 updatedById: userId,
                 ...(assignees?.length && {
-                  assigneeStatuses: taskAssigneeStatusesCreateArgs(assignees, notStartedStatusId!)
+                  assigneeStatuses: taskAssigneeStatusesCreateArgs(assignees, notStartedStatusId!, userId)
                 }),
                 ...(taskTags?.length && {
                   tags: tagsConnectOrCreateArgs(taskTags, workspaceId, userId)
@@ -395,7 +395,9 @@ export class SourceService {
                 assigneeStatuses: {
                   create: validTaskAssigneeIds.map(assigneeId => ({
                     assigneeId,
-                    statusId: notStartedStatus.id
+                    statusId: notStartedStatus.id,
+                    createdById: source.createdById,
+                    updatedById: source.createdById
                   }))
                 }
               })
