@@ -27,7 +27,12 @@ type TaskIncludePayload = Prisma.TaskGetPayload<{
     messages: true,
     status: true,
     archivedWorkspaceAssigneeTask: true,
-    archivedUserAssigneeTask: true
+    archivedUserAssigneeTask: true,
+    _count: {
+      select: {
+        assigneeStatuses: true
+      }
+    }
   }
 }>
 
@@ -106,6 +111,17 @@ export class TaskService {
             ? { where: { userId } }
             : true
         }
+      },
+      _count: {
+        select: {
+          assigneeStatuses: {
+            where: {
+              assignee: {
+                users: { some: { id: userId } }
+              }
+            }
+          }
+        }
       }
     } satisfies Prisma.TaskInclude
   }
@@ -138,7 +154,7 @@ export class TaskService {
       ?? wholeTaskArchivedAt
       ?? null
     const personalArchivedAt = (assigneeStatus && personalArchivedIds[assigneeStatus.assigneeId]) ?? null
-      
+
     const isTaskArchived = isWorkspaceArchive ? workspaceArchivedAt : (workspaceArchivedAt || personalArchivedAt)
 
     const editable = !!user.info?.isBI || (
@@ -207,6 +223,8 @@ export class TaskService {
     if (!activeAssignees) {
       return []
     }
+
+    const isAssigned = originalTask._count.assigneeStatuses > 0
 
     return [{
       ...rest,
@@ -406,6 +424,8 @@ export class TaskService {
     if (!activeAssignees) {
       return []
     }
+
+    const isAssigned = task._count.assigneeStatuses > 0
 
     const fields = {
       ...taskFields,
