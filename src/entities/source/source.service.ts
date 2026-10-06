@@ -91,9 +91,7 @@ export class SourceService {
     const isDraft = aiExtraction || draft
 
     const source = await this.prisma.$transaction(async tx => {
-      const lastSerialId = tasks?.length && isDraft === false
-        ? await TaskService.getLastSerialId(tx, workspaceId, true)
-        : 0
+      const lastSerialId = await TaskService.getLastSerialId(tx, workspaceId, true)
 
       const created = await tx.source.create({
         data: {
