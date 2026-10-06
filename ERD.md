@@ -164,7 +164,7 @@ COMPLETED COMPLETED
 
   "tasks" {
     Int id "🗝️"
-    Int serial_id 
+    Int serial_id "❓"
     String title 
     String description "❓"
     Boolean flagged 
