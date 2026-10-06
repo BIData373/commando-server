@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common'
-import { keyBy, mapValues, maxBy } from 'lodash'
+import { keyBy, mapValues, maxBy, omit } from 'lodash'
 import { chatUrl, notificationTemplate, vectorUrl } from '../../common/consts/env'
 import { renderTemplate } from '../../common/functions/template'
 import { PrismaService } from '../../common/prisma.service'
@@ -454,9 +454,9 @@ export class TaskService {
       : formattedActiveAssignees
 
     return assigneeStatusesForRows
-      .map(({ assigneeId, statusId, taskId, createdAt, createdBy, createdById, updatedAt, updatedBy, updatedById, ...assigneeStatusFields }) => ({
+      .map(({ assigneeId, updatedAt, updatedBy, ...assigneeStatusFields }) => ({
         ...fields,
-        ...assigneeStatusFields,
+        ...omit(assigneeStatusFields, ['statusId', 'taskId', 'createdAt', 'createdBy', 'createdById']),
         // A row is one assignee's view of the task, so its last update is the status's, not the task's
         updatedAt,
         updatedBy,
