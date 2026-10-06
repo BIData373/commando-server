@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common'
 import { countBy, flatMap, intersection, map, uniq } from 'lodash'
-import { chatUrl, discussionNotificationTemplate, sendmanUsernameVector, vectorUrl } from '../../common/consts/env'
+import { chatUrl, discussionNotificationTemplate, messageRelayUsername, vectorUrl } from '../../common/consts/env'
 import { decodeMulterFilename } from '../../common/functions/string'
 import { renderTemplate } from '../../common/functions/template'
 import { PrismaService } from '../../common/prisma.service'
@@ -57,7 +57,7 @@ export class SourceService {
       const chatMessage = `${source}, נוצרו ${count} הנחיות באחריותך\n
          לצפייה בהנחיות: ${tasksUrl}`
 
-      await this.messageRelayService.sendNotification(recipients, title, chatMessage, 'chat', undefined, sendmanUsernameVector!)
+      await this.messageRelayService.sendNotification(recipients, title, chatMessage, 'chat', undefined, messageRelayUsername!)
     }
     if (mailNotification) {
       const html = renderTemplate(discussionNotificationTemplate!, {

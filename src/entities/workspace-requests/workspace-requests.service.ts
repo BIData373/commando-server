@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { biChatChannelName, chatChannel, chatChannelUrl, chatUrl, redPhone, sendmanUsernameVector } from '../../common/consts/env';
+import { biChatChannelName, chatChannel, chatChannelUrl, chatUrl, redPhone, messageRelayUsername } from '../../common/consts/env';
 import { PrismaService } from '../../common/prisma.service';
 import { PermissionType, Prisma, User, WorkspaceRequest, WorkspaceRequestStatus } from '../../types/prisma';
 import { MessageRelayService } from '../services/message-relay.service';
@@ -75,7 +75,7 @@ ${managers}
 לפרטים נוספים לפנות בקבוצה בצא'ט המבצעי [${chatChannel}](${chatChannelUrl}), או לפנות אלינו במספר *${redPhone}*
     `
 
-    await this.messageRelayService.sendNotification([user.upn], managerTitleMessage, managerBodyMessage, 'chat', undefined, sendmanUsernameVector!)
+    await this.messageRelayService.sendNotification([user.upn], managerTitleMessage, managerBodyMessage, 'chat', undefined, messageRelayUsername!)
 
     return response
   }
