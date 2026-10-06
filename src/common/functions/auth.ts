@@ -2,7 +2,7 @@ import { UnauthorizedException } from "@nestjs/common";
 import { JwtPayload, verify } from "jsonwebtoken";
 import { admin } from "../consts/admin";
 import { ssoClientSecret, ssoEnabled, staticToken } from "../consts/env";
-import { isBiHeader, requestUsernameHeader, staticTokenHeader } from "../consts/headers";
+import { bearerPrefix, isBiHeader, requestUsernameHeader, staticTokenHeader } from "../consts/headers";
 import { CreateUserDto } from "../../entities/user/dto/request/create-user.dto";
 import { GetUserInfoDto } from "../../entities/user/dto/request/get-user-info.dto";
 import { IncomingHttpHeaders } from "node:http";
@@ -27,7 +27,6 @@ export function verifySsoUser(ssoUser: string) {
 
 export function resolveUser(
   headers: IncomingHttpHeaders,
-  ssoUser: string | undefined,
 ): CreateUserDto {
   const hasStaticToken = (
     staticToken &&
@@ -45,6 +44,12 @@ export function resolveUser(
     }
   }
 
-  const info = verifySsoUser(ssoUser!)
+  const authorization = headers.authorization
+  if (!authorization?.startsWith(bearerPrefix)) {
+    throw new UnauthorizedException()
+  }
+
+  const token = authorization.slice(bearerPrefix.length)
+  const info = verifySsoUser(token)
   return { upn: info.upn, info }
 }
