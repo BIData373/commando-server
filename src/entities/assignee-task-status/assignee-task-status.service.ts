@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../common/prisma.service';
 import { Prisma } from '../../types/prisma';
-import { UpdateAssigneeTaskStatusDto } from './dto/request/update-assignee-task-status.dto';
 import { TaskService } from '../task/task.service';
+import { UpdateAssigneeTaskStatusDto } from './dto/request/update-assignee-task-status.dto';
 
 @Injectable()
 export class AssigneeTaskStatusService {
@@ -36,7 +36,7 @@ export class AssigneeTaskStatusService {
     })
   }
 
-  async remove(taskId: number, assigneeId: number, userId: number) {
+  async remove(taskId: number, assigneeId: number, updatedById: number) {
     return await this.prisma.$transaction(async tx => {
       const keptAssignees = await tx.assigneeTaskStatus.findMany({
         where: { taskId, assigneeId: { not: assigneeId } },
@@ -48,7 +48,7 @@ export class AssigneeTaskStatusService {
       // The removed status takes its updatedAt with it, so the task itself records the change
       await tx.task.update({
         where: { id: taskId },
-        data: { updatedById: userId }
+        data: { updatedById }
       })
 
       return await tx.assigneeTaskStatus.delete({

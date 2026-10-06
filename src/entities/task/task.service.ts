@@ -101,9 +101,7 @@ export class TaskService {
   } satisfies Prisma.TaskInclude
 
   // The task as a whole was last touched by whichever came last: an edit to the task itself or to one of its assignee statuses
-  static withLatestUpdate<TTask extends Pick<TaskIncludePayload, 'updatedAt' | 'updatedBy'> & {
-    assigneeStatuses: Pick<AssigneeStatusEntity, 'updatedAt' | 'updatedBy'>[]
-  }>(task: TTask) {
+  static withLatestUpdate<TTask extends TaskIncludePayload>(task: TTask) {
     const { updatedAt, updatedBy } = maxBy([task, ...task.assigneeStatuses], 'updatedAt')!
 
     return { ...task, updatedAt, updatedBy }
