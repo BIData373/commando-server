@@ -19,7 +19,8 @@ export class CreateTaskDto extends GetTaskFieldsDto {
       where: {
         id: value,
         deletedAt: null,
-        workspace: { id: obj.workspaceId }
+        workspace: { id: obj.workspaceId },
+        draft: false
       },
     })
   })

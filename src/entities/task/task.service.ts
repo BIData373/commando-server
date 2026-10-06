@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { keyBy, mapValues, maxBy, omit } from 'lodash'
-import { chatUrl, notificationTemplate, vectorUrl } from '../../common/consts/env'
+import { chatUrl, messageRelayUsername, notificationTemplate, vectorUrl } from '../../common/consts/env'
 import { renderTemplate } from '../../common/functions/template'
 import { PrismaService } from '../../common/prisma.service'
 import { ArchivedUserAssigneeTask, ArchivedWorkspaceAssigneeTask, PermissionType, Prisma, Task, User } from '../../types/prisma'
@@ -255,7 +255,7 @@ export class TaskService {
     if (workspace.chatNotification) {
       const chatMessage = `ההנחיה: ${taskName}\n מעבר להנחיה: ${taskUrl}`
 
-      await this.messageRelayService.sendNotification(recipients, title, chatMessage, 'chat')
+      await this.messageRelayService.sendNotification(recipients, title, chatMessage, 'chat', undefined, messageRelayUsername!)
     }
 
     if (workspace.mailNotification) {
