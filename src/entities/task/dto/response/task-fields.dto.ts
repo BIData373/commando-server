@@ -10,8 +10,8 @@ import { WorkspaceStatusDto } from '../../../workspace-status/dto/response/works
 
 @Exclude()
 export class TaskFieldsDto extends IdMetaFieldsDto {
-  @ExposeProperty({ type: Number, nullable: true })
-  serialId: number | null;
+  @ExposeProperty()
+  serialId: number;
 
   @ExposeProperty()
   title: string;

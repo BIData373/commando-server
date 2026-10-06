@@ -251,10 +251,8 @@ export class SourceService {
       this.taskRunner.sendTask('vector.process_document', [id])
     }
 
-    const newDraft = aiExtraction || draft
-    const isPublishing = source.draft && newDraft === false
-
-    console.log(newDraft, isPublishing, id)
+    const updatedDraftState = aiExtraction || draft
+    const isPublishing = source.draft && updatedDraftState === false
 
     if (isPublishing) {
       return await this.prisma.$transaction(async tx => {
@@ -267,12 +265,12 @@ export class SourceService {
         if (draftTasks.length > 0) {
           const lastSerialId = await TaskService.getLastSerialId(tx, workspaceId, true)
 
-          for (const [index, task] of draftTasks.entries()) {
-            await tx.task.update({
+          await Promise.all(draftTasks.map((task, index) => (
+            tx.task.update({
               where: { id: task.id },
               data: { serialId: lastSerialId + index + 1 }
             })
-          }
+          )))
 
           await WorkspaceService.bumpSerialIdsTx(tx, workspaceId, draftTasks.length)
         }
@@ -301,7 +299,7 @@ export class SourceService {
         attachmentKey,
         attachmentName,
         updatedById,
-        draft: newDraft,
+        draft: updatedDraftState,
         ...(tags !== undefined && {
           tags: tagsSetOrCreateArgs(tags, workspaceId, updatedById)
         })
@@ -379,7 +377,7 @@ export class SourceService {
       createdTasks = await this.prisma.$transaction(async tx => {
         const tasks: Task[] = []
 
-        for (const [, { title, deadlineType, deadlineDate, assigneeIds: taskAssigneeIds }] of aiTasks.entries()) {
+        for (const { title, deadlineType, deadlineDate, assigneeIds: taskAssigneeIds } of aiTasks) {
           const validTaskAssigneeIds = intersection(taskAssigneeIds, validIds)
 
           tasks.push(await tx.task.create({
