@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common'
 import { countBy, flatMap, intersection, map, uniq } from 'lodash'
-import { chatUrl, discussionNotificationTemplate, vectorUrl } from '../../common/consts/env'
+import { chatUrl, discussionNotificationTemplate, messageRelayUsername, vectorUrl } from '../../common/consts/env'
 import { decodeMulterFilename } from '../../common/functions/string'
 import { renderTemplate } from '../../common/functions/template'
 import { PrismaService } from '../../common/prisma.service'
@@ -57,7 +57,7 @@ export class SourceService {
       const chatMessage = `${source}, נוצרו ${count} הנחיות באחריותך\n
          לצפייה בהנחיות: ${tasksUrl}`
 
-      await this.messageRelayService.sendNotification(recipients, title, chatMessage, 'chat')
+      await this.messageRelayService.sendNotification(recipients, title, chatMessage, 'chat', undefined, messageRelayUsername!)
     }
     if (mailNotification) {
       const html = renderTemplate(discussionNotificationTemplate!, {
@@ -115,7 +115,7 @@ export class SourceService {
                 createdById: userId,
                 updatedById: userId,
                 ...(assignees?.length && {
-                  assigneeStatuses: taskAssigneeStatusesCreateArgs(assignees, notStartedStatusId!)
+                  assigneeStatuses: taskAssigneeStatusesCreateArgs(assignees, notStartedStatusId!, userId)
                 }),
                 ...(taskTags?.length && {
                   tags: tagsConnectOrCreateArgs(taskTags, workspaceId, userId)
@@ -395,7 +395,9 @@ export class SourceService {
                 assigneeStatuses: {
                   create: validTaskAssigneeIds.map(assigneeId => ({
                     assigneeId,
-                    statusId: notStartedStatus.id
+                    statusId: notStartedStatus.id,
+                    createdById: source.createdById,
+                    updatedById: source.createdById
                   }))
                 }
               })
@@ -418,13 +420,6 @@ export class SourceService {
       where: { id: source.id },
       data: { extractionStatus }
     })
-
-    if (createdTasks.length > 0) {
-      this.sendNotificationsForNewTasks(
-        aiTasks.map(t => intersection(t.assigneeIds, validIds)),
-        source.workspaceId, source.name, source.date ?? undefined
-      ).catch((e: Error) => console.error('Failed to send AI task created notifications:', e))
-    }
 
     return await this.findOneAndEmit(source.id, user, workspace.urlName, SocketEventType.TASK_EXTRACTION_FINISHED)
   }

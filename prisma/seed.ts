@@ -590,6 +590,8 @@ async function main() {
       taskId: createdTaskIds[i],
       assigneeId,
       statusId: statusIdByType[def.workspaceId][statusType],
+      createdById: def.createdById,
+      updatedById: def.createdById,
       ...(def.assignees.length > 1 && { description: randomDesc() }),
     })),
   );

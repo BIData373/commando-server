@@ -25,7 +25,8 @@ export class MessageRelayService {
         title: string,
         message: string,
         channel: 'mail' | 'chat',
-        groupRecipients?: string[]
+        groupRecipients?: string[],
+        username?: string
     ) {
         try {
             const response = await this.client.post('/relay',
@@ -35,7 +36,8 @@ export class MessageRelayService {
                     channel,
                     title,
                     message,
-                    groupRecipients
+                    groupRecipients,
+                    username
                 })
 
             return response.data
