@@ -421,13 +421,6 @@ export class SourceService {
       data: { extractionStatus }
     })
 
-    if (createdTasks.length > 0) {
-      this.sendNotificationsForNewTasks(
-        aiTasks.map(t => intersection(t.assigneeIds, validIds)),
-        source.workspaceId, source.name, source.date ?? undefined
-      ).catch((e: Error) => console.error('Failed to send AI task created notifications:', e))
-    }
-
     return await this.findOneAndEmit(source.id, user, workspace.urlName, SocketEventType.TASK_EXTRACTION_FINISHED)
   }
 }
