@@ -121,6 +121,7 @@ COMPLETED COMPLETED
     Int user_id 
     Int workspace_id 
     PermissionType type 
+    Boolean has_entered_workspace 
     }
   
 
@@ -205,6 +206,7 @@ COMPLETED COMPLETED
     Int id "🗝️"
     String upn 
     Json info "❓"
+    Boolean has_onboarded 
     }
   
 
