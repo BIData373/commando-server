@@ -5,6 +5,8 @@ model User {
   /// [UserInfo]
   info Json?
 
+  hasOnboarded Boolean @default(false) @map("has_onboarded")
+
   archivedUserAssigneeTask ArchivedUserAssigneeTask[]
   assignees   Assignee[]    @relation("assignee_users")
   permissions Permission[]

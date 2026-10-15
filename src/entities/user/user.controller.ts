@@ -1,6 +1,7 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req, UseGuards } from '@nestjs/common';
 import { ApiBody, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { TransformPlainToInstance } from 'class-transformer';
+import type { Request } from 'express';
 import { BIGuard } from '../../common/guards/bi.guard';
 import { CreateUserDto } from './dto/request/create-user.dto';
 import { GetSearchDto } from './dto/request/get-search.dto';
@@ -44,6 +45,26 @@ export class UserController {
     @Query() { search }: GetSearchDto
   ) {
     return await this.userService.search(search);
+  }
+
+  @ApiOperation({ operationId: 'getMe' })
+  @Get('me')
+  @ApiOkResponse({ type: UserDto })
+  @TransformPlainToInstance(UserDto)
+  async findMe(
+    @Req() { user }: Request
+  ) {
+    return user;
+  }
+
+  @ApiOperation({ operationId: 'markMeOnboarded' })
+  @Patch('visit')
+  @ApiOkResponse({ type: UserDto })
+  @TransformPlainToInstance(UserDto)
+  async markOnboarded(
+    @Req() { user }: Request
+  ) {
+    return await this.userService.markOnboarded(user.id);
   }
 
   @UseGuards(BIGuard)
