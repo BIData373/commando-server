@@ -71,6 +71,7 @@ export const notificationTemplate = process.env.NOTIFICATION_TEMPLATE
 export const discussionNotificationTemplate = process.env.DISCUSSION_NOTIFICATION_TEMPLATE
 export const vectorUrl = process.env.VECTOR_URL
 export const chatUrl = process.env.VITE_CHAT_URL
+export const messageRelayUsername = process.env.MESSAGE_RELAY_USERNAME
 
 export const mirageEnabled = process.env.MIRAGE_ENABLED === 'true'
 export const mirageUrl = process.env.MIRAGE_URL

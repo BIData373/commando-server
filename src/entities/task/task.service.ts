@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
-import { keyBy, mapValues } from 'lodash'
-import { chatUrl, invalidationDays, notificationTemplate, vectorUrl } from '../../common/consts/env'
+import { keyBy, mapValues, maxBy, omit } from 'lodash'
+import { chatUrl, messageRelayUsername, invalidationDays, notificationTemplate, vectorUrl } from '../../common/consts/env'
 import { renderTemplate } from '../../common/functions/template'
 import { PrismaService } from '../../common/prisma.service'
 import { ArchivedUserAssigneeTask, ArchivedWorkspaceAssigneeTask, PermissionType, Prisma, Task, User } from '../../types/prisma'
@@ -16,7 +16,7 @@ import dayjs from 'dayjs';
 
 
 type AssigneeStatusInclude = {
-  include: { assignee: { include: { users: true } }; status: true }
+  include: { assignee: { include: { users: true } }; status: true; createdBy: true; updatedBy: true }
 }
 
 type AssigneeStatusEntity = Prisma.AssigneeTaskStatusGetPayload<AssigneeStatusInclude>
@@ -26,6 +26,7 @@ type WorkspaceInclude = { include: { userWorkspaceVisits: true } }
 type TaskIncludePayload = Prisma.TaskGetPayload<{
   include: {
     assigneeStatuses: AssigneeStatusInclude,
+    updatedBy: true,
     source: true,
     tags: true,
     messages: true,
@@ -102,10 +103,19 @@ export class TaskService {
       orderBy: { assigneeId: 'asc' },
       include: {
         assignee: { include: { users: true } },
-        status: true
+        status: true,
+        createdBy: true,
+        updatedBy: true
       }
     }
   } satisfies Prisma.TaskInclude
+
+  // The task as a whole was last touched by whichever came last: an edit to the task itself or to one of its assignee statuses
+  static withLatestUpdate<TTask extends TaskIncludePayload>(task: TTask) {
+    const { updatedAt, updatedBy } = maxBy([task, ...task.assigneeStatuses], 'updatedAt')!
+
+    return { ...task, updatedAt, updatedBy }
+  }
 
   static withWorkspaceInclude(userId?: number) {
     return {
@@ -154,20 +164,21 @@ export class TaskService {
     personalArchivedIds: Record<number, Date | undefined>,
     wholeTaskArchivedAt: Date | null,
     isAssigned: boolean,
+    isWorkspaceArchive: boolean,
     assigneeStatus?: AssigneeStatusEntity,
   ) {
-
     const workspaceArchivedAt = (assigneeStatus && workspaceArchivedIds[assigneeStatus.assigneeId])
       ?? wholeTaskArchivedAt
       ?? null
-
     const personalArchivedAt = (assigneeStatus && personalArchivedIds[assigneeStatus.assigneeId]) ?? null
+
+    const isTaskArchived = isWorkspaceArchive ? workspaceArchivedAt : (workspaceArchivedAt || personalArchivedAt)
 
     const editable = !!user.info?.isBI || (
       ((
         workspace.assigneeStatusEditable && isAssigned) ||
         workspace.permissions[0]?.type === PermissionType.MANAGER
-      ) && !(workspaceArchivedAt || personalArchivedAt)
+      ) && !isTaskArchived
     )
 
     return {
@@ -217,17 +228,19 @@ export class TaskService {
     archiveLocation: 'workspace' | 'personal',
     isArchived?: boolean
   ) {
-    const { assigneeStatuses, status, ...rest } = originalTask
+    const { assigneeStatuses, messages, status, ...rest } = TaskService.withLatestUpdate(originalTask)
 
     const workspaceArchiveMap = TaskService.getArchivedIdsMap(originalTask.archivedWorkspaceAssigneeTask)
     const personalArchiveMap = TaskService.getArchivedIdsMap(originalTask.archivedWorkspaceAssigneeTask)
 
-    const archivedIds = archiveLocation === 'workspace' ? workspaceArchiveMap : personalArchiveMap
+    const isWorkspace = archiveLocation === 'workspace'
+    const archivedIds = isWorkspace ? workspaceArchiveMap : personalArchiveMap
 
     const activeAssignees = TaskService.filterByArchivedAssignee(originalTask, archivedIds, isArchived)
     if (!activeAssignees) {
       return []
     }
+
     const isAssigned = originalTask._count.assigneeStatuses > 0
 
     return [{
@@ -240,7 +253,8 @@ export class TaskService {
           workspaceArchiveMap,
           personalArchiveMap,
           originalTask.archivedAt,
-          isAssigned
+          isAssigned,
+          isWorkspace
         )
       ),
       assigneeStatuses: activeAssignees.map(assigneeStatus =>
@@ -251,6 +265,7 @@ export class TaskService {
           personalArchiveMap,
           originalTask.archivedAt,
           isAssigned,
+          isWorkspace,
           assigneeStatus
         )
       ),
@@ -271,7 +286,7 @@ export class TaskService {
     if (workspace.chatNotification) {
       const chatMessage = `ההנחיה: ${taskName}\n מעבר להנחיה: ${taskUrl}`
 
-      await this.messageRelayService.sendNotification(recipients, title, chatMessage, 'chat')
+      await this.messageRelayService.sendNotification(recipients, title, chatMessage, 'chat', undefined, messageRelayUsername!)
     }
 
     if (workspace.mailNotification) {
@@ -331,7 +346,7 @@ export class TaskService {
             sourceId
           }),
           ...(assignees?.length && {
-            assigneeStatuses: taskAssigneeStatusesCreateArgs(assignees, notStartedStatus.id)
+            assigneeStatuses: taskAssigneeStatusesCreateArgs(assignees, notStartedStatus.id, userId)
           }),
           ...(tags && {
             tags: tagsConnectOrCreateArgs(tags, workspaceId, userId)
@@ -369,7 +384,7 @@ export class TaskService {
         recipients
       )
     }
-    return createdTask
+    return TaskService.withLatestUpdate(createdTask)
   }
 
   // FIX Dont include assignee users?
@@ -476,6 +491,7 @@ export class TaskService {
           personalArchiveMap,
           task.archivedAt,
           isAssigned,
+          isWorkspace
         ),
         otherAssignees: [],
         rowKey: TaskService.formatTaskRowId(taskFields.id),
@@ -491,7 +507,8 @@ export class TaskService {
         personalArchiveMap,
         task.archivedAt,
         isAssigned,
-        assigneeStatus,
+        isWorkspace,
+        assigneeStatus
       )
     )
 
@@ -506,9 +523,12 @@ export class TaskService {
       : formattedActiveAssignees
 
     return assigneeStatusesForRows
-      .map(({ assigneeId, statusId, taskId, ...assigneeStatusFields }) => ({
+      .map(({ assigneeId, updatedAt, updatedBy, ...assigneeStatusFields }) => ({
         ...fields,
-        ...assigneeStatusFields,
+        ...omit(assigneeStatusFields, ['statusId', 'taskId', 'createdAt', 'createdBy', 'createdById']),
+        // A row is one assignee's view of the task, so its last update is the status's, not the task's
+        updatedAt,
+        updatedBy,
         rowKey: TaskService.formatTaskRowId(taskFields.id, assigneeStatusFields?.assignee?.id),
         otherAssignees: formattedAssigneeStatuses.filter(current => current.assigneeId !== assigneeId)
       }))
@@ -632,10 +652,10 @@ export class TaskService {
   }
 
   // A task is archived as a whole only while nobody is assigned to it
-  static async clearWholeTaskArchiveTx(tx: Prisma.TransactionClient, taskId: number) {
+  static async clearWholeTaskArchiveTx(tx: Prisma.TransactionClient, taskId: number, updatedById: number) {
     await tx.task.updateMany({
       where: { id: taskId, archivedAt: { not: null } },
-      data: { archivedAt: null }
+      data: { archivedAt: null, updatedById }
     })
   }
 
@@ -672,6 +692,7 @@ export class TaskService {
       ? await this.findDefaultStatusInWorkspaces(workspaceId)
       : [null]
 
+    // Only the statuses of the assignees sent are touched, so the others keep their own updatedAt/By
     const assigneeStatuses = assignees && {
       deleteMany: !hasAssignees
         ? {}
@@ -688,12 +709,15 @@ export class TaskService {
           create: {
             assigneeId,
             description,
-            statusId: assigneeStatusId ?? notStartedStatus!.id
+            statusId: assigneeStatusId ?? notStartedStatus!.id,
+            createdById: updatedById,
+            updatedById
           },
           update: {
             assigneeId,
             description,
-            statusId: assigneeStatusId
+            statusId: assigneeStatusId,
+            updatedById
           }
         }))
       })
@@ -704,14 +728,13 @@ export class TaskService {
         await TaskService.detachAssigneesTx(tx, id, assignees.map(a => a.id))
       }
 
-      return await tx.task.update({
+      const updatedTask = await tx.task.update({
         where: { id },
         data: {
           ...dto,
           sourceId,
           statusId,
           assigneeStatuses,
-          // A task is archived as a whole only while nobody is assigned to it
           ...(hasAssignees && { archivedAt: null }),
           ...(tags !== undefined && {
             tags: tagsSetOrCreateArgs(tags, workspaceId, updatedById)
@@ -720,14 +743,16 @@ export class TaskService {
         },
         include: TaskService.withWorkspaceInclude(updatedById)
       })
+
+      return TaskService.withLatestUpdate(updatedTask)
     })
   }
 
-  async remove(id: number, deletedBy: number) {
+  async remove(id: number, deletedById: number) {
     return await this.prisma.task.update({
       where: { id },
-      data: { deletedAt: new Date(), deletedById: deletedBy },
-      include: TaskService.withWorkspaceInclude(deletedBy)
+      data: { deletedAt: new Date(), deletedById, updatedById: deletedById },
+      include: TaskService.withWorkspaceInclude(deletedById)
     })
   }
 }
