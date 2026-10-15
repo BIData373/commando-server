@@ -44,9 +44,10 @@ export class MessageController {
   @ApiOkResponse({ type: MessageDto })
   @TransformPlainToInstance(MessageDto)
   async findOne(
+    @Req() { user }: Request,
     @Param() { id }: GetViewerMessageIdDto
   ) {
-    return await this.messageService.findOne(id);
+    return await this.messageService.findOne(id, user.id);
   }
 
   @ApiOperation({ operationId: 'updateMessage' })
@@ -60,7 +61,7 @@ export class MessageController {
     @Param() { id }: GetManagerMessageIdDto,
     @Body() dto: UpdateMessageDto
   ) {
-    return await this.messageService.update(id, dto, user.id);
+    return await this.messageService.updateMessage(id, user.id, { ...dto, updatedById: user.id });
   }
 
   @ApiOperation({ operationId: 'deleteMessage' })

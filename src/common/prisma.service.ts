@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config'
 import { PrismaPg } from '@prisma/adapter-pg'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { PrismaClient } from '../types/prisma/client'
+import { Prisma, PrismaClient } from '../types/prisma/client'
 import { saveDatabaseCertificates } from './functions/ssl'
 
 @Injectable()
