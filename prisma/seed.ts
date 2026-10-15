@@ -575,12 +575,22 @@ async function main() {
     };
   });
 
-  // createManyAndReturn keeps input order on PostgreSQL, so index i lines up with taskDefs[i].
-  const createdTaskIds: number[] = [];
+  // RETURNING order isn't guaranteed, so map ids back through the (workspaceId, serialId) pair,
+  // which is unique per task, instead of relying on index i lining up with taskDefs[i].
+  const taskIdByKey = new Map<string, number>();
   for (const rows of chunk(taskRows, 500)) {
-    const created = await prisma.task.createManyAndReturn({ data: rows, select: { id: true } });
-    createdTaskIds.push(...created.map((t) => t.id));
+    const created = await prisma.task.createManyAndReturn({
+      data: rows,
+      select: { id: true, workspaceId: true, serialId: true },
+    });
+    for (const t of created) taskIdByKey.set(`${t.workspaceId}:${t.serialId}`, t.id);
   }
+
+  const createdTaskIds = taskRows.map(({ workspaceId, serialId }) => {
+    const id = taskIdByKey.get(`${workspaceId}:${serialId}`);
+    if (id === undefined) throw new Error(`Seed integrity error: no task created for workspace ${workspaceId} serial ${serialId}`);
+    return id;
+  });
   console.timeEnd('* Tasks')
 
   console.log('* Creating Assignee Statuses, History, Messages and Tag links')
@@ -627,6 +637,11 @@ async function main() {
     await prisma.$executeRawUnsafe(`INSERT INTO "_tasks_tags" ("A", "B") VALUES ${values} ON CONFLICT DO NOTHING`);
   }
   console.timeEnd('* Task Relations')
+
+  const tasksWithoutAssignees = await prisma.task.count({ where: { assigneeStatuses: { none: {} } } });
+  if (tasksWithoutAssignees > 0) {
+    throw new Error(`Seed integrity error: ${tasksWithoutAssignees} tasks were created without any assignee status`);
+  }
 
   await Promise.all(
     Object.entries(taskCounterByWorkspace).map(([workspaceId, taskCounter]) =>
