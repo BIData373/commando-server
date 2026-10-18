@@ -117,12 +117,12 @@ export class TaskService {
     return { ...task, updatedAt, updatedBy }
   }
 
-  static withWorkspaceInclude(userId?: number) {
+  static withWorkspaceInclude(userId?: number, workspaceId?: number) {
     return {
       ...TaskService.baseInclude,
       workspace: {
         include: {
-          ...(userId && { userWorkspaceVisits: { where: { userId } } }),
+          ...(userId && { userWorkspaceVisits: { where: { userId, workspaceId } } }),
           permissions: userId
             ? { where: { userId } }
             : true
@@ -352,7 +352,7 @@ export class TaskService {
             tags: tagsConnectOrCreateArgs(tags, workspaceId, userId)
           })
         },
-        include: TaskService.withWorkspaceInclude(userId)
+        include: TaskService.withWorkspaceInclude(userId, workspaceId)
       })
 
       await WorkspaceService.bumpSerialIdsTx(tx, workspaceId, 1)
@@ -399,7 +399,7 @@ export class TaskService {
       },
       include: {
         ...TaskService.withArchivedInclude(user.id),
-        ...TaskService.withWorkspaceInclude(user.id),
+        ...TaskService.withWorkspaceInclude(user.id, workspace.id),
       },
       orderBy: TaskService.orderBy
     })
@@ -552,7 +552,7 @@ export class TaskService {
     ).flat()
   }
 
-  async findBySource(sourceId: number, userId: number, isArchived?: boolean) {
+  async findBySource(sourceId: number, userId: number, workspaceId?: number, isArchived?: boolean) {
     return await this.prisma.task.findMany({
       where: {
         sourceId,
@@ -560,14 +560,14 @@ export class TaskService {
       },
       include: {
         ...TaskService.withArchivedInclude(userId),
-        ...TaskService.withWorkspaceInclude(userId)
+        ...TaskService.withWorkspaceInclude(userId, workspaceId)
       },
       orderBy: { id: 'asc' }
     })
   }
 
   async findFormattedBySource(sourceId: number, workspace: WorkspaceWithPermissions, user: User, isArchived?: boolean) {
-    const tasks = await this.findBySource(sourceId, user.id, isArchived)
+    const tasks = await this.findBySource(sourceId, user.id, workspace.id, isArchived)
 
     return tasks.flatMap(task => TaskService.formatAdditionalTaskFields(
       task,
