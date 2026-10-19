@@ -741,7 +741,7 @@ export class TaskService {
           }),
           updatedById
         },
-        include: TaskService.withWorkspaceInclude(updatedById)
+        include: TaskService.withWorkspaceInclude(updatedById, workspaceId)
       })
 
       return TaskService.withLatestUpdate(updatedTask)
