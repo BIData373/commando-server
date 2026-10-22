@@ -1,0 +1,80 @@
+# @import ../../../global.http
+
+### Create Assignee Group — valid payload
+POST {{baseUrl}}/assignee-group
+...headers
+
+{
+  "name": "Alpha Group",
+  "workspaceId": {{workspaceId}},
+  "assigneeIds": []
+}
+
+{{@response
+  exports.assigneeGroupId = response.parsedBody.id;
+}}
+
+?? status == 201
+
+### Create Assignee Group — non-existent assignee (expect 400)
+POST {{baseUrl}}/assignee-group
+...headers
+
+{
+  "name": "Broken Group",
+  "workspaceId": {{workspaceId}},
+  "assigneeIds": [99999]
+}
+
+?? status == 400
+
+### Create Assignee Group — missing required fields (expect 400)
+POST {{baseUrl}}/assignee-group
+...headers
+
+{
+  "workspaceId": {{workspaceId}}
+}
+
+?? status == 400
+
+### Get all Assignee Groups in workspace
+GET {{baseUrl}}/assignee-group?workspaceId={{workspaceId}}
+...headers
+
+?? status == 200
+
+### Get Assignee Group by id
+GET {{baseUrl}}/assignee-group/{{2}}
+...headers
+
+?? status == 200
+
+### Update Assignee Group
+PATCH {{baseUrl}}/assignee-group/{{3}}
+...headers
+
+{
+  "name": "Alpha Group Updated",
+  "assigneeIds": [7]
+}
+
+?? status == 200
+
+### Delete Assignee Group — non-existent id (expect 400)
+DELETE {{baseUrl}}/assignee-group/99999
+...headers
+
+?? status == 400
+
+### Delete Assignee Group
+DELETE {{baseUrl}}/assignee-group/{{3}}
+...headers
+
+?? status == 200
+
+### Delete Assignee — group member cleanup
+DELETE {{baseUrl}}/assignee/{{9}}
+...headers
+
+?? status == 200

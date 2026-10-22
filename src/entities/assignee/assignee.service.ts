@@ -121,7 +121,11 @@ export class AssigneeService {
 
       return await tx.assignee.update({
         where: { id },
-        data: { deletedAt: new Date(), deletedById },
+        data: {
+          deletedAt: new Date(),
+          deletedById,
+          assigneeGroups: { set: [] }
+        },
         include: AssigneeService.include
       })
     })

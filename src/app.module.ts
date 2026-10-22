@@ -13,6 +13,7 @@ import { WritableQueryMiddleware } from './common/middleware/writable-query.midd
 import { PrismaModule } from './common/prisma.module';
 import { ArchivedUserAssigneeTaskModule } from './entities/archived-user-assignee-task/archived-user-assignee-task.module';
 import { ArchivedWorkspaceAssigneeModule } from './entities/archived-workspace-assignee-task/archived-workspace-assignee-task.module';
+import { AssigneeGroupModule } from './entities/assignee-group/assignee-group.module';
 import { AssigneeTaskStatusModule } from './entities/assignee-task-status/assignee-task-status.module';
 import { AssigneeModule } from './entities/assignee/assignee.module';
 import { MessageModule } from './entities/message/message.module';
@@ -64,6 +65,7 @@ export const openApiRoute = 'open-api'
     TaskModule,
     WorkspaceStatusModule,
     AssigneeModule,
+    AssigneeGroupModule,
     UserModule,
     AssigneeTaskStatusModule,
     PermissionModule,
