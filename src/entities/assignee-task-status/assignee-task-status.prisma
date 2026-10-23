@@ -19,6 +19,5 @@ model AssigneeTaskStatus {
   description String?
 
   @@id([taskId, assigneeId])
-  @@index([assigneeId])
   @@map("assignee_task_statuses")
 }
