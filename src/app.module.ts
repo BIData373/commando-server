@@ -8,7 +8,7 @@ import { excludedLogHeaders } from './common/consts/headers';
 import { forbiddenExceptionFactory } from './common/functions/transform';
 import { BIGuard } from './common/guards/bi.guard';
 import { AddUserToContextInterceptor } from './common/interceptors/add-user-to-context.interceptor';
-import { CookieMiddleware } from './common/middleware/cookie.middleware';
+import { AuthMiddleware } from './common/middleware/auth.middleware';
 import { WritableQueryMiddleware } from './common/middleware/writable-query.middleware';
 import { PrismaModule } from './common/prisma.module';
 import { ArchivedUserAssigneeTaskModule } from './entities/archived-user-assignee-task/archived-user-assignee-task.module';
@@ -95,7 +95,7 @@ export const openApiRoute = 'open-api'
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer): void {
     consumer
-      .apply(WritableQueryMiddleware, CookieMiddleware)
+      .apply(WritableQueryMiddleware, AuthMiddleware)
       .exclude(openApiRoute, `${openApiRoute}/(.*)`)
       .forRoutes('*');
   }
