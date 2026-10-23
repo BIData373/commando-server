@@ -230,7 +230,22 @@ async function main() {
   };
 
   // ── Tasks + AssigneeTaskStatus + TaskHistory ───────────────────────────────
-  const taskDefs = [
+  type SeedTaskDef = {
+    title: string;
+    description: string;
+    flagged: boolean;
+    creationType: TaskCreationType;
+    deadlineType: DeadlineType;
+    dueDate?: Date;
+    workspaceId: number;
+    sourceId: number;
+    createdById: number;
+    tagIds: number[];
+    assignees: { assigneeId: number; statusType: WorkspaceStatusType }[];
+    messages?: { userId: number; content: string }[];
+  };
+
+  const handcraftedTaskDefs: SeedTaskDef[] = [
     {
       title: 'הכנת תקציב שנתי לשנת 2026',
       description: '## משימה\nיש להכין את התקציב השנתי לשנת 2026 כולל:\n- תקציב תפעולי\n- תקציב פיתוח\n- תקציב שיווק\n\n### הערות\nיש לתאם עם מחלקת כספים לגבי תחזיות ההכנסות.',
@@ -456,6 +471,114 @@ async function main() {
     },
   ];
 
+  // ── Bulk load generation ───────────────────────────────────────────────────
+  // Intentionally heavy: enough tasks (with tags, assignee statuses, history and
+  // messages hanging off them) to make unindexed queries and N+1 includes hurt.
+  const BULK_TASK_COUNT = 5000;
+
+  const pick = <T,>(arr: readonly T[]) => arr[Math.floor(Math.random() * arr.length)];
+
+  // Unique sample of 1..max items (composite PKs downstream forbid duplicates).
+  const pickSome = <T,>(arr: readonly T[], max: number, min = 0) => {
+    const shuffled = [...arr].sort(() => Math.random() - 0.5);
+    const count = Math.min(arr.length, min + Math.floor(Math.random() * (max - min + 1)));
+    return shuffled.slice(0, count);
+  };
+
+  const chunk = <T,>(arr: T[], size: number) => {
+    const out: T[][] = [];
+    for (let i = 0; i < arr.length; i += size) out.push(arr.slice(i, i + size));
+    return out;
+  };
+
+  // Per-workspace pools, so every generated task stays referentially coherent.
+  const pools = {
+    [ws1.id]: {
+      weight: 70,
+      sources: [src01, src02, src03, src04, src05, src06, src07, src08, src09, src10, src11, src12].map((s) => s.id),
+      assignees: [a1, a2, a3, a4, a5, a6].map((a) => a.id),
+      tags: [tBudget, tHR, tIT, tOps, tField].map((t) => t.id),
+      users: [u1, u2, u3, u4, u5, u6].map((u) => u.id),
+    },
+    [ws2.id]: {
+      weight: 20,
+      sources: [src13, src14, src15].map((s) => s.id),
+      assignees: [a7.id],
+      tags: [tDev, tQA].map((t) => t.id),
+      users: [u2, u4, u5].map((u) => u.id),
+    },
+    [ws3.id]: {
+      weight: 10,
+      sources: [src16, src17].map((s) => s.id),
+      assignees: [a8.id],
+      tags: [] as number[],
+      users: [u1, u3, u6].map((u) => u.id),
+    },
+  };
+
+  const weightedWorkspaceIds = Object.entries(pools).flatMap(([id, { weight }]) =>
+    Array.from({ length: weight }, () => Number(id)),
+  );
+
+  const TITLE_VERBS = ['הכנת', 'עדכון', 'בחינת', 'סיכום', 'הטמעת', 'שדרוג', 'ביקורת', 'תיאום', 'הפקת', 'ריענון'];
+  const TITLE_OBJECTS = [
+    'נוהל מבצעי', 'תכנית עבודה', 'דוח מצב', 'מערך הדרכה', 'תשתית תקשורת', 'מלאי לוגיסטי',
+    'סד"כ כוח אדם', 'תיק שטח', 'מסמך דרישות', 'תחקיר אירוע', 'לוח זמנים', 'תקציב רבעוני',
+  ];
+  const TITLE_SUFFIXES = ['לרבעון 1', 'לרבעון 2', 'לרבעון 3', 'לרבעון 4', 'לשנת 2026', 'ליחידה', 'למטה', 'לגדוד'];
+
+  const BODY_LINES = [
+    'יש לוודא תיאום מלא מול כלל הגורמים המעורבים.',
+    'נדרשת סקירה של הנהלים הקיימים לפני תחילת הביצוע.',
+    'הערכת המשאבים הנדרשים תבוצע בשלב הראשון.',
+    'יש להציג סטטוס ביניים בישיבת המטה השבועית.',
+    'לאחר סיום השלב הנוכחי יופץ עדכון לכלל הנוגעים בדבר.',
+    'ממתין לאישור תקציבי טרם המשך התהליך.',
+  ];
+
+  const MESSAGE_TEXTS = [
+    'מתקדם לפי התכנון, אעדכן בהמשך השבוע.',
+    'נתקלנו בעיכוב מול הספק — בטיפול.',
+    'צריך אישור שלך לפני שממשיכים.',
+    'הועבר לגורם המקצועי לבדיקה.',
+    'הושלם מצדי, מעביר לבקרה.',
+    'אפשר לסגור את זה?',
+  ];
+
+  const STATUS_TYPES = [WorkspaceStatusType.NOT_STARTED, WorkspaceStatusType.IN_PROGRESS, WorkspaceStatusType.COMPLETED];
+  const CREATION_TYPES = [TaskCreationType.HUMAN, TaskCreationType.AI_HUMAN, TaskCreationType.AI];
+  const DEADLINE_TYPES = [DeadlineType.IMMEDIATE, DeadlineType.DATE, DeadlineType.ROLLING];
+
+  const bulkTaskDefs: SeedTaskDef[] = Array.from({ length: BULK_TASK_COUNT }, (_, i) => {
+    const workspaceId = pick(weightedWorkspaceIds);
+    const pool = pools[workspaceId];
+    const createdById = pick(pool.users);
+    const deadlineType = pick(DEADLINE_TYPES);
+
+    return {
+      title: `${pick(TITLE_VERBS)} ${pick(TITLE_OBJECTS)} ${pick(TITLE_SUFFIXES)} #${i + 1}`,
+      description: `## רקע\n${pick(BODY_LINES)}\n\n### הערות\n- ${pick(BODY_LINES)}\n- ${pick(BODY_LINES)}`,
+      flagged: Math.random() < 0.2,
+      creationType: pick(CREATION_TYPES),
+      deadlineType,
+      ...(deadlineType !== DeadlineType.IMMEDIATE && {
+        // Spread over ~10 months, some already overdue.
+        dueDate: new Date(Date.now() + (Math.floor(Math.random() * 300) - 60) * 24 * 60 * 60 * 1000),
+      }),
+      workspaceId,
+      sourceId: pick(pool.sources),
+      createdById,
+      tagIds: pickSome(pool.tags, 3),
+      assignees: pickSome(pool.assignees, 4, 1).map((assigneeId) => ({
+        assigneeId,
+        statusType: pick(STATUS_TYPES),
+      })),
+      messages: pickSome(pool.users, 4).map((userId) => ({ userId, content: pick(MESSAGE_TEXTS) })),
+    };
+  });
+
+  const taskDefs = [...handcraftedTaskDefs, ...bulkTaskDefs];
+
   // Guard: every assignee must belong to the same workspace as its task.
   const assigneeWorkspace: Record<number, number> = {
     [a1.id]: ws1.id, [a2.id]: ws1.id, [a3.id]: ws1.id,
@@ -473,51 +596,98 @@ async function main() {
     }
   }
 
-  console.log('* Creating Tasks')
+  console.log(`* Creating ${taskDefs.length} Tasks`)
+  console.time('* Tasks')
   // Mirrors what TaskService.reserveSerialIdsTx does at runtime: hand each task the next number
   // for its workspace, then leave Workspace.taskCounter at the highest one issued.
   const taskCounterByWorkspace: Record<number, number> = {};
 
-  for (const def of taskDefs) {
+  const taskRows = taskDefs.map((def) => {
     const serialId = (taskCounterByWorkspace[def.workspaceId] ?? 0) + 1;
     taskCounterByWorkspace[def.workspaceId] = serialId;
 
-    await prisma.task.create({
-      data: {
-        serialId,
-        title: def.title,
-        description: def.description,
-        flagged: def.flagged,
-        creationType: def.creationType,
-        deadlineType: def.deadlineType,
-        ...(def.dueDate && { dueDate: def.dueDate }),
-        workspaceId: def.workspaceId,
-        sourceId: def.sourceId,
-        statusId: statusIdByType[def.workspaceId][taskStatusType(def.assignees)],
-        createdById: def.createdById,
-        updatedById: def.createdById,
-        ...(def.tagIds.length > 0 && { tags: { connect: def.tagIds.map((id) => ({ id })) } }),
-        assigneeStatuses: {
-          create: def.assignees.map(({ assigneeId, statusType }) => ({
-            assigneeId,
-            statusId: statusIdByType[def.workspaceId][statusType],
-            createdById: def.createdById,
-            updatedById: def.createdById,
-            ...(def.assignees.length > 1 && { description: randomDesc() }),
-          }))
-        },
-        history: {
-          create: {
-            action: HistoryAction.CREATE,
-            field: 'task',
-            value: def.title,
-            workspaceId: def.workspaceId,
-            userId: def.createdById,
-          }
-        }
-      }
-    });
+    return {
+      serialId,
+      title: def.title,
+      description: def.description,
+      flagged: def.flagged,
+      creationType: def.creationType,
+      deadlineType: def.deadlineType,
+      ...(def.dueDate && { dueDate: def.dueDate }),
+      workspaceId: def.workspaceId,
+      sourceId: def.sourceId,
+      statusId: statusIdByType[def.workspaceId][taskStatusType(def.assignees)],
+      createdById: def.createdById,
+      updatedById: def.createdById,
+    };
+  });
 
+  // RETURNING order isn't guaranteed, so map ids back through the (workspaceId, serialId) pair,
+  // which is unique per task, instead of relying on index i lining up with taskDefs[i].
+  const taskIdByKey = new Map<string, number>();
+  for (const rows of chunk(taskRows, 500)) {
+    const created = await prisma.task.createManyAndReturn({
+      data: rows,
+      select: { id: true, workspaceId: true, serialId: true },
+    });
+    for (const t of created) taskIdByKey.set(`${t.workspaceId}:${t.serialId}`, t.id);
+  }
+
+  const createdTaskIds = taskRows.map(({ workspaceId, serialId }) => {
+    const id = taskIdByKey.get(`${workspaceId}:${serialId}`);
+    if (id === undefined) throw new Error(`Seed integrity error: no task created for workspace ${workspaceId} serial ${serialId}`);
+    return id;
+  });
+  console.timeEnd('* Tasks')
+
+  console.log('* Creating Assignee Statuses, History, Messages and Tag links')
+  console.time('* Task Relations')
+  const assigneeStatusRows = taskDefs.flatMap((def, i) =>
+    def.assignees.map(({ assigneeId, statusType }) => ({
+      taskId: createdTaskIds[i],
+      assigneeId,
+      statusId: statusIdByType[def.workspaceId][statusType],
+      createdById: def.createdById,
+      updatedById: def.createdById,
+      ...(def.assignees.length > 1 && { description: randomDesc() }),
+    })),
+  );
+
+  const historyRows = taskDefs.map((def, i) => ({
+    taskId: createdTaskIds[i],
+    action: HistoryAction.CREATE,
+    field: 'task',
+    value: def.title,
+    workspaceId: def.workspaceId,
+    userId: def.createdById,
+  }));
+
+  const messageRows = taskDefs.flatMap((def, i) =>
+    (def.messages ?? []).map(({ userId, content }) => ({
+      taskId: createdTaskIds[i],
+      userId,
+      content,
+      createdById: userId,
+      updatedById: userId,
+    })),
+  );
+
+  // [tagId, taskId] pairs for the implicit m2m join table (A = tag, B = task).
+  const tagLinks = taskDefs.flatMap((def, i) => def.tagIds.map((tagId) => [tagId, createdTaskIds[i]] as const));
+
+  for (const rows of chunk(assigneeStatusRows, 1000)) await prisma.assigneeTaskStatus.createMany({ data: rows });
+  for (const rows of chunk(historyRows, 1000)) await prisma.taskHistory.createMany({ data: rows });
+  for (const rows of chunk(messageRows, 1000)) await prisma.message.createMany({ data: rows });
+
+  for (const links of chunk([...tagLinks], 1000)) {
+    const values = links.map(([tagId, taskId]) => `(${tagId}, ${taskId})`).join(', ');
+    await prisma.$executeRawUnsafe(`INSERT INTO "_tasks_tags" ("A", "B") VALUES ${values} ON CONFLICT DO NOTHING`);
+  }
+  console.timeEnd('* Task Relations')
+
+  const tasksWithoutAssignees = await prisma.task.count({ where: { assigneeStatuses: { none: {} } } });
+  if (tasksWithoutAssignees > 0) {
+    throw new Error(`Seed integrity error: ${tasksWithoutAssignees} tasks were created without any assignee status`);
   }
 
   // ── Overload: bulk-generated assignees + tasks in workspace 1 ──────────────
@@ -644,14 +814,14 @@ async function main() {
     )
   );
 
-  const totalAssigneeStatuses = taskDefs.reduce((s, d) => s + d.assignees.length, 0);
+  const totalAssigneeStatuses = assigneeStatusRows.length;
   console.log(`✅ Done — seeded:
   • 12 users
   • 1 pikud, 3 workspaces, 9 workspace statuses
-  • 8 assignees, ${taskDefs.reduce((s, d) => s + (d.tagIds?.length ?? 0), 0)} tag links
+  • 8 assignees, ${tagLinks.length} tag links
   • 7 tags, 17 sources
-  • 17 tasks with ${totalAssigneeStatuses} assignee statuses and history entries${overload ? `
-  • overload: ${overload.assignees} assignees, ${overload.tasks} tasks with ${overloadAssigneeStatuses} assignee statuses, ${overloadTagLinks} tag links` : ''}`);
+  • ${taskDefs.length} tasks (${handcraftedTaskDefs.length} handcrafted + ${bulkTaskDefs.length} generated)
+  • ${totalAssigneeStatuses} assignee statuses, ${historyRows.length} history entries, ${messageRows.length} messages`);
 }
 
 main()
