@@ -282,7 +282,7 @@ export class TaskService {
     recipients: string[]
   ) {
     const title = `קיבלת הנחיה חדשה מ${workspace.title}`
-    const taskUrl = `${vectorUrl}/personal/task/${taskId}`
+    const taskUrl = `${vectorUrl}/personal/tasks/${taskId}`
 
     if (workspace.chatNotification) {
       const chatMessage = `ההנחיה: ${taskName}\n מעבר להנחיה: ${taskUrl}`

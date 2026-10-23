@@ -7,6 +7,53 @@ const connectionString = postgresPrismaUrl ?? databaseUrl
 const adapter = new PrismaPg({ connectionString })
 const prisma = new PrismaClient({ adapter });
 
+// ── Overload mode (performance testing) ─────────────────────────────────────
+// Adds a pile of generated tasks/assignees to workspace 1 (hativa) on top of the hand-written seed.
+//   npm run db:seed:overload --env=dev                          → defaults below
+//   npm run db:seed:overload --env=dev -- --tasks=50000         → override any of them
+//   npx prisma db seed -- --tasks=2000 --assignees=20           → passing a count implies overload
+const OVERLOAD_DEFAULTS = { tasks: 10_000, assignees: 50, maxAssigneesPerTask: 5 };
+const OVERLOAD_CHUNK_SIZE = 1_000;
+
+const parseSeedArgs = () => {
+  const argv = process.argv.slice(2);
+  const readCount = (name: string) => {
+    const raw = argv.find((arg) => arg.startsWith(`--${name}=`))?.split('=')[1];
+    if (raw === undefined) return undefined;
+
+    const value = Number(raw);
+    if (!Number.isInteger(value) || value < 1) throw new Error(`--${name} must be a positive integer, got "${raw}"`);
+    return value;
+  };
+
+  const tasks = readCount('tasks');
+  const assignees = readCount('assignees');
+  const maxAssigneesPerTask = readCount('max-assignees-per-task');
+
+  const enabled = argv.includes('--overload') || [tasks, assignees, maxAssigneesPerTask].some((v) => v !== undefined);
+  if (!enabled) return null;
+
+  return {
+    tasks: tasks ?? OVERLOAD_DEFAULTS.tasks,
+    assignees: assignees ?? OVERLOAD_DEFAULTS.assignees,
+    maxAssigneesPerTask: maxAssigneesPerTask ?? OVERLOAD_DEFAULTS.maxAssigneesPerTask,
+  };
+};
+
+const overload = parseSeedArgs();
+
+const pick = <T>(items: readonly T[]) => items[Math.floor(Math.random() * items.length)];
+const sample = <T>(items: readonly T[], count: number) => {
+  const copy = [...items];
+  for (let i = copy.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy.slice(0, count);
+};
+const chunk = <T>(items: readonly T[], size: number) =>
+  Array.from({ length: Math.ceil(items.length / size) }, (_, i) => items.slice(i * size, (i + 1) * size));
+
 async function main() {
   console.log('🌱 Seeding database...');
 
@@ -641,6 +688,121 @@ async function main() {
   const tasksWithoutAssignees = await prisma.task.count({ where: { assigneeStatuses: { none: {} } } });
   if (tasksWithoutAssignees > 0) {
     throw new Error(`Seed integrity error: ${tasksWithoutAssignees} tasks were created without any assignee status`);
+  }
+
+  // ── Overload: bulk-generated assignees + tasks in workspace 1 ──────────────
+  // Uses createMany / raw inserts in chunks instead of per-row nested creates, otherwise 10k+ tasks take forever.
+  let overloadAssigneeStatuses = 0;
+  let overloadTagLinks = 0;
+
+  if (overload) {
+    console.log(`* Overload: ${overload.assignees} assignees, ${overload.tasks} tasks (≤${overload.maxAssigneesPerTask} assignees each) in "${ws1.urlName}"`);
+    console.time('* Overload');
+
+    const ws1Users = [u1, u2, u3, u4, u5, u6];
+    const ws1Tags = [tBudget, tHR, tIT, tOps, tField];
+    const ws1Sources = [src01, src02, src03, src04, src05, src06, src07, src08, src09, src10, src11, src12];
+    const statusTypes = Object.values(WorkspaceStatusType);
+    const creationTypes = Object.values(TaskCreationType);
+    const deadlineTypes = Object.values(DeadlineType);
+
+    const generatedAssignees = await prisma.assignee.createManyAndReturn({
+      data: Array.from({ length: overload.assignees }, (_, i) => ({
+        name: `צוות עומס ${i + 1}`,
+        color: `#${Math.floor(Math.random() * 0xffffff).toString(16).padStart(6, '0')}`,
+        workspaceId: ws1.id,
+        createdById: u1.id,
+        updatedById: u1.id,
+      })),
+      select: { id: true },
+    });
+
+    // Implicit m2m (Assignee ↔ User): "A" = assignees.id, "B" = users.id
+    const assigneeUserLinks = generatedAssignees.flatMap(({ id }) =>
+      sample(ws1Users, 1 + Math.floor(Math.random() * 2)).map((user) => [id, user.id] as const)
+    );
+    await prisma.$executeRaw`
+      INSERT INTO "_assignee_users" ("A", "B")
+      SELECT * FROM UNNEST(${assigneeUserLinks.map(([a]) => a)}::int[], ${assigneeUserLinks.map(([, b]) => b)}::int[])`;
+
+    const assigneePool = [a1, a2, a3, a4, a5, a6, ...generatedAssignees].map(({ id }) => id);
+    const now = Date.now();
+    const DAY = 24 * 60 * 60 * 1000;
+
+    for (const [chunkIndex, batch] of chunk(Array.from({ length: overload.tasks }, (_, i) => i), OVERLOAD_CHUNK_SIZE).entries()) {
+      const defs = batch.map(() => {
+        const serialId = (taskCounterByWorkspace[ws1.id] ?? 0) + 1;
+        taskCounterByWorkspace[ws1.id] = serialId;
+
+        const deadlineType = pick(deadlineTypes);
+        const assignees = sample(assigneePool, 1 + Math.floor(Math.random() * overload.maxAssigneesPerTask))
+          .map((assigneeId) => ({ assigneeId, statusType: pick(statusTypes) }));
+
+        return {
+          serialId,
+          title: `משימת עומס #${serialId}`,
+          description: pick(RANDOM_DESCRIPTIONS),
+          flagged: Math.random() < 0.15,
+          creationType: pick(creationTypes),
+          deadlineType,
+          dueDate: deadlineType === DeadlineType.IMMEDIATE ? null : new Date(now + (Math.random() * 180 - 90) * DAY),
+          sourceId: pick(ws1Sources).id,
+          createdById: pick(ws1Users).id,
+          tagIds: sample(ws1Tags, Math.floor(Math.random() * 3)).map(({ id }) => id),
+          assignees,
+        };
+      });
+
+      const created = await prisma.task.createManyAndReturn({
+        data: defs.map(({ tagIds, assignees, ...def }) => ({
+          ...def,
+          workspaceId: ws1.id,
+          statusId: statusIdByType[ws1.id][taskStatusType(assignees)],
+          updatedById: def.createdById,
+        })),
+        select: { id: true, serialId: true },
+      });
+      // Match back by serialId rather than trusting RETURNING order
+      const taskIdBySerial = new Map(created.map(({ id, serialId }) => [serialId, id]));
+      const withIds = defs.map((def) => ({ ...def, taskId: taskIdBySerial.get(def.serialId)! }));
+
+      const assigneeStatusRows = withIds.flatMap(({ taskId, createdById, assignees }) =>
+        assignees.map(({ assigneeId, statusType }) => ({
+          taskId,
+          assigneeId,
+          statusId: statusIdByType[ws1.id][statusType],
+          createdById,
+          updatedById: createdById,
+          ...(assignees.length > 1 && { description: pick(RANDOM_DESCRIPTIONS) }),
+        }))
+      );
+
+      // Implicit m2m (Tag ↔ Task): "A" = tags.id, "B" = tasks.id
+      const tagLinks = withIds.flatMap(({ taskId, tagIds }) => tagIds.map((tagId) => [tagId, taskId] as const));
+
+      await Promise.all([
+        prisma.assigneeTaskStatus.createMany({ data: assigneeStatusRows }),
+        prisma.taskHistory.createMany({
+          data: withIds.map(({ taskId, title, createdById }) => ({
+            action: HistoryAction.CREATE,
+            field: 'task',
+            value: title,
+            taskId,
+            workspaceId: ws1.id,
+            userId: createdById,
+          })),
+        }),
+        tagLinks.length > 0 && prisma.$executeRaw`
+          INSERT INTO "_tasks_tags" ("A", "B")
+          SELECT * FROM UNNEST(${tagLinks.map(([a]) => a)}::int[], ${tagLinks.map(([, b]) => b)}::int[])`,
+      ]);
+
+      overloadAssigneeStatuses += assigneeStatusRows.length;
+      overloadTagLinks += tagLinks.length;
+      console.log(`  - ${Math.min((chunkIndex + 1) * OVERLOAD_CHUNK_SIZE, overload.tasks)}/${overload.tasks} tasks`);
+    }
+
+    console.timeEnd('* Overload');
   }
 
   await Promise.all(
