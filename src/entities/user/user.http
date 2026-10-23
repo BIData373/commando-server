@@ -30,6 +30,18 @@ GET {{baseUrl}}/user
 
 ?? status == 200
 
+### Get current User
+GET {{baseUrl}}/user/me
+...headers
+
+?? status == 200
+
+### Mark current User as onboarded
+PATCH {{baseUrl}}/user/visit
+...headers
+
+?? status == 200
+
 ### Get User by id
 GET {{baseUrl}}/user/{{userId}}
 

@@ -34,11 +34,20 @@ export class PermissionService {
     const info = user.info as unknown as UserInfoDto
 
     return info.isBI
-      ? { user, workspaceId, type: PermissionType.MANAGER }
+      ? { user, workspaceId, type: PermissionType.MANAGER, hasEnteredWorkspace: true }
       : await this.prisma.permission.findUnique({
         where: { userId_workspaceId: { userId: user.id, workspaceId } },
         include: PermissionService.include
       });
+  }
+
+  async markEntered(user: User, workspaceId: number) {
+    await this.prisma.permission.updateMany({
+      where: { userId: user.id, workspaceId },
+      data: { hasEnteredWorkspace: true }
+    })
+
+    return await this.findOne(user, workspaceId)
   }
 
   async upsert({ upn, info, workspaceId, type }: UpsertPermissionDto) {
