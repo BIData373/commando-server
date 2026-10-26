@@ -25,6 +25,7 @@ model Assignee {
   archivedUserAssigneeTask ArchivedUserAssigneeTask[]
   users        User[]               @relation("assignee_users")
   taskStatuses AssigneeTaskStatus[]
+  assigneeGroups AssigneeGroup[] @relation("assignee_groups_assignees")
 
   @@map("assignees")
 }

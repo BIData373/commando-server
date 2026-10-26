@@ -16,6 +16,10 @@ model User {
   updatedAssignees Assignee[] @relation("assignee_updated_by")
   deletedAssignees Assignee[] @relation("assignee_deleted_by")
 
+  createdAssigneeGroups AssigneeGroup[] @relation("assignee_group_created_by")
+  updatedAssigneeGroups AssigneeGroup[] @relation("assignee_group_updated_by")
+  deletedAssigneeGroups AssigneeGroup[] @relation("assignee_group_deleted_by")
+
   createdAssigneeTaskStatuses AssigneeTaskStatus[] @relation("assignee_task_status_created_by")
   updatedAssigneeTaskStatuses AssigneeTaskStatus[] @relation("assignee_task_status_updated_by")
 
