@@ -15,7 +15,6 @@ export class UpdateAssigneeGroupDto extends IntersectionType(
   @IsOptional()
   @IsArray()
   @ArrayUnique()
-  @IsPositiveInt({ each: true })
   @EntityExists('assignee', {
     each: true,
     validateIf: ({ obj }) => !!obj?.context?.assigneeGroup?.id,

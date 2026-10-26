@@ -1,8 +1,3 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmptyString } from '../../../../common/decorators/is-not-empty-string.decorator';
+import { GetNameDto } from '../../../../common/dto/request/get-name.dto';
 
-export class GetAssigneeGroupFieldsDto {
-  @ApiProperty()
-  @IsNotEmptyString()
-  name: string;
-}
+export class GetAssigneeGroupFieldsDto extends GetNameDto { }
