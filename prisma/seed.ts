@@ -62,6 +62,8 @@ async function main() {
   await prisma.archivedUserAssigneeTask.deleteMany();
   await prisma.archivedWorkspaceAssigneeTask.deleteMany();
   await prisma.userView.deleteMany();
+  await prisma.userViewedTasks.deleteMany();
+  await prisma.userWorkspaceVisits.deleteMany();
   await prisma.workspaceRequest.deleteMany();
   await prisma.taskHistory.deleteMany();
   await prisma.message.deleteMany();
@@ -70,6 +72,7 @@ async function main() {
   await prisma.source.deleteMany();
   await prisma.tag.deleteMany();
   await prisma.permission.deleteMany();
+  await prisma.assigneeGroup.deleteMany();
   await prisma.assignee.deleteMany();
   await prisma.workspaceStatus.deleteMany();
   await prisma.workspace.deleteMany();
