@@ -91,6 +91,19 @@ COMPLETED COMPLETED
     }
   
 
+  "assignee_groups" {
+    Int id "🗝️"
+    String name 
+    Int workspace_id 
+    DateTime created_at 
+    DateTime updated_at 
+    DateTime deleted_at "❓"
+    Int created_by 
+    Int updated_by 
+    Int deleted_by "❓"
+    }
+  
+
   "assignee_task_statuses" {
     Int task_id 
     Int assignee_id 
@@ -282,6 +295,11 @@ COMPLETED COMPLETED
     "assignees" }o--|| users : "updatedBy"
     "assignees" }o--|o users : "deletedBy"
     "assignees" o{--}o "users" : ""
+    "assignees" o{--}o "assignee_groups" : ""
+    "assignee_groups" }o--|| workspaces : "workspace"
+    "assignee_groups" }o--|| users : "createdBy"
+    "assignee_groups" }o--|| users : "updatedBy"
+    "assignee_groups" }o--|o users : "deletedBy"
     "assignee_task_statuses" }o--|| users : "createdBy"
     "assignee_task_statuses" }o--|| users : "updatedBy"
     "assignee_task_statuses" }o--|| tasks : "task"

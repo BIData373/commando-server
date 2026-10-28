@@ -36,6 +36,7 @@ model Workspace {
   tasksHistory      TaskHistory[]
   sources           Source[]
   assignees         Assignee[]
+  assigneeGroups    AssigneeGroup[]
   userViews         UserView[]
 
   @@map("workspaces")

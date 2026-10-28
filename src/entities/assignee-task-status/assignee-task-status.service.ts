@@ -11,7 +11,7 @@ export class AssigneeTaskStatusService {
     status: true,
     createdBy: true,
     updatedBy: true,
-    task: { include: TaskService.baseInclude }
+    task: { include: TaskService.baseInclude() }
   }
 
   constructor(private readonly prisma: PrismaService) { }

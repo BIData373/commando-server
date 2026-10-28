@@ -2,11 +2,11 @@ import { Exclude, Transform, Type } from 'class-transformer';
 import { ExposeProperty } from '../../../../common/decorators/expose-property.decorator';
 import { IdMetaFieldsDto } from '../../../../common/dto/response/id-meta-fields.dto';
 import { DeadlineType, TaskCreationType } from '../../../../types/prisma';
+import { MessageDto } from '../../../message/dto/response/message.dto';
 import { SourceDto } from '../../../source/dto/response/source.dto';
 import { TagDto } from '../../../tag/dto/response/tag.dto';
-import { MessageDto } from '../../../message/dto/response/message.dto';
-import { TaskMessageCountPayload } from '../../types/tasks-payload.type';
 import { WorkspaceStatusDto } from '../../../workspace-status/dto/response/workspace-status.dto';
+import { TaskIncludePayload } from '../../task.service';
 
 @Exclude()
 export class TaskFieldsDto extends IdMetaFieldsDto {
@@ -57,7 +57,7 @@ export class TaskFieldsDto extends IdMetaFieldsDto {
   lastMessage: MessageDto;
 
   @ExposeProperty()
-  @Transform(({ obj }: { obj: TaskMessageCountPayload }) => obj?._count?.messages)
+  @Transform(({ obj }: { obj: TaskIncludePayload }) => obj?._count?.messages)
   messageCount: number
 
   @ExposeProperty()
