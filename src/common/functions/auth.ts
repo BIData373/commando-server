@@ -54,7 +54,6 @@ export function resolveUser(
 
     return {
       ...currentUser,
-      upn: 'yael',
       info: { upn: currentUser.upn, isBI },
     }
   }
