@@ -8,7 +8,7 @@ import { excludedLogHeaders } from './common/consts/headers';
 import { forbiddenExceptionFactory } from './common/functions/transform';
 import { BIGuard } from './common/guards/bi.guard';
 import { AddUserToContextInterceptor } from './common/interceptors/add-user-to-context.interceptor';
-import { CookieMiddleware } from './common/middleware/cookie.middleware';
+import { AuthMiddleware } from './common/middleware/auth.middleware';
 import { WritableQueryMiddleware } from './common/middleware/writable-query.middleware';
 import { PrismaModule } from './common/prisma.module';
 import { ArchivedUserAssigneeTaskModule } from './entities/archived-user-assignee-task/archived-user-assignee-task.module';
@@ -20,16 +20,18 @@ import { MessageModule } from './entities/message/message.module';
 import { PermissionModule } from './entities/permission/permission.module';
 import { PikudModule } from './entities/pikud/pikud.module';
 import { SourceModule } from './entities/source/source.module';
+import { ssoParamsRoute } from './entities/sso/sso.controller';
+import { SsoModule } from './entities/sso/sso.module';
 import { TagModule } from './entities/tag/tag.module';
 import { TaskHistoryModule } from './entities/task-history/task-history.module';
 import { TaskModule } from './entities/task/task.module';
 import { UserViewModule } from './entities/user-views/user-view.module';
 import { UserModule } from './entities/user/user.module';
+import { WorkspaceRequestsModule } from './entities/workspace-requests/workspace-requests.module';
 import { WorkspaceStatusModule } from './entities/workspace-status/workspace-status.module';
 import { WorkspaceModule } from './entities/workspace/workspace.module';
 import { SocketModule } from './socket/socket.module';
 import { TaskRunnerModule } from './task-runner/task-runner.module';
-import { WorkspaceRequestsModule } from './entities/workspace-requests/workspace-requests.module';
 
 // FIX Move to env
 export const openApiRoute = 'open-api'
@@ -75,6 +77,7 @@ export const openApiRoute = 'open-api'
     ArchivedUserAssigneeTaskModule,
     ArchivedWorkspaceAssigneeModule,
     UserViewModule,
+    SsoModule,
   ],
   providers: [
     BIGuard,
@@ -97,8 +100,8 @@ export const openApiRoute = 'open-api'
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer): void {
     consumer
-      .apply(WritableQueryMiddleware, CookieMiddleware)
-      .exclude(openApiRoute, `${openApiRoute}/(.*)`)
+      .apply(WritableQueryMiddleware, AuthMiddleware)
+      .exclude(openApiRoute, `${openApiRoute}/(.*)`, ssoParamsRoute)
       .forRoutes('*');
   }
 }

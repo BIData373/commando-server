@@ -239,6 +239,10 @@ Always export the service. Register the module in `AppModule`'s `imports`.
 * Booleans are normalized at the const (`=== 'true'`), so consumers get real booleans.
 * Document new vars in `config/dev/.env.example`.
 
+### SSO
+
+Login flows (mobile + desktop), the Keycloak dev setup and what's built so far are in `SSO.md`.
+
 ### HTTP Test Files
 
 Each entity folder has a `[entity].http` in httpYac format:
