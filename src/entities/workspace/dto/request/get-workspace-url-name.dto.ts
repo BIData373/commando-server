@@ -8,10 +8,10 @@ import { IUserContext } from "../../../user/interfaces/user-context.interface";
 import { WorkspaceError } from "../../enum/workspace-error";
 import { IWorkspaceContext } from "../../interfaces/workspace-context.interface";
 import { WorkspaceService } from "../../workspace.service";
+import { IContext } from "../../../../common/interfaces/context.interface";
 
-interface IUrlName {
+interface IUrlName extends IContext<IUserContext> {
   urlName: string
-  context: IUserContext
 }
 
 export function IsWorkspaceUrlName(
