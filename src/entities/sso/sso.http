@@ -1,0 +1,6 @@
+# @import ../../../global.http
+
+### Get SSO Params — public, no cookie needed
+GET {{baseUrl}}/sso/params
+
+?? status == 200

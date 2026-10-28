@@ -1,16 +1,29 @@
 import { UnauthorizedException } from "@nestjs/common";
 import { JwtPayload, verify } from "jsonwebtoken";
-import { admin } from "../consts/admin";
-import { ssoClientSecret, ssoEnabled, staticToken } from "../consts/env";
-import { isBiHeader, requestUsernameHeader, staticTokenHeader } from "../consts/headers";
+import { IncomingHttpHeaders } from "node:http";
 import { CreateUserDto } from "../../entities/user/dto/request/create-user.dto";
 import { GetUserInfoDto } from "../../entities/user/dto/request/get-user-info.dto";
-import { IncomingHttpHeaders } from "node:http";
+import { admin } from "../consts/admin";
+import { ssoClientSecret, ssoEnabled, staticToken } from "../consts/env";
+import { bearerPrefix, isBiHeader, requestUsernameHeader, staticTokenHeader } from "../consts/headers";
 
-export function verifySsoUser(ssoUser: string) {
+export function extractSsoToken(
+  authorization: string | undefined,
+  ssoUserCookie: string | undefined,
+) {
+  if (ssoUserCookie) {
+    return ssoUserCookie
+  }
+
+  if (authorization && bearerPrefix.test(authorization)) {
+    return authorization.replace(bearerPrefix, '')
+  }
+}
+
+export function verifySsoToken(token: string) {
   try {
     const result = verify(
-      ssoUser,
+      token,
       ssoClientSecret!,
       { algorithms: ['HS256'] }
     ) as JwtPayload
@@ -27,7 +40,7 @@ export function verifySsoUser(ssoUser: string) {
 
 export function resolveUser(
   headers: IncomingHttpHeaders,
-  ssoUser: string | undefined,
+  ssoToken: string | undefined,
 ): CreateUserDto {
   const hasStaticToken = (
     staticToken &&
@@ -41,10 +54,11 @@ export function resolveUser(
 
     return {
       ...currentUser,
+      upn: 'yael',
       info: { upn: currentUser.upn, isBI },
     }
   }
 
-  const info = verifySsoUser(ssoUser!)
+  const info = verifySsoToken(ssoToken!)
   return { upn: info.upn, info }
 }
