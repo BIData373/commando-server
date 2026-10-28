@@ -21,7 +21,7 @@ export const ssoClientSecret = process.env.SSO_CLIENT_SECRET
 export const ssoCodeIssuer = process.env.SSO_CODE_ISSUER
 export const ssoClientId = process.env.SSO_CLIENT_ID
 export const ssoRedirectUri = process.env.SSO_REDIRECT_URI
-export const ssoSiteId = process.env.SSO_SITE_ID
+export const ssoSite = process.env.SSO_SITE
 
 export const staticToken = process.env.STATIC_TOKEN
 

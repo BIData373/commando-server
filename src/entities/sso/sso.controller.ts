@@ -1,6 +1,6 @@
 import { Controller, Get } from '@nestjs/common';
 import { ApiOperation } from '@nestjs/swagger';
-import { ssoClientId, ssoRedirectUri, ssoSiteId } from '../../common/consts/env';
+import { ssoClientId, ssoRedirectUri, ssoSite } from '../../common/consts/env';
 
 export const ssoParamsRoute = 'sso/params'
 
@@ -10,7 +10,7 @@ export class SsoController {
   @Get(ssoParamsRoute)
   async getParams() {
     return {
-      site: ssoSiteId,
+      site: ssoSite,
       client_id: ssoClientId,
       redirect_uri: ssoRedirectUri,
       response_type: 'code',

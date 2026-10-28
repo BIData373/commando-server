@@ -22,7 +22,7 @@ cookie, falling back to an `Authorization: Bearer <token>` header.
 | `SSO_CODE_ISSUER` | Issuer URL, e.g. `http://localhost:8180/realms/vector`. Empty = SSO server signs a static mock user |
 | `SSO_CLIENT_ID` | OIDC client id |
 | `SSO_REDIRECT_URI` | `redirect_uri` handed out by `/sso/params`: the frontend, which gets `?code&state&session_state&iss`. The desktop callback is the SSO server's own `/sso/callback` |
-| `SSO_SITE_ID` | `site` returned by `/sso/params` |
+| `SSO_SITE` | `site` returned by `/sso/params` |
 
 ### Token claims
 
