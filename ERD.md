@@ -219,6 +219,7 @@ COMPLETED COMPLETED
     String upn 
     DateTime personal_area_entered_at "❓"
     Json info "❓"
+    Boolean has_onboarded 
     }
   
 

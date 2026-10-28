@@ -17,14 +17,18 @@ export class WorkspaceService {
     private readonly prisma: PrismaService
   ) { }
 
-  private permissionsInclude(userId: number): Prisma.WorkspaceInclude {
+  static permissionsInclude(userId: number) {
     return {
       ...WorkspaceService.include,
       permissions: {
         where: { userId },
         select: { type: true }
+      },
+      userWorkspaceVisits: {
+        where: { userId },
+        select: { userId: true }
       }
-    };
+    } satisfies Prisma.WorkspaceInclude
   }
 
   private sortByPermission<T extends { permissions: { type: string }[] }>(workspaces: T[]): T[] {
@@ -87,7 +91,7 @@ export class WorkspaceService {
         deletedAt: null,
         ...extraWhere
       },
-      include: this.permissionsInclude(userId)
+      include: WorkspaceService.permissionsInclude(userId)
     });
 
     return this.sortByPermission(workspaces);
@@ -103,7 +107,7 @@ export class WorkspaceService {
           },
         },
       },
-      include: this.permissionsInclude(userId)
+      include: WorkspaceService.permissionsInclude(userId)
     });
 
     return this.sortByPermission(workspaces);

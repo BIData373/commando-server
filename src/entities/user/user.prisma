@@ -6,6 +6,8 @@ model User {
   /// [UserInfo]
   info Json?
 
+  hasOnboarded Boolean @default(false) @map("has_onboarded")
+
   userWorkspaceVisits UserWorkspaceVisits[]
   userViewedTasks UserViewedTasks[]
   archivedUserAssigneeTask ArchivedUserAssigneeTask[]
