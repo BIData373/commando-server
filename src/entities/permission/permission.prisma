@@ -3,8 +3,6 @@ model Permission {
   workspaceId Int            @map("workspace_id")
   type        PermissionType
 
-  hasEnteredWorkspace Boolean @default(false) @map("has_entered_workspace")
-
   user      User      @relation(fields: [userId], references: [id])
   workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 

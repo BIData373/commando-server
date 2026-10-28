@@ -2,7 +2,7 @@ import { Body, Controller, Delete, Get, Patch, Query, Req } from '@nestjs/common
 import { ApiBody, ApiOkResponse, ApiOperation, ApiQuery } from '@nestjs/swagger';
 import { TransformPlainToInstance } from 'class-transformer';
 import type { Request } from 'express';
-import { GetManagerWorkspaceIdFieldDto, GetWorkspaceIdFieldDto } from '../workspace/dto/request/get-workspace-id-field.dto';
+import { GetWorkspaceIdFieldDto } from '../workspace/dto/request/get-workspace-id-field.dto';
 import { DeletePermissionDto } from './dto/request/delete-permission.dto';
 import { UpsertPermissionDto } from './dto/request/upsert-permission.dto';
 import { PermissionDto } from './dto/response/permission.dto';
@@ -33,18 +33,6 @@ export class PermissionController {
     @Query() { workspaceId }: GetWorkspaceIdFieldDto
   ) {
     return await this.permissionService.findOne(user, workspaceId);
-  }
-
-  @ApiOperation({ operationId: 'markMyWorkspaceVisit' })
-  @ApiQuery({ type: GetManagerWorkspaceIdFieldDto })
-  @Patch('visit')
-  @ApiOkResponse({ type: PermissionDto })
-  @TransformPlainToInstance(PermissionDto)
-  async markEntered(
-    @Req() { user }: Request,
-    @Query() { workspaceId }: GetManagerWorkspaceIdFieldDto
-  ) {
-    return await this.permissionService.markEntered(user, workspaceId);
   }
 
   @ApiOperation({ operationId: 'upsertPermission' })

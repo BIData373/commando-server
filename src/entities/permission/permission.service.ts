@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { admin } from '../../common/consts/admin';
 import { PrismaService } from '../../common/prisma.service';
 import { PermissionType, Prisma, User } from '../../types/prisma';
+import { UserWorkspaceVisitsService } from '../user-workspace-visits/user-workspace-visits.service';
 import { UserInfoDto } from '../user/dto/response/user-info.dto';
 import { UserService } from '../user/user.service';
 import { UpsertPermissionDto } from './dto/request/upsert-permission.dto';
@@ -13,7 +14,10 @@ export class PermissionService {
     user: true
   }
 
-  constructor(private readonly prisma: PrismaService) { }
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly userWorkspaceVisitsService: UserWorkspaceVisitsService
+  ) { }
 
   async hasPermission(userId: number, workspaceId: number, types: PermissionType[]) {
     const count = await this.prisma.permission.count({
@@ -24,10 +28,18 @@ export class PermissionService {
   }
 
   async findInWorkspace(workspaceId: number) {
-    return await this.prisma.permission.findMany({
-      where: { workspaceId },
-      include: PermissionService.include
-    });
+    const [permissions, visitedUserIds] = await Promise.all([
+      this.prisma.permission.findMany({
+        where: { workspaceId },
+        include: PermissionService.include
+      }),
+      this.userWorkspaceVisitsService.findVisitedUserIds(workspaceId)
+    ])
+
+    return permissions.map(permission => ({
+      ...permission,
+      hasEnteredWorkspace: visitedUserIds.has(permission.userId)
+    }))
   }
 
   async findOne(user: User, workspaceId: number) {
@@ -35,19 +47,10 @@ export class PermissionService {
 
     return info.isBI
       ? { user, workspaceId, type: PermissionType.MANAGER, hasEnteredWorkspace: true }
-      : await this.prisma.permission.findUnique({
+      : await this.withHasEntered(await this.prisma.permission.findUnique({
         where: { userId_workspaceId: { userId: user.id, workspaceId } },
         include: PermissionService.include
-      });
-  }
-
-  async markEntered(user: User, workspaceId: number) {
-    await this.prisma.permission.updateMany({
-      where: { userId: user.id, workspaceId },
-      data: { hasEnteredWorkspace: true }
-    })
-
-    return await this.findOne(user, workspaceId)
+      }));
   }
 
   async upsert({ upn, info, workspaceId, type }: UpsertPermissionDto) {
@@ -60,13 +63,20 @@ export class PermissionService {
         update: { type },
         include: PermissionService.include
       });
-    })
+    }).then(permission => this.withHasEntered(permission))
   }
 
   async remove(userId: number, workspaceId: number) {
-    return await this.prisma.permission.delete({
+    return await this.withHasEntered(await this.prisma.permission.delete({
       where: { userId_workspaceId: { userId, workspaceId } },
       include: PermissionService.include
-    });
+    }));
+  }
+
+  private async withHasEntered<T extends { userId: number, workspaceId: number }>(permission: T | null) {
+    return permission && {
+      ...permission,
+      hasEnteredWorkspace: await this.userWorkspaceVisitsService.hasVisited(permission.userId, permission.workspaceId)
+    }
   }
 }

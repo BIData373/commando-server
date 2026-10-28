@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { keyBy, mapValues, maxBy, omit } from 'lodash'
-import { chatUrl, messageRelayUsername, notificationTemplate, vectorUrl } from '../../common/consts/env'
+import { chatUrl, messageRelayUsername, invalidationDays, notificationTemplate, vectorUrl } from '../../common/consts/env'
 import { renderTemplate } from '../../common/functions/template'
 import { PrismaService } from '../../common/prisma.service'
 import { ArchivedUserAssigneeTask, ArchivedWorkspaceAssigneeTask, PermissionType, Prisma, Task, User } from '../../types/prisma'
@@ -12,6 +12,8 @@ import { WorkspaceService } from '../workspace/workspace.service'
 import { CreateTaskDto } from './dto/request/create-task.dto'
 import { UpdateTaskDto } from './dto/request/update-task.dto'
 import { taskAssigneeStatusesCreateArgs } from './functions/task-args'
+import dayjs from 'dayjs';
+
 
 type AssigneeStatusInclude = {
   include: { assignee: { include: { users: true } }; status: true; createdBy: true; updatedBy: true }
@@ -19,7 +21,9 @@ type AssigneeStatusInclude = {
 
 type AssigneeStatusEntity = Prisma.AssigneeTaskStatusGetPayload<AssigneeStatusInclude>
 
-type TaskIncludePayload = Prisma.TaskGetPayload<{
+type WorkspaceInclude = { include: { userWorkspaceVisits: true } }
+
+export type TaskIncludePayload = Prisma.TaskGetPayload<{
   include: {
     assigneeStatuses: AssigneeStatusInclude,
     updatedBy: true,
@@ -29,14 +33,23 @@ type TaskIncludePayload = Prisma.TaskGetPayload<{
     status: true,
     archivedWorkspaceAssigneeTask: true,
     archivedUserAssigneeTask: true,
+    workspace: WorkspaceInclude,
+    userViewedTasks: true,
     _count: {
       select: {
-        assigneeStatuses: true
+        assigneeStatuses: true,
+        messages: true
       }
     }
   }
 }>
 
+type TaskLatestUpdatePayload = Prisma.TaskGetPayload<{
+  include: {
+    assigneeStatuses: AssigneeStatusInclude,
+    updatedBy: true
+  }
+}>
 
 @Injectable()
 export class TaskService {
@@ -54,93 +67,96 @@ export class TaskService {
     createdAt: 'desc'
   } satisfies Prisma.TaskOrderByWithRelationInput;
 
-  static readonly includeMessageCount: Prisma.TaskInclude = {
-    _count: {
-      select: {
-        messages: {
-          where: {
-            deletedAt: null
-          },
-        },
-      },
-    },
-  }
-
-  constructor(
-    private readonly prisma: PrismaService,
-    private readonly messageRelayService: MessageRelayService
-  ) { }
-  static readonly baseInclude = {
-    tags: true,
-    source: {
-      where: { deletedAt: null },
-      include: { tags: true }
-    },
-    messages: {
-      where: { deletedAt: null },
-      include: {
-        user: true,
-      },
-      orderBy: TaskService.orderBy,
-      take: 1,
-    },
-    ...TaskService.includeMessageCount,
-    createdBy: true,
-    updatedBy: true,
-    deletedBy: true,
-    status: true,
-    assigneeStatuses: {
-      where: {
-        assignee: {
-          deletedAt: null,
-        }
-      },
-      orderBy: { assigneeId: 'asc' },
-      include: {
-        assignee: { include: { users: true } },
-        status: true,
-        createdBy: true,
-        updatedBy: true
-      }
-    }
-  } satisfies Prisma.TaskInclude
-
-  // The task as a whole was last touched by whichever came last: an edit to the task itself or to one of its assignee statuses
-  static withLatestUpdate<TTask extends TaskIncludePayload>(task: TTask) {
-    const { updatedAt, updatedBy } = maxBy([task, ...task.assigneeStatuses], 'updatedAt')!
-
-    return { ...task, updatedAt, updatedBy }
-  }
-
-  static withWorkspaceInclude(userId?: number) {
+  // Every count goes through one _count, so ask for them all here: two spread _counts keep only the last.
+  // userId counts the statuses whose assignee includes that user
+  static includeCounts({ messages = false, userId }: { messages?: boolean; userId?: number }) {
     return {
-      ...TaskService.baseInclude,
-      workspace: {
-        include: {
-          permissions: userId
-            ? { where: { userId } }
-            : true
-        }
-      },
       _count: {
         select: {
-          assigneeStatuses: {
-            where: {
-              assignee: {
-                users: { some: { id: userId } }
-              }
-            }
+          messages: messages && { where: { deletedAt: null } },
+          assigneeStatuses: userId !== undefined && {
+            where: { assignee: { users: { some: { id: userId } } } }
           }
         }
       }
     } satisfies Prisma.TaskInclude
   }
 
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly messageRelayService: MessageRelayService
+  ) { }
+
+  static baseInclude(userId?: number) {
+    return {
+      tags: true,
+      source: {
+        where: { deletedAt: null },
+        include: { tags: true }
+      },
+      messages: {
+        where: { deletedAt: null },
+        include: {
+          user: true,
+        },
+        orderBy: TaskService.orderBy,
+        take: 1,
+      },
+      ...TaskService.includeCounts({ messages: true, userId }),
+      createdBy: true,
+      updatedBy: true,
+      status: true,
+      assigneeStatuses: {
+        where: {
+          assignee: {
+            deletedAt: null,
+          }
+        },
+        orderBy: { assigneeId: 'asc' },
+        include: {
+          assignee: { include: { users: true } },
+          status: true,
+          createdBy: true,
+          updatedBy: true
+        }
+      }
+    } satisfies Prisma.TaskInclude
+  }
+
+  // The task as a whole was last touched by whichever came last: an edit to the task itself or to one of its assignee statuses
+  static withLatestUpdate<TTask extends TaskLatestUpdatePayload>(task: TTask) {
+    const { updatedAt, updatedBy } = maxBy([task, ...task.assigneeStatuses], 'updatedAt')!
+
+    return { ...task, updatedAt, updatedBy }
+  }
+
+  static withWorkspaceInclude(userId?: number, workspaceId?: number) {
+    return {
+      ...TaskService.baseInclude(userId),
+      workspace: {
+        include: {
+          ...(userId && { userWorkspaceVisits: { where: { userId, workspaceId } } }),
+          permissions: userId
+            ? { where: { userId } }
+            : true
+        }
+      },
+      userViewedTasks: { where: { userId } }
+    } satisfies Prisma.TaskInclude
+  }
+
   static withArchivedInclude(userId: number) {
     return {
-      ...TaskService.baseInclude,
+      ...TaskService.baseInclude(userId),
       archivedWorkspaceAssigneeTask: true,
-      archivedUserAssigneeTask: { where: { userId } },
+      archivedUserAssigneeTask: { where: { userId } }
+    } satisfies Prisma.TaskInclude
+  }
+
+  static withWorkspaceAndArchivedInclude(userId: number) {
+    return {
+      ...TaskService.withWorkspaceInclude(userId),
+      ...TaskService.withArchivedInclude(userId)
     } satisfies Prisma.TaskInclude
   }
 
@@ -224,7 +240,7 @@ export class TaskService {
     const { assigneeStatuses, messages, status, ...rest } = TaskService.withLatestUpdate(originalTask)
 
     const workspaceArchiveMap = TaskService.getArchivedIdsMap(originalTask.archivedWorkspaceAssigneeTask)
-    const personalArchiveMap = TaskService.getArchivedIdsMap(originalTask.archivedWorkspaceAssigneeTask)
+    const personalArchiveMap = TaskService.getArchivedIdsMap(originalTask.archivedUserAssigneeTask)
 
     const isWorkspace = archiveLocation === 'workspace'
     const archivedIds = isWorkspace ? workspaceArchiveMap : personalArchiveMap
@@ -263,7 +279,7 @@ export class TaskService {
         )
       ),
       workspace: TaskService.formatTaskWorkspace(workspace, user),
-      lastMessage: messages[0]
+      ...TaskService.formatUserViewedTask(originalTask, user, isAssigned),
     }]
   }
 
@@ -274,7 +290,7 @@ export class TaskService {
     recipients: string[]
   ) {
     const title = `קיבלת הנחיה חדשה מ${workspace.title}`
-    const taskUrl = `${vectorUrl}/personal/task/${taskId}`
+    const taskUrl = `${vectorUrl}/personal/tasks/${taskId}`
 
     if (workspace.chatNotification) {
       const chatMessage = `ההנחיה: ${taskName}\n מעבר להנחיה: ${taskUrl}`
@@ -345,7 +361,7 @@ export class TaskService {
             tags: tagsConnectOrCreateArgs(tags, workspaceId, userId)
           })
         },
-        include: TaskService.withWorkspaceInclude(userId)
+        include: TaskService.withWorkspaceInclude(userId, workspaceId)
       })
 
       await WorkspaceService.bumpSerialIdsTx(tx, workspaceId, 1)
@@ -390,7 +406,10 @@ export class TaskService {
         workspaceId: workspace.id,
         ...TaskService.commonWhere
       },
-      include: TaskService.withArchivedInclude(user.id),
+      include: {
+        ...TaskService.withArchivedInclude(user.id),
+        ...TaskService.withWorkspaceInclude(user.id, workspace.id),
+      },
       orderBy: TaskService.orderBy
     })
   }
@@ -413,6 +432,35 @@ export class TaskService {
 
   static formatTaskRowId(taskId: number, assigneeId?: number) {
     return `${taskId}${TaskService.TASK_ROW_ID_SEPARATOR}${assigneeId}`
+  }
+
+  static isTimePassed(createdAt: Date) {
+    const now = dayjs()
+    return now.diff(dayjs(createdAt), 'days') >= invalidationDays
+  }
+
+  static formatUserViewedTask(
+    { messages, userViewedTasks, workspace, createdAt }: TaskIncludePayload,
+    user: User,
+    isAssigned: boolean
+  ) {
+
+    const [latestWorkspaceEntry] = workspace.userWorkspaceVisits
+    const [viewedTask] = userViewedTasks
+    const [lastMessage] = messages
+
+    const isTaskOpened = viewedTask?.viewedAt != null
+
+    const viewedMessages = lastMessage == null || TaskService.isTimePassed(lastMessage.createdAt) || (
+      isTaskOpened &&
+      lastMessage.createdAt <= viewedTask.viewedAt
+    )
+
+    const viewedInWorkspaceTable = !!latestWorkspaceEntry && createdAt <= latestWorkspaceEntry.visitedAt
+    const viewedInPersonalTable = isAssigned && user?.personalAreaEnteredAt !== null && createdAt <= user.personalAreaEnteredAt
+    const viewedInTable = TaskService.isTimePassed(createdAt) || viewedInWorkspaceTable || viewedInPersonalTable || isTaskOpened
+
+    return { viewedInTable, viewedMessages, lastMessage }
   }
 
   static extractTaskToRows<TTask extends TaskIncludePayload>(
@@ -439,7 +487,7 @@ export class TaskService {
 
     const fields = {
       ...taskFields,
-      lastMessage: messages[0]
+      ...TaskService.formatUserViewedTask(task, user, isAssigned)
     }
 
     if (isWorkspace && assigneeStatuses.length === 0) {
@@ -513,19 +561,22 @@ export class TaskService {
     ).flat()
   }
 
-  async findBySource(sourceId: number, userId: number, isArchived?: boolean) {
+  async findBySource(sourceId: number, userId: number, workspaceId?: number, isArchived?: boolean) {
     return await this.prisma.task.findMany({
       where: {
         sourceId,
         deletedAt: null
       },
-      include: TaskService.withArchivedInclude(userId),
+      include: {
+        ...TaskService.withArchivedInclude(userId),
+        ...TaskService.withWorkspaceInclude(userId, workspaceId)
+      },
       orderBy: { id: 'asc' }
     })
   }
 
   async findFormattedBySource(sourceId: number, workspace: WorkspaceWithPermissions, user: User, isArchived?: boolean) {
-    const tasks = await this.findBySource(sourceId, user.id, isArchived)
+    const tasks = await this.findBySource(sourceId, user.id, workspace.id, isArchived)
 
     return tasks.flatMap(task => TaskService.formatAdditionalTaskFields(
       task,
@@ -549,10 +600,7 @@ export class TaskService {
         },
         ...TaskService.commonWhere
       },
-      include: {
-        ...TaskService.withArchivedInclude(user.id),
-        ...TaskService.withWorkspaceInclude(user.id)
-      },
+      include: TaskService.withWorkspaceAndArchivedInclude(user.id),
       orderBy: TaskService.orderBy
     })
   }
@@ -589,10 +637,7 @@ export class TaskService {
   async findOne(id: number, user: User) {
     const task = await this.prisma.task.findUnique({
       where: { id, deletedAt: null },
-      include: {
-        ...TaskService.withArchivedInclude(user.id),
-        ...TaskService.withWorkspaceInclude(user.id)
-      }
+      include: TaskService.withWorkspaceAndArchivedInclude(user.id)
     })
 
     if (!task) {
@@ -699,7 +744,7 @@ export class TaskService {
           }),
           updatedById
         },
-        include: TaskService.withWorkspaceInclude(updatedById)
+        include: TaskService.withWorkspaceInclude(updatedById, workspaceId)
       })
 
       return TaskService.withLatestUpdate(updatedTask)
@@ -710,7 +755,10 @@ export class TaskService {
     return await this.prisma.task.update({
       where: { id },
       data: { deletedAt: new Date(), deletedById, updatedById: deletedById },
-      include: TaskService.withWorkspaceInclude(deletedById)
+      include: {
+        ...TaskService.withWorkspaceInclude(deletedById),
+        deletedBy: true
+      }
     })
   }
 }

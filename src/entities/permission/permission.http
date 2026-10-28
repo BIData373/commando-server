@@ -12,18 +12,6 @@ GET {{baseUrl}}/permission/me?workspaceId={{workspaceId}}
 
 ?? status == 200
 
-### Mark my first visit to the Workspace
-PATCH {{baseUrl}}/permission/visit?workspaceId={{workspaceId}}
-...headers
-
-?? status == 200
-
-### Mark my first visit — not a manager (expect 403)
-PATCH {{baseUrl}}/permission/visit?workspaceId=99999
-...headers
-
-?? status == 400
-
 ### Update Permission type
 PATCH {{baseUrl}}/permission
 ...headers

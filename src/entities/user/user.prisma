@@ -1,12 +1,15 @@
 model User {
   id  Int    @id @default(autoincrement())
   upn String @unique
+  personalAreaEnteredAt DateTime? @map("personal_area_entered_at")
 
   /// [UserInfo]
   info Json?
 
   hasOnboarded Boolean @default(false) @map("has_onboarded")
 
+  userWorkspaceVisits UserWorkspaceVisits[]
+  userViewedTasks UserViewedTasks[]
   archivedUserAssigneeTask ArchivedUserAssigneeTask[]
   assignees   Assignee[]    @relation("assignee_users")
   permissions Permission[]
@@ -17,6 +20,10 @@ model User {
   createdAssignees Assignee[] @relation("assignee_created_by")
   updatedAssignees Assignee[] @relation("assignee_updated_by")
   deletedAssignees Assignee[] @relation("assignee_deleted_by")
+
+  createdAssigneeGroups AssigneeGroup[] @relation("assignee_group_created_by")
+  updatedAssigneeGroups AssigneeGroup[] @relation("assignee_group_updated_by")
+  deletedAssigneeGroups AssigneeGroup[] @relation("assignee_group_deleted_by")
 
   createdAssigneeTaskStatuses AssigneeTaskStatus[] @relation("assignee_task_status_created_by")
   updatedAssigneeTaskStatuses AssigneeTaskStatus[] @relation("assignee_task_status_updated_by")

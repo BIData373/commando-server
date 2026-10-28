@@ -1,0 +1,41 @@
+import { Injectable } from '@nestjs/common';
+import { PrismaService } from '../../common/prisma.service';
+
+@Injectable()
+export class UserWorkspaceVisitsService {
+  constructor(private readonly prisma: PrismaService) { }
+
+  async updateUserVisit(userId: number, workspaceId?: number) {
+    const now = new Date()
+
+    if (workspaceId) {
+      await this.prisma.userWorkspaceVisits.upsert({
+        where: { userId_workspaceId: { userId, workspaceId } },
+        create: { userId, workspaceId },
+        update: { visitedAt: now },
+      })
+    } else {
+      await this.prisma.user.update({
+        where: { id: userId },
+        data: { personalAreaEnteredAt: now }
+      })
+    }
+  }
+
+  async hasVisited(userId: number, workspaceId: number) {
+    const count = await this.prisma.userWorkspaceVisits.count({
+      where: { userId, workspaceId }
+    })
+
+    return count > 0
+  }
+
+  async findVisitedUserIds(workspaceId: number) {
+    const visits = await this.prisma.userWorkspaceVisits.findMany({
+      where: { workspaceId },
+      select: { userId: true }
+    })
+
+    return new Set(visits.map(({ userId }) => userId))
+  }
+}
