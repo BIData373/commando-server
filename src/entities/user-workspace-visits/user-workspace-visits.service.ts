@@ -21,21 +21,4 @@ export class UserWorkspaceVisitsService {
       })
     }
   }
-
-  async hasVisited(userId: number, workspaceId: number) {
-    const count = await this.prisma.userWorkspaceVisits.count({
-      where: { userId, workspaceId }
-    })
-
-    return count > 0
-  }
-
-  async findVisitedUserIds(workspaceId: number) {
-    const visits = await this.prisma.userWorkspaceVisits.findMany({
-      where: { workspaceId },
-      select: { userId: true }
-    })
-
-    return new Set(visits.map(({ userId }) => userId))
-  }
 }

@@ -14,7 +14,4 @@ export class PermissionDto {
 
   @ExposeProperty({ enumName: 'PermissionType', enum: PermissionType })
   type: PermissionType;
-
-  @ExposeProperty()
-  hasEnteredWorkspace: boolean;
 }

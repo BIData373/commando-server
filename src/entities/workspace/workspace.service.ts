@@ -23,6 +23,10 @@ export class WorkspaceService {
       permissions: {
         where: { userId },
         select: { type: true }
+      },
+      userWorkspaceVisits: {
+        where: { userId },
+        select: { userId: true }
       }
     };
   }
