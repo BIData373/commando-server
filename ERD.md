@@ -217,7 +217,15 @@ COMPLETED COMPLETED
   "users" {
     Int id "🗝️"
     String upn 
+    DateTime personal_area_entered_at "❓"
     Json info "❓"
+    }
+  
+
+  "user_viewed_tasks" {
+    Int user_id 
+    Int task_id 
+    DateTime viewed_at 
     }
   
 
@@ -226,6 +234,13 @@ COMPLETED COMPLETED
     Int user_id 
     Int workspace_id "❓"
     Json view 
+    }
+  
+
+  "user_workspace_visits" {
+    Int user_id 
+    Int workspace_id 
+    DateTime visited_at 
     }
   
 
@@ -323,8 +338,12 @@ COMPLETED COMPLETED
     "tasks_history" }o--|| tasks : "task"
     "tasks_history" }o--|| workspaces : "workspace"
     "tasks_history" }o--|| users : "user"
+    "user_viewed_tasks" }o--|| users : "user"
+    "user_viewed_tasks" }o--|| tasks : "task"
     "user_views" }o--|| users : "user"
     "user_views" }o--|o workspaces : "workspace"
+    "user_workspace_visits" }o--|| users : "user"
+    "user_workspace_visits" }o--|| workspaces : "workspace"
     "workspaces" }o--|| users : "createdBy"
     "workspaces" }o--|| users : "updatedBy"
     "workspaces" }o--|o users : "deletedBy"

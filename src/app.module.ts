@@ -26,6 +26,8 @@ import { TagModule } from './entities/tag/tag.module';
 import { TaskHistoryModule } from './entities/task-history/task-history.module';
 import { TaskModule } from './entities/task/task.module';
 import { UserViewModule } from './entities/user-views/user-view.module';
+import { UserViewedTasksModule } from './entities/user-viewed-tasks/user-viewed-tasks.module';
+import { UserWorkspaceVisitsModule } from './entities/user-workspace-visits/user-workspace-visits.module';
 import { UserModule } from './entities/user/user.module';
 import { WorkspaceRequestsModule } from './entities/workspace-requests/workspace-requests.module';
 import { WorkspaceStatusModule } from './entities/workspace-status/workspace-status.module';
@@ -77,6 +79,8 @@ export const openApiRoute = 'open-api'
     ArchivedUserAssigneeTaskModule,
     ArchivedWorkspaceAssigneeModule,
     UserViewModule,
+    UserViewedTasksModule,
+    UserWorkspaceVisitsModule,
     SsoModule,
   ],
   providers: [
