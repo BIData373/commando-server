@@ -57,11 +57,11 @@ export class UserController {
     return user;
   }
 
-  @ApiOperation({ operationId: 'markMeOnboarded' })
-  @Patch('visit')
+  @ApiOperation({ operationId: 'completeOnboarding' })
+  @Patch('complete-onboarding')
   @ApiOkResponse({ type: UserDto })
   @TransformPlainToInstance(UserDto)
-  async markOnboarded(
+  async completeOnboarding(
     @Req() { user }: Request
   ) {
     return await this.userService.markOnboarded(user.id);

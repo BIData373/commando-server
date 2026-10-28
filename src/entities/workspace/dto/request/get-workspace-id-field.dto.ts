@@ -59,11 +59,6 @@ export function GetPermittedWorkspaceIdFieldDto(type: PermissionType) {
             where: {
               userId: obj.context.user.id
             }
-          },
-          userWorkspaceVisits: {
-            where: {
-              userId: obj.context.user.id
-            }
           }
         }
 
