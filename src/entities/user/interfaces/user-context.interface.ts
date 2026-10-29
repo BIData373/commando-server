@@ -1,5 +1,5 @@
-import { UserDto } from "../dto/response/user.dto";
+import { CurrentUserDto } from "../dto/response/current-user.dto";
 
 export interface IUserContext {
-    user: UserDto
+    user: CurrentUserDto
 }

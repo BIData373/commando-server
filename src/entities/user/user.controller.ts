@@ -7,6 +7,7 @@ import { CreateUserDto } from './dto/request/create-user.dto';
 import { GetSearchDto } from './dto/request/get-search.dto';
 import { GetUserIdDto } from './dto/request/get-user-id.dto';
 import { UpdateUserDto } from './dto/request/update-user.dto';
+import { CurrentUserDto } from './dto/response/current-user.dto';
 import { MirageUserDto } from './dto/response/mirage-user.dto';
 import { UserDto } from './dto/response/user.dto';
 import { UserService } from './user.service';
@@ -49,8 +50,8 @@ export class UserController {
 
   @ApiOperation({ operationId: 'getMe' })
   @Get('me')
-  @ApiOkResponse({ type: UserDto })
-  @TransformPlainToInstance(UserDto)
+  @ApiOkResponse({ type: CurrentUserDto })
+  @TransformPlainToInstance(CurrentUserDto)
   async findMe(
     @Req() { user }: Request
   ) {
@@ -59,8 +60,8 @@ export class UserController {
 
   @ApiOperation({ operationId: 'completeOnboarding' })
   @Patch('complete-onboarding')
-  @ApiOkResponse({ type: UserDto })
-  @TransformPlainToInstance(UserDto)
+  @ApiOkResponse({ type: CurrentUserDto })
+  @TransformPlainToInstance(CurrentUserDto)
   async completeOnboarding(
     @Req() { user }: Request
   ) {
