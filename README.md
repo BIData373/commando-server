@@ -71,7 +71,7 @@ auth.
 | `npm run start:debug --env=<env>` | Same, with the debugger |
 | `npm run build` | Compile to `dist/` |
 | `npm run start:dist` | Run the compiled build (`node dist/main.js`) |
-| `npm run build:webpack` | Webpack bundle (used for the deployment archive) |
+| `npm run build:webpack` | Webpack bundle |
 | `npm run prisma:client:generate --env=<env>` | Regenerate the client into `src/types/prisma/` |
 | `npm run prisma:format` / `prisma:studio` / `prisma:repl` | Format schema / DB browser / REPL |
 | `npm run migration:generate --env=<env>` | Create a migration (`--create-only`, review before applying) |
@@ -81,7 +81,6 @@ auth.
 | `npm run db:seed --env=<env>` | Seed the DB. Add `-- --overload` (optionally `--tasks=N --assignees=N`) to generate bulk data for perf testing |
 | `npm run mock:sso --env=<env>` | Local SSO server on `http://localhost:4000/sso` |
 | `npm run mermaid` | Regenerate the ERD from the Prisma schema |
-| `npm run types:pack` | Pack `src/types/` into a `.tgz` for the frontend |
 
 There is no automated test suite (`npm test` is a placeholder). Endpoints are exercised manually with the httpYac
 `.http` files next to each entity (`src/entities/*/*.http`), which import the shared `global.http`.
@@ -139,13 +138,35 @@ npm run migration:deploy --env=<env>     # apply it
 npm run prisma:client:generate --env=<env>
 ```
 
-## Docker & deployment
+## Docker
 
 - `Dockerfile` — multi-stage Node 22 build; `CMD node dist/main.js`, exposes 3000. Pass config via `--env-file`.
 - `docker-compose.yml` — local dev dependencies only (Postgres, Redis, Keycloak), not the app itself.
-- `run.sh` — clones the `dev` branch, builds `zip.dockerfile` and copies out `server.tar.gz` (a packaged source
-  archive with `node_modules`) for offline deployment. Requires Docker and SSH access to the repo.
 - `vercel.json` — Vercel config entry pointing at `src/main.ts`.
+
+## Deployment (`run.sh`)
+
+`run.sh` packages the server into a source archive, `server.tar.gz`, for deployment.
+
+```bash
+./run.sh        # writes ./server.tar.gz into the current directory
+```
+
+Requires Docker and SSH access to `git@github.com:BIData373/commando-server.git`.
+
+What it does:
+1. Clones the **`dev` branch** (shallow) into a temp dir. It packages what is on `dev`, not your working tree, so push
+   first.
+2. Builds `zip.dockerfile` (`ubi9/nodejs-22`, `linux/amd64`): copies the repo and runs `npm install`, which also runs
+   `prisma generate`.
+3. Tars the result into `server.tar.gz` inside the container and `docker cp`s it to your current directory.
+4. Removes the temp container, image and clone, even on failure.
+
+Notes:
+- The archive unpacks under `tmp/archive/` and includes `node_modules`. It is **not built** (no `dist/`), so run
+  `npm run build` (or `build:webpack`) on the target.
+- Env files are git-ignored, so none are included. Provide `config/common.env` and `config/<env>/.env` on the target
+  and run migrations there (`npm run migration:deploy --env=<env>`).
 
 ## Troubleshooting
 
