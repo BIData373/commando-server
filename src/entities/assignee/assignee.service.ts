@@ -10,7 +10,7 @@ import { UpdateAssigneeDto } from './dto/request/update-assignee.dto'
 @Injectable()
 export class AssigneeService {
   static readonly include: Prisma.AssigneeInclude = {
-    users: true,
+    users: { include: { user: true } },
     createdBy: true,
     updatedBy: true,
     deletedBy: true
@@ -45,15 +45,21 @@ export class AssigneeService {
     { context, users, ...dto }: CreateAssigneeDto,
     userId: number
   ) {
+    const statusEditable = context.workspace.assigneeStatusEditable && dto.statusEditable === true
+
     return await this.prisma.$transaction(async tx => {
       return await tx.assignee.create({
         data: {
           ...dto,
+          statusEditable,
           createdById: userId,
           updatedById: userId,
           ...(users.length > 0 && {
             users: {
-              connect: await AssigneeService.upsertUsersTx(tx, users)
+              create: (await AssigneeService.upsertUsersTx(tx, users)).map(({ id }) => ({
+                userId: id,
+                statusEditable
+              }))
             }
           })
         },
@@ -65,7 +71,8 @@ export class AssigneeService {
   async findInWorkspace(workspaceId: number) {
     return await this.prisma.assignee.findMany({
       where: { workspaceId, deletedAt: null },
-      include: AssigneeService.includeMany
+      include: AssigneeService.includeMany,
+      orderBy: [{ id: 'asc' }]
     })
   }
 
@@ -82,21 +89,45 @@ export class AssigneeService {
     updatedBy: number
   ) {
     return await this.prisma.$transaction(async tx => {
+      const upsertedUsers = users && await AssigneeService.upsertUsersTx(tx, users)
+
       return await tx.assignee.update({
         where: { id },
         data: {
           ...dto,
           updatedById: updatedBy,
-          ...(users && {
+          ...(upsertedUsers && {
             users: {
-              set: [],
-              connect: await AssigneeService.upsertUsersTx(tx, users)
+              deleteMany: { userId: { notIn: upsertedUsers.map(({ id: userId }) => userId) } },
+              upsert: upsertedUsers.map(({ id: userId }, index) => ({
+                where: { assigneeId_userId: { assigneeId: id, userId } },
+                create: { userId, statusEditable: users[index].statusEditable === true },
+                update: { statusEditable: users[index].statusEditable === true }
+              }))
             }
           })
         },
         include: AssigneeService.include
       })
     })
+  }
+
+  async updateStatusEditable(
+    assigneeId: number,
+    statusEditable: boolean,
+    userId?: number
+  ) {
+    if (userId) {
+      await this.prisma.assigneeUser.update({
+        where: { assigneeId_userId: { assigneeId, userId } },
+        data: { statusEditable }
+      })
+    } else {
+      await this.prisma.assignee.update({
+        where: { id: assigneeId },
+        data: { statusEditable }
+      })
+    }
   }
 
   static async detachArchivedTasksTx(tx: Prisma.TransactionClient, assigneeId: number) {

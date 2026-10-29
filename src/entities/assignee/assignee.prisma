@@ -8,6 +8,8 @@ model Assignee {
   workspaceId Int       @map("workspace_id")
   workspace   Workspace @relation(fields: [workspaceId], references: [id])
 
+  statusEditable Boolean @default(false) @map("status_editable")
+
   createdAt DateTime  @default(now()) @map("created_at")
   updatedAt DateTime  @updatedAt @map("updated_at")
   deletedAt DateTime? @map("deleted_at")
@@ -23,7 +25,7 @@ model Assignee {
 
   archivedWorkspaceAssigneeTask ArchivedWorkspaceAssigneeTask[]
   archivedUserAssigneeTask ArchivedUserAssigneeTask[]
-  users        User[]               @relation("assignee_users")
+  users        AssigneeUser[]
   taskStatuses AssigneeTaskStatus[]
   assigneeGroups AssigneeGroup[] @relation("assignee_groups_assignees")
 

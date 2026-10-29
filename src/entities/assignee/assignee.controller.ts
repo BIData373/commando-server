@@ -1,14 +1,16 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req } from '@nestjs/common';
-import { ApiBody, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery } from '@nestjs/swagger';
+import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Query, Req } from '@nestjs/common';
+import { ApiBody, ApiCreatedResponse, ApiNoContentResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { TransformPlainToInstance } from 'class-transformer';
 import { Request } from 'express';
 import { GetViewerWorkspaceIdFieldDto } from '../workspace/dto/request/get-workspace-id-field.dto';
 import { AssigneeService } from './assignee.service';
 import { CreateAssigneeDto } from './dto/request/create-assignee.dto';
 import { GetManagerAssigneeIdDto, GetViewerAssigneeIdDto } from './dto/request/get-assignee-id.dto';
+import { GetStatusEditableDto } from './dto/request/get-status-editable.dto';
 import { UpdateAssigneeDto } from './dto/request/update-assignee.dto';
 import { AssigneeDto } from './dto/response/assignee.dto';
 import { AssigneesDto } from './dto/response/assignees.dto';
+import { HttpStatusCode } from 'axios';
 
 @Controller('assignee')
 export class AssigneeController {
@@ -46,6 +48,17 @@ export class AssigneeController {
     @Param() { id }: GetViewerAssigneeIdDto
   ) {
     return await this.assigneeService.findOne(id);
+  }
+
+  @ApiOperation({ operationId: 'updateAssigneeStatusEditable' })
+  @Patch('status-editable')
+  @HttpCode(HttpStatusCode.NoContent)
+  @ApiNoContentResponse()
+  async updateStatusEditable(
+    @Query() { assigneeId, userId, statusEditable }: GetStatusEditableDto
+  ) {
+    console.log("Assignee ", assigneeId, statusEditable)
+    await this.assigneeService.updateStatusEditable(assigneeId, statusEditable, userId);
   }
 
   @ApiOperation({ operationId: 'updateAssignee' })
