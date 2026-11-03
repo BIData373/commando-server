@@ -16,7 +16,17 @@ import dayjs from 'dayjs';
 
 
 type AssigneeStatusInclude = {
-  include: { assignee: { include: { users: true } }; status: true; createdBy: true; updatedBy: true }
+  include: {
+    assignee: {
+      include: {
+        users: { include: { user: true } }
+        _count: { select: { users: true } }
+      }
+    }
+    status: true
+    createdBy: true
+    updatedBy: true
+  }
 }
 
 type AssigneeStatusEntity = Prisma.AssigneeTaskStatusGetPayload<AssigneeStatusInclude>
@@ -75,7 +85,7 @@ export class TaskService {
         select: {
           messages: messages && { where: { deletedAt: null } },
           assigneeStatuses: userId !== undefined && {
-            where: { assignee: { users: { some: { id: userId } } } }
+            where: { assignee: { users: { some: { userId } } } }
           }
         }
       }
@@ -114,7 +124,18 @@ export class TaskService {
         },
         orderBy: { assigneeId: 'asc' },
         include: {
-          assignee: { include: { users: true } },
+          assignee: {
+            include: {
+              users: { include: { user: true } },
+              _count: {
+                select: {
+                  users: userId !== undefined
+                    ? { where: { userId, statusEditable: true } }
+                    : true
+                }
+              }
+            }
+          },
           status: true,
           createdBy: true,
           updatedBy: true
@@ -183,9 +204,12 @@ export class TaskService {
 
     const isTaskArchived = isWorkspaceArchive ? workspaceArchivedAt : (workspaceArchivedAt || personalArchivedAt)
 
+    const isEditableAssignee = !!assigneeStatus?.assignee.statusEditable &&
+      assigneeStatus.assignee._count.users > 0
+
     const editable = !!user.info?.isBI || (
       ((
-        workspace.assigneeStatusEditable && isAssigned) ||
+        workspace.assigneeStatusEditable && isAssigned && isEditableAssignee) ||
         workspace.permissions[0]?.type === PermissionType.MANAGER
       ) && !isTaskArchived
     )
@@ -374,7 +398,7 @@ export class TaskService {
         where: {
           assignees: {
             some: {
-              id: {
+              assigneeId: {
                 in: assignees.map(({ id }) => id)
               }
             }
@@ -528,7 +552,7 @@ export class TaskService {
     )
 
     const assigneeStatusesForRows = !isWorkspace
-      ? formattedActiveAssignees.filter(({ assignee }) => assignee?.users.some(({ id }) => id === user.id))
+      ? formattedActiveAssignees.filter(({ assignee }) => assignee?.users.some(({ userId }) => userId === user.id))
       : formattedActiveAssignees
 
     return assigneeStatusesForRows
@@ -594,7 +618,7 @@ export class TaskService {
           some: {
             assignee: {
               deletedAt: null,
-              users: { some: { id: user.id } }
+              users: { some: { userId: user.id } }
             }
           }
         },

@@ -8,7 +8,8 @@ POST {{baseUrl}}/assignee
   "name": "Alpha Team",
   "color": "#E53935",
   "icon": "shield",
-  "workspaceId": {{workspaceId}},
+  "workspaceId": 1,
+  "statusEditable": true,
   "users": []
 }
 
@@ -29,7 +30,7 @@ POST {{baseUrl}}/assignee
 ?? status == 400
 
 ### Get all Assignees in workspace
-GET {{baseUrl}}/assignee?workspaceId={{workspaceId}}
+GET {{baseUrl}}/assignee?workspaceId=1
 ...headers
 
 ?? status == 200
@@ -50,6 +51,18 @@ PATCH {{baseUrl}}/assignee/{{assigneeId}}
 }
 
 ?? status == 200
+
+### Update Assignee Status Editable — turn on
+PATCH {{baseUrl}}/assignee/status-editable?assigneeId=1&statusEditable=true
+...headers
+
+?? status == 204
+
+### Update Assignee User Status Editable — with userId
+PATCH {{baseUrl}}/assignee/status-editable?assigneeId=1&userId=6&statusEditable=true
+...headers
+
+?? status == 204
 
 ### Delete Assignee — non-existent id (expect 400)
 DELETE {{baseUrl}}/assignee/99999

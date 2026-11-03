@@ -36,7 +36,7 @@ export class GetAssignedWorkspaceIdDto extends GetContextDto<IUserContext> {
             assignees: {
               some: {
                 deletedAt: null,
-                users: { some: { id: obj.context.user.id } }
+                users: { some: { userId: obj.context.user.id } }
               }
             }
           }

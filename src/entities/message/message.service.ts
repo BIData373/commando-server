@@ -118,11 +118,7 @@ export class MessageService {
             some: {
               assignee: {
                 deletedAt: null,
-                users: {
-                  some: {
-                    id: userId
-                  }
-                }
+                users: { some: { userId } }
               }
             }
           },

@@ -82,6 +82,7 @@ COMPLETED COMPLETED
     String icon "❓"
     String icon_name "❓"
     Int workspace_id 
+    Boolean status_editable 
     DateTime created_at 
     DateTime updated_at 
     DateTime deleted_at "❓"
@@ -113,6 +114,13 @@ COMPLETED COMPLETED
     Int created_by 
     Int updated_by 
     String description "❓"
+    }
+  
+
+  "assignee_users" {
+    Int assignee_id 
+    Int user_id 
+    Boolean status_editable 
     }
   
 
@@ -295,7 +303,6 @@ COMPLETED COMPLETED
     "assignees" }o--|| users : "createdBy"
     "assignees" }o--|| users : "updatedBy"
     "assignees" }o--|o users : "deletedBy"
-    "assignees" o{--}o "users" : ""
     "assignees" o{--}o "assignee_groups" : ""
     "assignee_groups" }o--|| workspaces : "workspace"
     "assignee_groups" }o--|| users : "createdBy"
@@ -306,6 +313,8 @@ COMPLETED COMPLETED
     "assignee_task_statuses" }o--|| tasks : "task"
     "assignee_task_statuses" }o--|| assignees : "assignee"
     "assignee_task_statuses" }o--|| workspace_statuses : "status"
+    "assignee_users" }o--|| assignees : "assignee"
+    "assignee_users" }o--|| users : "user"
     "messages" }o--|| users : "user"
     "messages" }o--|| tasks : "task"
     "messages" }o--|| users : "createdBy"

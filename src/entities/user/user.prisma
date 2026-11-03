@@ -11,7 +11,7 @@ model User {
   userWorkspaceVisits UserWorkspaceVisits[]
   userViewedTasks UserViewedTasks[]
   archivedUserAssigneeTask ArchivedUserAssigneeTask[]
-  assignees   Assignee[]    @relation("assignee_users")
+  assignees   AssigneeUser[]
   permissions Permission[]
   history     TaskHistory[]
   messages    Message[]     @relation("message_user")
