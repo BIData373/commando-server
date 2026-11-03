@@ -1,19 +1,22 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsBoolean, IsOptional } from 'class-validator';
+import { EntityExists } from '../../../../common/decorators/entity-exists.decorator';
 import { IdExists } from '../../../../common/decorators/id-exists.decorator';
 import { TransformToBoolean } from '../../../../common/decorators/transform-to-boolean.decorator';
-import { GetContextDto } from '../../../../common/dto/request/get-context.dto';
-import { IUserContext } from '../../../user/interfaces/user-context.interface';
+import { GetManagerAssigneeIdFieldDto } from './get-assignee-id-field.dto';
 
-export class GetStatusEditableDto extends GetContextDto<IUserContext> {
+export class GetStatusEditableDto extends GetManagerAssigneeIdFieldDto {
   @ApiProperty({ type: Boolean })
+  @EntityExists('assignee', {
+    message: 'The statusEditable is not enabled',
+    validateIf: ({ value }) => value === true,
+    findArgs: ({ obj }) => ({
+      where: { id: obj.assigneeId, deletedAt: null, workspace: { assigneeStatusEditable: true } }
+    })
+  })
   @IsBoolean()
   @TransformToBoolean()
   statusEditable: boolean;
-
-  @ApiProperty()
-  @IdExists('assignee', { filterDeletedAt: true })
-  assigneeId: number;
 
   @ApiPropertyOptional()
   @IsOptional()

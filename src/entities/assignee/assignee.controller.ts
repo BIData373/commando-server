@@ -57,7 +57,6 @@ export class AssigneeController {
   async updateStatusEditable(
     @Query() { assigneeId, userId, statusEditable }: GetStatusEditableDto
   ) {
-    console.log("Assignee ", assigneeId, statusEditable)
     await this.assigneeService.updateStatusEditable(assigneeId, statusEditable, userId);
   }
 
