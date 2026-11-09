@@ -51,11 +51,12 @@ export class AssigneeController {
   }
 
   @ApiOperation({ operationId: 'updateAssigneeStatusEditable' })
+  @ApiBody({ type: GetStatusEditableDto })
   @Patch('status-editable')
   @HttpCode(HttpStatusCode.NoContent)
   @ApiNoContentResponse()
   async updateStatusEditable(
-    @Query() { assigneeId, userId, statusEditable }: GetStatusEditableDto
+    @Body() { assigneeId, userId, statusEditable }: GetStatusEditableDto
   ) {
     await this.assigneeService.updateStatusEditable(assigneeId, statusEditable, userId);
   }
