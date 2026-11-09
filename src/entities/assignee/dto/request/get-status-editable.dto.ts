@@ -8,7 +8,7 @@ import { GetManagerAssigneeIdFieldDto } from './get-assignee-id-field.dto';
 export class GetStatusEditableDto extends GetManagerAssigneeIdFieldDto {
   @ApiProperty({ type: Boolean })
   @EntityExists('assignee', {
-    message: 'The statusEditable is not enabled',
+    message: 'Cannot set statusEditable: enable assigneeStatusEditable on the workspace first',
     validateIf: ({ value }) => value === true,
     findArgs: ({ obj }) => ({
       where: { id: obj.assigneeId, deletedAt: null, workspace: { assigneeStatusEditable: true } }

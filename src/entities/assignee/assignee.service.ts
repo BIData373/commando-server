@@ -9,14 +9,14 @@ import { UpdateAssigneeDto } from './dto/request/update-assignee.dto'
 
 @Injectable()
 export class AssigneeService {
-  static readonly include: Prisma.AssigneeInclude = {
+  static readonly include = {
     users: { include: { user: true } },
     createdBy: true,
     updatedBy: true,
     deletedBy: true
-  }
+  } satisfies Prisma.AssigneeInclude
 
-  static readonly includeMany: Prisma.AssigneeInclude = {
+  static readonly includeMany = {
     ...AssigneeService.include,
     _count: {
       select: {
@@ -29,7 +29,7 @@ export class AssigneeService {
         }
       }
     }
-  }
+  } satisfies Prisma.AssigneeInclude
 
   constructor(private readonly prisma: PrismaService) { }
 
@@ -48,6 +48,11 @@ export class AssigneeService {
     const statusEditable = context.workspace.assigneeStatusEditable && dto.statusEditable === true
 
     return await this.prisma.$transaction(async tx => {
+      const upsertedUsers = (await AssigneeService.upsertUsersTx(tx, users)).map(({ id }) => ({
+        userId: id,
+        statusEditable
+      }))
+
       return await tx.assignee.create({
         data: {
           ...dto,
@@ -56,10 +61,7 @@ export class AssigneeService {
           updatedById: userId,
           ...(users.length > 0 && {
             users: {
-              create: (await AssigneeService.upsertUsersTx(tx, users)).map(({ id }) => ({
-                userId: id,
-                statusEditable
-              }))
+              create: upsertedUsers
             }
           })
         },
