@@ -6,6 +6,7 @@ import { CreateUserDto } from '../user/dto/request/create-user.dto'
 import { UserService } from '../user/user.service'
 import { CreateAssigneeDto } from './dto/request/create-assignee.dto'
 import { UpdateAssigneeDto } from './dto/request/update-assignee.dto'
+import { map } from 'lodash'
 
 @Injectable()
 export class AssigneeService {
@@ -100,11 +101,22 @@ export class AssigneeService {
           updatedById: updatedBy,
           ...(upsertedUsers && {
             users: {
-              deleteMany: { userId: { notIn: upsertedUsers.map(({ id: userId }) => userId) } },
+              deleteMany: {
+                userId: {
+                  notIn: map(upsertedUsers, 'id')
+                }
+              },
               upsert: upsertedUsers.map(({ id: userId }, index) => ({
-                where: { assigneeId_userId: { assigneeId: id, userId } },
-                create: { userId, statusEditable: users[index].statusEditable === true },
-                update: { statusEditable: users[index].statusEditable === true }
+                where: {
+                  assigneeId_userId: { assigneeId: id, userId }
+                },
+                create: {
+                  userId,
+                  statusEditable: users[index].statusEditable === true
+                },
+                update: {
+                  statusEditable: users[index].statusEditable === true
+                }
               }))
             }
           })

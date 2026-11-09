@@ -123,18 +123,17 @@ export class WorkspaceService {
   static async enableAllAssigneesStatusEditableTx(tx: Prisma.TransactionClient, workspaceId: number) {
     const assigneeWhere = { workspaceId, deletedAt: null } satisfies Prisma.AssigneeWhereInput;
 
-    const anyEditable = await tx.assignee.findFirst({
+    const editableAssigneesCount = await tx.assignee.count({
       where: {
         ...assigneeWhere,
         OR: [
           { statusEditable: true },
           { users: { some: { statusEditable: true } } }
         ]
-      },
-      select: { id: true }
+      }
     });
 
-    if (anyEditable) {
+    if (editableAssigneesCount > 0) {
       return;
     }
 
