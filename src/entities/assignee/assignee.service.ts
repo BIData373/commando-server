@@ -129,19 +129,25 @@ export class AssigneeService {
   async updateStatusEditable(
     assigneeId: number,
     statusEditable: boolean,
+    updatedBy: number,
     userId?: number
   ) {
-    if (userId) {
-      await this.prisma.assigneeUser.update({
-        where: { assigneeId_userId: { assigneeId, userId } },
-        data: { statusEditable }
-      })
-    } else {
-      await this.prisma.assignee.update({
-        where: { id: assigneeId },
-        data: { statusEditable }
-      })
-    }
+    await this.prisma.assignee.update({
+      where: { id: assigneeId },
+      data: {
+        updatedById: updatedBy,
+        ...(userId
+          ? {
+            users: {
+              update: {
+                where: { assigneeId_userId: { assigneeId, userId } },
+                data: { statusEditable }
+              }
+            }
+          }
+          : { statusEditable })
+      }
+    })
   }
 
   static async detachArchivedTasksTx(tx: Prisma.TransactionClient, assigneeId: number) {

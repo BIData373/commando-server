@@ -3,15 +3,17 @@ import { IsBoolean, IsOptional } from 'class-validator';
 import { EntityExists } from '../../../../common/decorators/entity-exists.decorator';
 import { IdExists } from '../../../../common/decorators/id-exists.decorator';
 import { TransformToBoolean } from '../../../../common/decorators/transform-to-boolean.decorator';
-import { GetManagerAssigneeIdFieldDto } from './get-assignee-id-field.dto';
+import { GetContextDto } from '../../../../common/dto/request/get-context.dto';
+import { IUserContext } from '../../../user/interfaces/user-context.interface';
+import { IAssigneeContext } from '../../interfaces/assignee-context.interface';
 
-export class GetStatusEditableDto extends GetManagerAssigneeIdFieldDto {
+export class UpdateStatusEditableDto extends GetContextDto<IAssigneeContext & IUserContext> {
   @ApiProperty({ type: Boolean })
   @EntityExists('assignee', {
     message: 'Cannot set statusEditable: enable assigneeStatusEditable on the workspace first',
-    validateIf: ({ value }) => value === true,
+    validateIf: ({ value, obj }) => value === true && !!obj?.context?.assignee?.id,
     findArgs: ({ obj }) => ({
-      where: { id: obj.assigneeId, deletedAt: null, workspace: { assigneeStatusEditable: true } }
+      where: { id: obj.context.assignee.id, deletedAt: null, workspace: { assigneeStatusEditable: true } }
     })
   })
   @IsBoolean()
@@ -21,8 +23,9 @@ export class GetStatusEditableDto extends GetManagerAssigneeIdFieldDto {
   @ApiPropertyOptional()
   @IsOptional()
   @IdExists('assigneeUser', {
+    validateIf: ({ obj }) => !!obj?.context?.assignee?.id,
     findArgs: ({ obj, value }) => ({
-      where: { assigneeId: obj.assigneeId, userId: value }
+      where: { assigneeId: obj.context.assignee.id, userId: value }
     })
   })
   userId?: number;

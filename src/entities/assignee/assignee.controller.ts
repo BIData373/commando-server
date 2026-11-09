@@ -1,16 +1,17 @@
-import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Query, Req } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Query, Req, UseInterceptors } from '@nestjs/common';
 import { ApiBody, ApiCreatedResponse, ApiNoContentResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery } from '@nestjs/swagger';
+import { HttpStatusCode } from 'axios';
 import { TransformPlainToInstance } from 'class-transformer';
 import { Request } from 'express';
+import { CopyDtosInRequest } from '../../common/interceptors/copy-dtos-in-request.interceptor';
 import { GetViewerWorkspaceIdFieldDto } from '../workspace/dto/request/get-workspace-id-field.dto';
 import { AssigneeService } from './assignee.service';
 import { CreateAssigneeDto } from './dto/request/create-assignee.dto';
 import { GetManagerAssigneeIdDto, GetViewerAssigneeIdDto } from './dto/request/get-assignee-id.dto';
-import { GetStatusEditableDto } from './dto/request/get-status-editable.dto';
 import { UpdateAssigneeDto } from './dto/request/update-assignee.dto';
+import { UpdateStatusEditableDto } from './dto/request/update-status-editable.dto';
 import { AssigneeDto } from './dto/response/assignee.dto';
 import { AssigneesDto } from './dto/response/assignees.dto';
-import { HttpStatusCode } from 'axios';
 
 @Controller('assignee')
 export class AssigneeController {
@@ -51,14 +52,20 @@ export class AssigneeController {
   }
 
   @ApiOperation({ operationId: 'updateAssigneeStatusEditable' })
-  @ApiBody({ type: GetStatusEditableDto })
-  @Patch('status-editable')
+  @ApiParam({ name: 'id', type: Number })
+  @ApiBody({ type: UpdateStatusEditableDto })
+  @UseInterceptors(
+    CopyDtosInRequest<UpdateStatusEditableDto, GetManagerAssigneeIdDto>({ from: 'params.id', to: 'body.context.assignee', dto: GetManagerAssigneeIdDto })
+  )
+  @Patch(':id/status-editable')
   @HttpCode(HttpStatusCode.NoContent)
   @ApiNoContentResponse()
   async updateStatusEditable(
-    @Body() { assigneeId, userId, statusEditable }: GetStatusEditableDto
+    @Req() { user }: Request,
+    @Param() { id }: GetManagerAssigneeIdDto,
+    @Body() { statusEditable, userId }: UpdateStatusEditableDto
   ) {
-    await this.assigneeService.updateStatusEditable(assigneeId, statusEditable, userId);
+    await this.assigneeService.updateStatusEditable(id, statusEditable, user.id, userId);
   }
 
   @ApiOperation({ operationId: 'updateAssignee' })

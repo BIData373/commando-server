@@ -53,22 +53,20 @@ PATCH {{baseUrl}}/assignee/{{assigneeId}}
 ?? status == 200
 
 ### Update Assignee Status Editable — turn on
-PATCH {{baseUrl}}/assignee/status-editable
+PATCH {{baseUrl}}/assignee/{{assigneeId}}/status-editable
 ...headers
 
 {
-  "assigneeId": 1,
   "statusEditable": true
 }
 
 ?? status == 204
 
 ### Update Assignee User Status Editable — with userId
-PATCH {{baseUrl}}/assignee/status-editable
+PATCH {{baseUrl}}/assignee/{{assigneeId}}/status-editable
 ...headers
 
 {
-  "assigneeId": 1,
   "userId": 6,
   "statusEditable": true
 }
