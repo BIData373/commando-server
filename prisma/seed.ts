@@ -138,16 +138,16 @@ async function main() {
   // ── Assignees ─────────────────────────────────────────────────────────────
   const [a1, a2, a3, a4, a5, a6, a7, a8] = await Promise.all([
     // workspace 1
-    prisma.assignee.create({ data: { name: 'מחלקת מבצעים', color: '#3B82F6', workspaceId: ws1.id, createdById: u1.id, updatedById: u1.id, users: { connect: [{ id: u1.id }, { id: u2.id }] } } }),
-    prisma.assignee.create({ data: { name: 'צוות לוגיסטיקה', color: '#10B981', workspaceId: ws1.id, createdById: u1.id, updatedById: u1.id, users: { connect: [{ id: u3.id }, { id: u4.id }] } } }),
-    prisma.assignee.create({ data: { name: 'קצינת מודיעין', color: '#F59E0B', workspaceId: ws1.id, createdById: u1.id, updatedById: u1.id, users: { connect: [{ id: u5.id }] } } }),
-    prisma.assignee.create({ data: { name: "פלוגה א'", color: '#EF4444', workspaceId: ws1.id, createdById: u1.id, updatedById: u1.id, users: { connect: [{ id: u4.id }, { id: u6.id }] } } }),
-    prisma.assignee.create({ data: { name: 'קצין קשר', color: '#8B5CF6', workspaceId: ws1.id, createdById: u1.id, updatedById: u1.id, users: { connect: [{ id: u5.id }, { id: u6.id }] } } }),
-    prisma.assignee.create({ data: { name: 'מפקדת הגדוד', color: '#EC4899', workspaceId: ws1.id, createdById: u1.id, updatedById: u1.id, users: { connect: [{ id: u1.id }, { id: u2.id }, { id: u3.id }] } } }),
+    prisma.assignee.create({ data: { name: 'מחלקת מבצעים', color: '#3B82F6', workspaceId: ws1.id, createdById: u1.id, updatedById: u1.id, users: { create: [{ userId: u1.id }, { userId: u2.id }] } } }),
+    prisma.assignee.create({ data: { name: 'צוות לוגיסטיקה', color: '#10B981', workspaceId: ws1.id, createdById: u1.id, updatedById: u1.id, users: { create: [{ userId: u3.id }, { userId: u4.id }] } } }),
+    prisma.assignee.create({ data: { name: 'קצינת מודיעין', color: '#F59E0B', workspaceId: ws1.id, createdById: u1.id, updatedById: u1.id, users: { create: [{ userId: u5.id }] } } }),
+    prisma.assignee.create({ data: { name: "פלוגה א'", color: '#EF4444', workspaceId: ws1.id, createdById: u1.id, updatedById: u1.id, users: { create: [{ userId: u4.id }, { userId: u6.id }] } } }),
+    prisma.assignee.create({ data: { name: 'קצין קשר', color: '#8B5CF6', workspaceId: ws1.id, createdById: u1.id, updatedById: u1.id, users: { create: [{ userId: u5.id }, { userId: u6.id }] } } }),
+    prisma.assignee.create({ data: { name: 'מפקדת הגדוד', color: '#EC4899', workspaceId: ws1.id, createdById: u1.id, updatedById: u1.id, users: { create: [{ userId: u1.id }, { userId: u2.id }, { userId: u3.id }] } } }),
     // workspace 2
-    prisma.assignee.create({ data: { name: 'צוות פיתוח', color: '#06B6D4', workspaceId: ws2.id, createdById: u2.id, updatedById: u2.id, users: { connect: [{ id: u2.id }, { id: u4.id }, { id: u5.id }] } } }),
+    prisma.assignee.create({ data: { name: 'צוות פיתוח', color: '#06B6D4', workspaceId: ws2.id, createdById: u2.id, updatedById: u2.id, users: { create: [{ userId: u2.id }, { userId: u4.id }, { userId: u5.id }] } } }),
     // workspace 3
-    prisma.assignee.create({ data: { name: 'צוות לוגיסטי', color: '#F97316', workspaceId: ws3.id, createdById: u3.id, updatedById: u3.id, users: { connect: [{ id: u3.id }, { id: u6.id }] } } }),
+    prisma.assignee.create({ data: { name: 'צוות לוגיסטי', color: '#F97316', workspaceId: ws3.id, createdById: u3.id, updatedById: u3.id, users: { create: [{ userId: u3.id }, { userId: u6.id }] } } }),
   ]);
 
   console.log('* Creating Permissions')
@@ -550,13 +550,10 @@ async function main() {
       select: { id: true },
     });
 
-    // Implicit m2m (Assignee ↔ User): "A" = assignees.id, "B" = users.id
     const assigneeUserLinks = generatedAssignees.flatMap(({ id }) =>
-      sample(ws1Users, 1 + Math.floor(Math.random() * 2)).map((user) => [id, user.id] as const)
+      sample(ws1Users, 1 + Math.floor(Math.random() * 2)).map((user) => ({ assigneeId: id, userId: user.id }))
     );
-    await prisma.$executeRaw`
-      INSERT INTO "_assignee_users" ("A", "B")
-      SELECT * FROM UNNEST(${assigneeUserLinks.map(([a]) => a)}::int[], ${assigneeUserLinks.map(([, b]) => b)}::int[])`;
+    await prisma.assigneeUser.createMany({ data: assigneeUserLinks, skipDuplicates: true });
 
     const assigneePool = [a1, a2, a3, a4, a5, a6, ...generatedAssignees].map(({ id }) => id);
     const now = Date.now();

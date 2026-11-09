@@ -66,7 +66,7 @@ export const findArgsInPermittedTask = <
                                         id: checkForAssignee(obj as TDto)
                                     }),
                                     deletedAt: null,
-                                    users: { some: { id: obj.context.user.id } }
+                                    users: { some: { userId: obj.context.user.id } }
                                 }
                             }
                         }]

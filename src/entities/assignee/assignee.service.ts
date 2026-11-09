@@ -6,17 +6,18 @@ import { CreateUserDto } from '../user/dto/request/create-user.dto'
 import { UserService } from '../user/user.service'
 import { CreateAssigneeDto } from './dto/request/create-assignee.dto'
 import { UpdateAssigneeDto } from './dto/request/update-assignee.dto'
+import { map } from 'lodash'
 
 @Injectable()
 export class AssigneeService {
-  static readonly include: Prisma.AssigneeInclude = {
-    users: true,
+  static readonly include = {
+    users: { include: { user: true } },
     createdBy: true,
     updatedBy: true,
     deletedBy: true
-  }
+  } satisfies Prisma.AssigneeInclude
 
-  static readonly includeMany: Prisma.AssigneeInclude = {
+  static readonly includeMany = {
     ...AssigneeService.include,
     _count: {
       select: {
@@ -29,7 +30,7 @@ export class AssigneeService {
         }
       }
     }
-  }
+  } satisfies Prisma.AssigneeInclude
 
   constructor(private readonly prisma: PrismaService) { }
 
@@ -45,15 +46,23 @@ export class AssigneeService {
     { context, users, ...dto }: CreateAssigneeDto,
     userId: number
   ) {
+    const statusEditable = context.workspace.assigneeStatusEditable && dto.statusEditable === true
+
     return await this.prisma.$transaction(async tx => {
+      const upsertedUsers = (await AssigneeService.upsertUsersTx(tx, users)).map(({ id }) => ({
+        userId: id,
+        statusEditable
+      }))
+
       return await tx.assignee.create({
         data: {
           ...dto,
+          statusEditable,
           createdById: userId,
           updatedById: userId,
           ...(users.length > 0 && {
             users: {
-              connect: await AssigneeService.upsertUsersTx(tx, users)
+              create: upsertedUsers
             }
           })
         },
@@ -65,7 +74,8 @@ export class AssigneeService {
   async findInWorkspace(workspaceId: number) {
     return await this.prisma.assignee.findMany({
       where: { workspaceId, deletedAt: null },
-      include: AssigneeService.includeMany
+      include: AssigneeService.includeMany,
+      orderBy: [{ id: 'asc' }]
     })
   }
 
@@ -82,20 +92,61 @@ export class AssigneeService {
     updatedBy: number
   ) {
     return await this.prisma.$transaction(async tx => {
+      const upsertedUsers = users && await AssigneeService.upsertUsersTx(tx, users)
+
       return await tx.assignee.update({
         where: { id },
         data: {
           ...dto,
           updatedById: updatedBy,
-          ...(users && {
+          ...(upsertedUsers && {
             users: {
-              set: [],
-              connect: await AssigneeService.upsertUsersTx(tx, users)
+              deleteMany: {
+                userId: {
+                  notIn: map(upsertedUsers, 'id')
+                }
+              },
+              upsert: upsertedUsers.map(({ id: userId }, index) => ({
+                where: {
+                  assigneeId_userId: { assigneeId: id, userId }
+                },
+                create: {
+                  userId,
+                  statusEditable: users[index].statusEditable === true
+                },
+                update: {
+                  statusEditable: users[index].statusEditable === true
+                }
+              }))
             }
           })
         },
         include: AssigneeService.include
       })
+    })
+  }
+
+  async updateStatusEditable(
+    assigneeId: number,
+    statusEditable: boolean,
+    updatedBy: number,
+    userId?: number
+  ) {
+    await this.prisma.assignee.update({
+      where: { id: assigneeId },
+      data: {
+        updatedById: updatedBy,
+        ...(userId
+          ? {
+            users: {
+              update: {
+                where: { assigneeId_userId: { assigneeId, userId } },
+                data: { statusEditable }
+              }
+            }
+          }
+          : { statusEditable })
+      }
     })
   }
 

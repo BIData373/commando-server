@@ -120,11 +120,38 @@ export class WorkspaceService {
     });
   }
 
+  static async enableAllAssigneesStatusEditableTx(tx: Prisma.TransactionClient, workspaceId: number) {
+    const assigneeWhere = { workspaceId, deletedAt: null } satisfies Prisma.AssigneeWhereInput;
+
+    const editableAssigneesCount = await tx.assignee.count({
+      where: {
+        ...assigneeWhere,
+        OR: [
+          { statusEditable: true },
+          { users: { some: { statusEditable: true } } }
+        ]
+      }
+    });
+
+    if (editableAssigneesCount > 0) {
+      return;
+    }
+
+    await tx.assignee.updateMany({ where: assigneeWhere, data: { statusEditable: true } });
+    await tx.assigneeUser.updateMany({ where: { assignee: assigneeWhere }, data: { statusEditable: true } });
+  }
+
   async update(id: number, { context, ...dto }: UpdateWorkspaceDto, updatedById: number) {
-    return await this.prisma.workspace.update({
-      where: { id },
-      data: { ...dto, updatedById },
-      include: WorkspaceService.include
+    return await this.prisma.$transaction(async tx => {
+      if (dto.assigneeStatusEditable === true) {
+        await WorkspaceService.enableAllAssigneesStatusEditableTx(tx, id);
+      }
+
+      return await tx.workspace.update({
+        where: { id },
+        data: { ...dto, updatedById },
+        include: WorkspaceService.include
+      });
     });
   }
 
