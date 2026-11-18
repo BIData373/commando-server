@@ -292,6 +292,8 @@ COMPLETED COMPLETED
     String color 
     WorkspaceStatusType status_type 
     Int workspace_id 
+    DateTime created_at 
+    DateTime updated_at 
     }
   
     "archived_user_assignee_task" }o--|| tasks : "task"
