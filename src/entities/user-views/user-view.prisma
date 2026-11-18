@@ -1,13 +1,21 @@
 model UserView {
-    id          Int  @id @default(autoincrement())
-    userId      Int  @map("user_id")
-    workspaceId Int? @map("workspace_id")
+    id          Int    @id @default(autoincrement())
+    userId      Int    @map("user_id")
+    workspaceId Int?   @map("workspace_id")
+    device      Device
     view        Json
 
     user      User       @relation(fields: [userId], references: [id])
     workspace Workspace? @relation(fields: [workspaceId], references: [id])
 
-    @@unique([userId, workspaceId], where: { workspaceId: { not: null } })
-    @@unique([userId], where: { workspaceId: null })
+    @@unique([userId, workspaceId, device], where: { workspaceId: { not: null } })
+    @@unique([userId, device], where: { workspaceId: null })
     @@map("user_views")
+}
+
+enum Device {
+    MOBILE
+    DESKTOP
+
+    @@map("device")
 }

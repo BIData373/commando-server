@@ -1,11 +1,12 @@
 # @import ../../../global.http
 
-### Upsert User View — valid payload
+### Upsert User View — valid payload (desktop)
 PATCH {{baseUrl}}/user-views
 ...headers
 
 {
   "workspaceId": {{workspaceId}},
+  "device": "DESKTOP",
   "view": {
     "table": {
       "sorting": [],
@@ -17,8 +18,36 @@ PATCH {{baseUrl}}/user-views
       }
     },
     "dashboard": {
-      "selectedTab": "load",
-      "displayMode": "overdue"
+      "distributionTab": "load",
+      "focusedInstructionsTab": "overdue",
+      "assigneeFilter": []
+    }
+  }
+}
+
+?? status == 200
+
+### Upsert User View — valid payload (mobile)
+PATCH {{baseUrl}}/user-views
+...headers
+
+{
+  "workspaceId": {{workspaceId}},
+  "device": "MOBILE",
+  "view": {
+    "table": {
+      "sorting": [],
+      "columnFilters": [],
+      "quickFilter": [],
+      "columnVisibility": {
+        "columnOrder": [],
+        "hiddenColumns": []
+      }
+    },
+    "dashboard": {
+      "distributionTab": "attention",
+      "focusedInstructionsTab": "approaching",
+      "assigneeFilter": ["1", "5"]
     }
   }
 }
@@ -35,18 +64,25 @@ PATCH {{baseUrl}}/user-views
 
 ?? status == 400
 
-### Get User View
-GET {{baseUrl}}/user-views?workspaceId={{workspaceId}}
+### Get User View — desktop
+GET {{baseUrl}}/user-views?workspaceId={{workspaceId}}&device=DESKTOP
 ...headers
 
 ?? status == 200
 
-### Upsert User View — updated values
+### Get User View — mobile
+GET {{baseUrl}}/user-views?workspaceId={{workspaceId}}&device=MOBILE
+...headers
+
+?? status == 200
+
+### Upsert User View — updated values (desktop)
 PATCH {{baseUrl}}/user-views
 ...headers
 
 {
   "workspaceId": {{workspaceId}},
+  "device": "DESKTOP",
   "view": {
     "table": {
       "sorting": [{ "id": "title", "desc": true }],
@@ -58,10 +94,43 @@ PATCH {{baseUrl}}/user-views
       }
     },
     "dashboard": {
-      "selectedTab": "attention",
-      "displayMode": "approaching"
+      "distributionTab": "attention",
+      "focusedInstructionsTab": "approaching",
+      "assigneeFilter": ["3", "7"]
     }
   }
 }
+
+?? status == 200
+
+### Upsert User View — personal area (no workspace, desktop)
+PATCH {{baseUrl}}/user-views
+...headers
+
+{
+  "device": "DESKTOP",
+  "view": {
+    "table": {
+      "sorting": [],
+      "columnFilters": [],
+      "quickFilter": [],
+      "columnVisibility": {
+        "columnOrder": [],
+        "hiddenColumns": []
+      }
+    },
+    "dashboard": {
+      "distributionTab": "load",
+      "focusedInstructionsTab": "overdue",
+      "assigneeFilter": []
+    }
+  }
+}
+
+?? status == 200
+
+### Get User View — personal area (desktop)
+GET {{baseUrl}}/user-views?device=DESKTOP
+...headers
 
 ?? status == 200
