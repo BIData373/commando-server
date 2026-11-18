@@ -44,6 +44,13 @@ DELETE DELETE
     
 
 
+        device {
+            MOBILE MOBILE
+DESKTOP DESKTOP
+        }
+    
+
+
         workspace_request_status {
             PENDING PENDING
 APPROVED APPROVED
@@ -242,6 +249,7 @@ COMPLETED COMPLETED
     Int id "🗝️"
     Int user_id 
     Int workspace_id "❓"
+    Device device 
     Json view 
     }
   
@@ -350,6 +358,7 @@ COMPLETED COMPLETED
     "tasks_history" }o--|| users : "user"
     "user_viewed_tasks" }o--|| users : "user"
     "user_viewed_tasks" }o--|| tasks : "task"
+    "user_views" |o--|| "Device" : "enum:device"
     "user_views" }o--|| users : "user"
     "user_views" }o--|o workspaces : "workspace"
     "user_workspace_visits" }o--|| users : "user"

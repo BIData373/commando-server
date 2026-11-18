@@ -9,7 +9,7 @@ import {
 import { ApiBody, ApiOkResponse, ApiOperation, ApiQuery } from '@nestjs/swagger';
 import { TransformPlainToInstance } from 'class-transformer';
 import type { Request } from 'express';
-import { GetOptionalViewerWorkspaceIdFieldDto, GetViewerWorkspaceIdFieldDto } from '../workspace/dto/request/get-workspace-id-field.dto';
+import { GetUserViewDto } from './dto/request/get-user-view.dto';
 import { UpsertUserViewDto } from './dto/request/upsert-user-view.dto';
 import { UserViewDto } from './dto/response/user-view.dto';
 import { UserViewService } from './user-view.service';
@@ -21,15 +21,15 @@ export class UserViewController {
     ) { }
 
     @ApiOperation({ operationId: 'getUserView' })
-    @ApiQuery({ type: GetOptionalViewerWorkspaceIdFieldDto })
+    @ApiQuery({ type: GetUserViewDto })
     @Get()
     @ApiOkResponse({ type: UserViewDto })
     @TransformPlainToInstance(UserViewDto)
     async findOne(
         @Req() { user }: Request,
-        @Query() { workspaceId }: GetOptionalViewerWorkspaceIdFieldDto
+        @Query() dto: GetUserViewDto
     ) {
-        return await this.userViewsService.findOne(user.id, workspaceId);
+        return await this.userViewsService.findOne(user.id, dto);
     }
 
     @ApiOperation({ operationId: 'upsertUserView' })
