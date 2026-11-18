@@ -16,4 +16,10 @@ export class WorkspaceStatusDto extends IdDto {
 
   @ExposeProperty()
   workspaceId: number;
+
+  @ExposeProperty()
+  createdAt: Date
+
+  @ExposeProperty()
+  updatedAt: Date
 }
