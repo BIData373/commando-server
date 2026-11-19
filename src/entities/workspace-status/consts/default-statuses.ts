@@ -1,6 +1,6 @@
 import { Prisma, WorkspaceStatusType } from "../../../types/prisma";
 
-export const DEFAULT_STATUSES: Prisma.WorkspaceStatusCreateManyWorkspaceInput[] =
+export const DEFAULT_STATUSES: Omit<Prisma.WorkspaceStatusCreateManyWorkspaceInput, "createdById" | "updatedById">[] =
   [
     {
       name: "טרם בוצע",

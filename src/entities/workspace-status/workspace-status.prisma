@@ -10,8 +10,15 @@ model WorkspaceStatus {
   assigneeTaskStatuses AssigneeTaskStatus[]
   tasks                Task[]
 
+  // Meta Fields
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @default(now()) @map("updated_at") @updatedAt
+
+  createdById Int  @map("created_by")
+  createdBy   User @relation("workspace_status_created_by", fields: [createdById], references: [id])
+
+  updatedById Int  @map("updated_by")
+  updatedBy   User @relation("workspace_status_updated_by", fields: [updatedById], references: [id])
 
   @@map("workspace_statuses")
 }

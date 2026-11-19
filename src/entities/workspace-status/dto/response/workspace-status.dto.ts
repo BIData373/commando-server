@@ -1,10 +1,13 @@
 import { Exclude } from 'class-transformer';
 import { ExposeProperty } from '../../../../common/decorators/expose-property.decorator';
-import { IdDto } from '../../../../common/dto/response/id.dto';
+import { PartialMetaFieldsDto } from '../../../../common/dto/response/partial-meta-fields.dto';
 import { WorkspaceStatusType } from '../../../../types/prisma/client';
 
 @Exclude()
-export class WorkspaceStatusDto extends IdDto {
+export class WorkspaceStatusDto extends PartialMetaFieldsDto {
+  @ExposeProperty()
+  id: number;
+
   @ExposeProperty()
   name: string;
 
@@ -16,10 +19,4 @@ export class WorkspaceStatusDto extends IdDto {
 
   @ExposeProperty()
   workspaceId: number;
-
-  @ExposeProperty()
-  createdAt: Date
-
-  @ExposeProperty()
-  updatedAt: Date
 }

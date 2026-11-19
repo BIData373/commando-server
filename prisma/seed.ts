@@ -119,14 +119,14 @@ async function main() {
 
   console.log('* Creating Workspace Statuses')
   // ── WorkspaceStatuses (3 per workspace) ───────────────────────────────────
-  const createStatuses = (workspaceId: number) =>
-    Promise.all(DEFAULT_STATUSES.map((s) => prisma.workspaceStatus.create({ data: { ...s, workspaceId } })));
+  const createStatuses = ({ id: workspaceId, createdById }: { id: number; createdById: number }) =>
+    Promise.all(DEFAULT_STATUSES.map((s) => prisma.workspaceStatus.create({ data: { ...s, workspaceId, createdById, updatedById: createdById } })));
 
   const [
     [ws1NotStarted, ws1InProgress, ws1Completed],
     [ws2NotStarted, ws2InProgress, ws2Completed],
     [ws3NotStarted, ws3InProgress, ws3Completed],
-  ] = await Promise.all([createStatuses(ws1.id), createStatuses(ws2.id), createStatuses(ws3.id)]);
+  ] = await Promise.all([createStatuses(ws1), createStatuses(ws2), createStatuses(ws3)]);
 
   const statusIdByType = {
     [ws1.id]: { [WorkspaceStatusType.NOT_STARTED]: ws1NotStarted.id, [WorkspaceStatusType.IN_PROGRESS]: ws1InProgress.id, [WorkspaceStatusType.COMPLETED]: ws1Completed.id },
