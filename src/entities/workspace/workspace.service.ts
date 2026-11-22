@@ -55,7 +55,11 @@ export class WorkspaceService {
         updatedById: userId,
         workspaceStatuses: {
           createMany: {
-            data: DEFAULT_STATUSES
+            data: DEFAULT_STATUSES.map((s) => ({ 
+              ...s, 
+              createdById: userId, 
+              updatedById: userId 
+            }))
           }
         }
       },

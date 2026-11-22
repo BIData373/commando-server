@@ -292,6 +292,10 @@ COMPLETED COMPLETED
     String color 
     WorkspaceStatusType status_type 
     Int workspace_id 
+    DateTime created_at 
+    DateTime updated_at 
+    Int created_by 
+    Int updated_by 
     }
   
     "archived_user_assignee_task" }o--|| tasks : "task"
@@ -364,4 +368,6 @@ COMPLETED COMPLETED
     "workspace_requests" }o--|o users : "deletedBy"
     "workspace_statuses" |o--|| "WorkspaceStatusType" : "enum:status_type"
     "workspace_statuses" }o--|| workspaces : "workspace"
+    "workspace_statuses" }o--|| users : "createdBy"
+    "workspace_statuses" }o--|| users : "updatedBy"
 ```

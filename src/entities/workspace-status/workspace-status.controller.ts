@@ -1,6 +1,7 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req } from '@nestjs/common';
 import { ApiBody, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { TransformPlainToInstance } from 'class-transformer';
+import { Request } from 'express';
 import { GetAssignedWorkspaceIdDto } from '../workspace/dto/request/get-workspace-id-field.dto';
 import { CreateWorkspaceStatusDto } from './dto/request/create-workspace-status.dto';
 import { GetManagerWorkspaceStatusIdDto, GetViewerWorkspaceStatusIdDto } from './dto/request/get-workspace-status-id.dto';
@@ -18,9 +19,10 @@ export class WorkspaceStatusController {
   @ApiCreatedResponse({ type: WorkspaceStatusDto })
   @TransformPlainToInstance(WorkspaceStatusDto)
   async create(
+    @Req() { user }: Request,
     @Body() dto: CreateWorkspaceStatusDto
   ) {
-    return await this.workspaceStatusService.create(dto);
+    return await this.workspaceStatusService.create(dto, user.id);
   }
 
   @ApiOperation({ operationId: 'listWorkspaceStatuses' })
@@ -52,10 +54,11 @@ export class WorkspaceStatusController {
   @ApiOkResponse({ type: WorkspaceStatusDto })
   @TransformPlainToInstance(WorkspaceStatusDto)
   async update(
+    @Req() { user }: Request,
     @Param() { id }: GetManagerWorkspaceStatusIdDto,
     @Body() dto: UpdateWorkspaceStatusDto
   ) {
-    return await this.workspaceStatusService.update(id, dto);
+    return await this.workspaceStatusService.update(id, dto, user.id);
   }
 
   @ApiOperation({ operationId: 'deleteWorkspaceStatus' })
