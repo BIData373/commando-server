@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, Query, Req } from '@nestjs/common';
 import { ApiBody, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { TransformPlainToInstance } from 'class-transformer';
 import { Request } from 'express';
@@ -50,7 +50,7 @@ export class TagController {
   @ApiOperation({ operationId: 'updateTag' })
   @ApiParam({ name: 'id', type: Number })
   @ApiBody({ type: UpdateTagDto })
-  @Patch(':id')
+  @Put(':id')
   @ApiOkResponse({ type: TagDto })
   @TransformPlainToInstance(TagDto)
   async update(

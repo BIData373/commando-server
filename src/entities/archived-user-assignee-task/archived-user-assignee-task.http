@@ -37,7 +37,7 @@ POST {{baseUrl}}/task
 ?? status == 201
 
 ### Toggle User Task Archive — assignee the user does not belong to (expect 403)
-PATCH {{baseUrl}}/archived-user-assignee-task?taskId={{personalTaskId}}&assigneeId={{personalAssigneeId}}
+PUT {{baseUrl}}/archived-user-assignee-task?taskId={{personalTaskId}}&assigneeId={{personalAssigneeId}}
 ...headers
 requestusername: s111111
 is-bi: false
@@ -45,7 +45,7 @@ is-bi: false
 ?? status == 403
 
 ### Toggle User Task Archive — missing assigneeId (expect 400)
-PATCH {{baseUrl}}/archived-user-assignee-task?taskId={{personalTaskId}}
+PUT {{baseUrl}}/archived-user-assignee-task?taskId={{personalTaskId}}
 ...headers
 requestusername: yael
 is-bi: false
@@ -53,7 +53,7 @@ is-bi: false
 ?? status == 400
 
 ### Toggle User Task Archive — missing taskId (expect 400)
-PATCH {{baseUrl}}/archived-user-assignee-task?assigneeId={{personalAssigneeId}}
+PUT {{baseUrl}}/archived-user-assignee-task?assigneeId={{personalAssigneeId}}
 ...headers
 requestusername: yael
 is-bi: false
@@ -61,7 +61,7 @@ is-bi: false
 ?? status == 400
 
 ### Toggle User Task Archive — archive
-PATCH {{baseUrl}}/archived-user-assignee-task?taskId={{personalTaskId}}&assigneeId={{personalAssigneeId}}
+PUT {{baseUrl}}/archived-user-assignee-task?taskId={{personalTaskId}}&assigneeId={{personalAssigneeId}}
 ...headers
 requestusername: yael
 is-bi: false
@@ -69,7 +69,7 @@ is-bi: false
 ?? status == 204
 
 ### Toggle User Task Archive — unarchive
-PATCH {{baseUrl}}/archived-user-assignee-task?taskId={{personalTaskId}}&assigneeId={{personalAssigneeId}}
+PUT {{baseUrl}}/archived-user-assignee-task?taskId={{personalTaskId}}&assigneeId={{personalAssigneeId}}
 ...headers
 requestusername: yael
 is-bi: false

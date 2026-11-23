@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, Query, Req, UseInterceptors } from '@nestjs/common';
 import { ApiBody, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { TransformPlainToInstance } from 'class-transformer';
 import { Request } from 'express';
@@ -54,7 +54,7 @@ export class AssigneeGroupController {
   @UseInterceptors(
     CopyDtosInRequest<UpdateAssigneeGroupDto, GetManagerAssigneeGroupIdDto>({ from: 'params.id', to: 'body.context.assigneeGroup', dto: GetManagerAssigneeGroupIdDto })
   )
-  @Patch(':id')
+  @Put(':id')
   @ApiOkResponse({ type: AssigneeGroupDto })
   @TransformPlainToInstance(AssigneeGroupDto)
   async update(

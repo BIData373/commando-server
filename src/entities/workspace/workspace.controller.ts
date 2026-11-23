@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, Query, Req, UseGuards, UseInterceptors } from '@nestjs/common';
 import { ApiBadRequestResponse, ApiBody, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { TransformPlainToInstance } from 'class-transformer';
 import { Request } from 'express';
@@ -71,7 +71,7 @@ export class WorkspaceController {
     from: 'params.id', to: 'body.context.workspace', dto: GetManagerWorkspaceIdDto
   }))
   
-  @Patch(':id')
+  @Put(':id')
   @ApiOkResponse({ type: WorkspaceDto })
   @ApiBadRequestResponse({ type: UpdateWorkspaceErrorDto })
   @TransformPlainToInstance(WorkspaceDto)

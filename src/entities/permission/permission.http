@@ -13,7 +13,7 @@ GET {{baseUrl}}/permission/me?workspaceId={{workspaceId}}
 ?? status == 200
 
 ### Update Permission type
-PATCH {{baseUrl}}/permission
+PUT {{baseUrl}}/permission
 ...headers
 
 {

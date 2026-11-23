@@ -224,7 +224,7 @@ is-bi: false
 ?? status == 403
 
 ### Update Source — with new attachment
-PATCH {{baseUrl}}/source/{{sourceId}}
+PUT {{baseUrl}}/source/{{sourceId}}
 ...formHeaders
 Content-Type: multipart/form-data; boundary={{boundary}}
 
@@ -242,7 +242,7 @@ Content-Type: application/pdf
 ?? status == 200
 
 ### Update Source — name only
-PATCH {{baseUrl}}/source/{{sourceId}}
+PUT {{baseUrl}}/source/{{sourceId}}
 ...headers
 
 {
@@ -254,7 +254,7 @@ PATCH {{baseUrl}}/source/{{sourceId}}
 ?? status == 200
 
 ### Update Source — insufficient permission (expect 403)
-PATCH {{baseUrl}}/source/{{sourceId}}
+PUT {{baseUrl}}/source/{{sourceId}}
 ...formHeaders
 is-bi: false
 Content-Type: multipart/form-data; boundary={{boundary}}

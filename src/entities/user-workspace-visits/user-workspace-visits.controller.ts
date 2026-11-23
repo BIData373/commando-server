@@ -1,4 +1,4 @@
-import { Controller, HttpCode, Patch, Query, Req } from '@nestjs/common';
+import { Controller, HttpCode, Put, Query, Req } from '@nestjs/common';
 import { ApiNoContentResponse, ApiOperation } from '@nestjs/swagger';
 import { HttpStatusCode } from 'axios';
 import { UserWorkspaceVisitsService } from './user-workspace-visits.service';
@@ -10,7 +10,7 @@ export class UserWorkspaceVisitsController {
   constructor(private readonly userWorkspaceVisitsService: UserWorkspaceVisitsService) { }
 
   @ApiOperation({ operationId: 'upsertUserWorkspaceVisit' })
-  @Patch()
+  @Put()
   @HttpCode(HttpStatusCode.NoContent)
   @ApiNoContentResponse()
   async updateUserVisit(

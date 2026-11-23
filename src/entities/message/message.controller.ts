@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, Query, Req } from '@nestjs/common';
 import { ApiBody, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { TransformPlainToInstance } from 'class-transformer';
 import { Request } from 'express';
@@ -53,7 +53,7 @@ export class MessageController {
   @ApiOperation({ operationId: 'updateMessage' })
   @ApiParam({ name: 'id', type: Number })
   @ApiBody({ type: UpdateMessageDto })
-  @Patch(':id')
+  @Put(':id')
   @ApiOkResponse({ type: MessageDto })
   @TransformPlainToInstance(MessageDto)
   async update(

@@ -39,7 +39,7 @@ GET {{baseUrl}}/tag/{{tagId}}
 ?? status == 200
 
 ### Update Tag
-PATCH {{baseUrl}}/tag/{{tagId}}
+PUT {{baseUrl}}/tag/{{tagId}}
 ...headers
 
 {

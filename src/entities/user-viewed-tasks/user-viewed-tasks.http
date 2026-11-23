@@ -1,6 +1,6 @@
 # @import ../../../global.http
 
-PATCH {{baseUrl}}/user-viewed-tasks?workspaceId=3
+PUT {{baseUrl}}/user-viewed-tasks?workspaceId=3
 ...headers
 requestusername: avi
 is-bi: false

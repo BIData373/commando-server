@@ -1,7 +1,7 @@
 # @import ../../../global.http
 
 ### Upsert User View — valid payload
-PATCH {{baseUrl}}/user-views
+PUT {{baseUrl}}/user-views
 ...headers
 
 {
@@ -26,7 +26,7 @@ PATCH {{baseUrl}}/user-views
 ?? status == 200
 
 ### Upsert User View — missing required field (expect 400)
-PATCH {{baseUrl}}/user-views
+PUT {{baseUrl}}/user-views
 ...headers
 
 {
@@ -42,7 +42,7 @@ GET {{baseUrl}}/user-views?workspaceId={{workspaceId}}
 ?? status == 200
 
 ### Upsert User View — updated values
-PATCH {{baseUrl}}/user-views
+PUT {{baseUrl}}/user-views
 ...headers
 
 {
