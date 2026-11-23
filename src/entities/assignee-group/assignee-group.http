@@ -51,7 +51,7 @@ GET {{baseUrl}}/assignee-group/{{2}}
 ?? status == 200
 
 ### Update Assignee Group
-PATCH {{baseUrl}}/assignee-group/{{3}}
+PUT {{baseUrl}}/assignee-group/{{3}}
 ...headers
 
 {

@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Query, Req, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, Param, Post, Put, Query, Req, UseInterceptors } from '@nestjs/common';
 import { ApiBody, ApiCreatedResponse, ApiNoContentResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { HttpStatusCode } from 'axios';
 import { TransformPlainToInstance } from 'class-transformer';
@@ -57,7 +57,7 @@ export class AssigneeController {
   @UseInterceptors(
     CopyDtosInRequest<UpdateStatusEditableDto, GetManagerAssigneeIdDto>({ from: 'params.id', to: 'body.context.assignee', dto: GetManagerAssigneeIdDto })
   )
-  @Patch(':id/status-editable')
+  @Put(':id/status-editable')
   @HttpCode(HttpStatusCode.NoContent)
   @ApiNoContentResponse()
   async updateStatusEditable(
@@ -71,7 +71,7 @@ export class AssigneeController {
   @ApiOperation({ operationId: 'updateAssignee' })
   @ApiParam({ name: 'id', type: Number })
   @ApiBody({ type: UpdateAssigneeDto })
-  @Patch(':id')
+  @Put(':id')
   @ApiOkResponse({ type: AssigneeDto })
   @TransformPlainToInstance(AssigneeDto)
   async update(

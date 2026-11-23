@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, Query, Req, UseGuards } from '@nestjs/common';
 import { ApiBody, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { TransformPlainToInstance } from 'class-transformer';
 import type { Request } from 'express';
@@ -59,7 +59,7 @@ export class UserController {
   }
 
   @ApiOperation({ operationId: 'completeOnboarding' })
-  @Patch('complete-onboarding')
+  @Put('complete-onboarding')
   @ApiOkResponse({ type: CurrentUserDto })
   @TransformPlainToInstance(CurrentUserDto)
   async completeOnboarding(
@@ -84,7 +84,7 @@ export class UserController {
   @ApiOperation({ operationId: 'updateUser' })
   @ApiParam({ name: 'id', type: Number })
   @ApiBody({ type: UpdateUserDto })
-  @Patch(':id')
+  @Put(':id')
   @ApiOkResponse({ type: UserDto })
   @TransformPlainToInstance(UserDto)
   async update(

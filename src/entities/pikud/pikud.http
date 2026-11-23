@@ -40,7 +40,7 @@ GET {{baseUrl}}/pikud/{{pikudId}}
 ?? status == 200
 
 ### Update Pikud
-PATCH {{baseUrl}}/pikud/{{3}}
+PUT {{baseUrl}}/pikud/{{3}}
 ...headers
 
 {

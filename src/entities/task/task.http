@@ -64,7 +64,7 @@ GET {{baseUrl}}/task/{{13}}
 ?? status == 200
 
 ### Update Task
-PATCH {{baseUrl}}/task/{{13}}
+PUT {{baseUrl}}/task/{{13}}
 ...headers
 
 {

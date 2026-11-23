@@ -38,7 +38,7 @@ GET {{baseUrl}}/workspace-status/{{workspaceStatusId}}
 ?? status == 200
 
 ### Update WorkspaceStatus
-PATCH {{baseUrl}}/workspace-status/{{workspaceStatusId}}
+PUT {{baseUrl}}/workspace-status/{{workspaceStatusId}}
 Content-Type: application/json
 
 {

@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, Req, UseGuards } from '@nestjs/common';
 import { ApiBadRequestResponse, ApiBody, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiParam } from '@nestjs/swagger';
 import { TransformPlainToInstance } from 'class-transformer';
 import { Request } from 'express';
@@ -53,7 +53,7 @@ export class WorkspaceRequestsController {
   @UseGuards(BIGuard)
   @ApiParam({ name: 'id', type: Number })
   @ApiBody({ type: UpdateWorkspaceRequestDto })
-  @Patch(':id')
+  @Put(':id')
   @ApiOkResponse({ type: WorkspaceRequestDto })
   @ApiBadRequestResponse({ type: UpdateWorkspaceRequestErrorDto })
   @TransformPlainToInstance(WorkspaceRequestDto)

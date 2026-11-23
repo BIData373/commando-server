@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Patch, Query, Req } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Put, Query, Req } from '@nestjs/common';
 import { ApiBody, ApiOkResponse, ApiOperation, ApiQuery } from '@nestjs/swagger';
 import { TransformPlainToInstance } from 'class-transformer';
 import type { Request } from 'express';
@@ -37,7 +37,7 @@ export class PermissionController {
 
   @ApiOperation({ operationId: 'upsertPermission' })
   @ApiBody({ type: UpsertPermissionDto })
-  @Patch()
+  @Put()
   @ApiOkResponse({ type: PermissionDto })
   @TransformPlainToInstance(PermissionDto)
   async upsert(

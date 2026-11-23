@@ -56,7 +56,7 @@ POST {{baseUrl}}/task
 ?? status == 201
 
 ### Toggle Workspace Task Archive — non-manager (expect 403)
-PATCH {{baseUrl}}/archived-workspace-assignee-task?taskId={{assignedTaskId}}&assigneeId={{archiveAssigneeId}}
+PUT {{baseUrl}}/archived-workspace-assignee-task?taskId={{assignedTaskId}}&assigneeId={{archiveAssigneeId}}
 ...headers
 requestusername: s111111
 is-bi: false
@@ -64,37 +64,37 @@ is-bi: false
 ?? status == 403
 
 ### Toggle Workspace Task Archive — missing taskId (expect 400)
-PATCH {{baseUrl}}/archived-workspace-assignee-task?assigneeId={{archiveAssigneeId}}
+PUT {{baseUrl}}/archived-workspace-assignee-task?assigneeId={{archiveAssigneeId}}
 ...headers
 
 ?? status == 400
 
 ### Toggle Workspace Task Archive — archive assignee
-PATCH {{baseUrl}}/archived-workspace-assignee-task?taskId={{assignedTaskId}}&assigneeId={{archiveAssigneeId}}
+PUT {{baseUrl}}/archived-workspace-assignee-task?taskId={{assignedTaskId}}&assigneeId={{archiveAssigneeId}}
 ...headers
 
 ?? status == 204
 
 ### Toggle Workspace Task Archive — unarchive assignee
-PATCH {{baseUrl}}/archived-workspace-assignee-task?taskId={{assignedTaskId}}&assigneeId={{archiveAssigneeId}}
+PUT {{baseUrl}}/archived-workspace-assignee-task?taskId={{assignedTaskId}}&assigneeId={{archiveAssigneeId}}
 ...headers
 
 ?? status == 204
 
 ### Toggle Workspace Task Archive — whole task while it has assignees (expect 400)
-PATCH {{baseUrl}}/archived-workspace-assignee-task?taskId={{assignedTaskId}}
+PUT {{baseUrl}}/archived-workspace-assignee-task?taskId={{assignedTaskId}}
 ...headers
 
 ?? status == 400
 
 ### Toggle Workspace Task Archive — archive whole unassigned task
-PATCH {{baseUrl}}/archived-workspace-assignee-task?taskId={{unassignedTaskId}}
+PUT {{baseUrl}}/archived-workspace-assignee-task?taskId={{unassignedTaskId}}
 ...headers
 
 ?? status == 204
 
 ### Toggle Workspace Task Archive — unarchive whole unassigned task
-PATCH {{baseUrl}}/archived-workspace-assignee-task?taskId={{unassignedTaskId}}
+PUT {{baseUrl}}/archived-workspace-assignee-task?taskId={{unassignedTaskId}}
 ...headers
 
 ?? status == 204

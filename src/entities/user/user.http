@@ -37,7 +37,7 @@ GET {{baseUrl}}/user/me
 ?? status == 200
 
 ### Mark current User as onboarded
-PATCH {{baseUrl}}/user/visit
+PUT {{baseUrl}}/user/visit
 ...headers
 
 ?? status == 200
@@ -48,7 +48,7 @@ GET {{baseUrl}}/user/{{userId}}
 ?? status == 200
 
 ### Update User
-PATCH {{baseUrl}}/user/{{userId}}
+PUT {{baseUrl}}/user/{{userId}}
 Content-Type: application/json
 
 {
