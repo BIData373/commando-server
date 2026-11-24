@@ -8,6 +8,7 @@ import { AddUserToContextInterceptor } from '../../common/interceptors/add-user-
 import { CopyDtosInRequest } from '../../common/interceptors/copy-dtos-in-request.interceptor';
 import { GetManagerWorkspaceIdFieldDto, GetViewerWorkspaceIdFieldDto } from '../workspace/dto/request/get-workspace-id-field.dto';
 import { CreateSourceDto } from './dto/request/create-source.dto';
+import { ExtractSourceDto } from './dto/request/extract-source.dto';
 import { GetAIExtractionCallbackDto } from './dto/request/get-ai-extraction-callback.dto';
 import { GetManagerSourceIdDto, GetViewerSourceIdDto } from './dto/request/get-source-id.dto';
 import { UpdateSourceDto } from './dto/request/update-source.dto';
@@ -68,23 +69,17 @@ export class SourceController {
   }
 
   @ApiOperation({ operationId: 'updateSource' })
-  @ApiConsumes('multipart/form-data')
   @ApiParam({ name: 'id', type: Number })
   @ApiBody({ type: UpdateSourceDto })
-  @UseInterceptors(
-    FileInterceptor('attachment', { storage: memoryStorage() }),
-    AddUserToContextInterceptor
-  )
   @Patch(':id')
   @ApiOkResponse({ type: SourceDto })
   @TransformPlainToInstance(SourceDto)
   async update(
     @Req() { user }: Request,
     @Param() { context: { source } }: GetManagerSourceIdDto,
-    @Body() dto: UpdateSourceDto,
-    @UploadedFile() file?: Express.Multer.File
+    @Body() dto: UpdateSourceDto
   ) {
-    return await this.sourceService.update(source, dto, user.id, file);
+    return await this.sourceService.update(source, dto, user.id);
   }
 
   @ApiOperation({ operationId: 'deleteSource' })
@@ -101,18 +96,22 @@ export class SourceController {
 
   @ApiOperation({ operationId: 'extractSource' })
   @ApiParam({ name: 'id', type: Number })
-  @Post(':id/extract')
+  @ApiParam({ name: 'attachmentId', type: Number })
+  @Post(':id/extract/:attachmentId')
   @ApiOkResponse({ type: SourceDto })
   @TransformPlainToInstance(SourceDto)
   async extract(
-    @Param() { context: { source } }: GetManagerSourceIdDto,
+    @Param() { context: { source, sourceAttachment } }: ExtractSourceDto
   ) {
-    return await this.sourceService.extract(source);
+    return await this.sourceService.extract(source, sourceAttachment);
   }
 
   @ApiOperation({ operationId: 'aiExtractionCallback' })
   @ApiParam({ name: 'id', type: Number })
   @ApiBody({ type: GetAIExtractionCallbackDto })
+  @UseInterceptors(
+    CopyDtosInRequest<GetAIExtractionCallbackDto, GetManagerSourceIdDto>({ from: 'params.id', to: 'body.context.source', dto: GetManagerSourceIdDto })
+  )
   @Post(':id/ai-result')
   @ApiOkResponse({ type: SourceWithTasksDto })
   @TransformPlainToInstance(SourceWithTasksDto)

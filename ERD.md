@@ -141,10 +141,7 @@ COMPLETED COMPLETED
     Int id "🗝️"
     String name 
     DateTime date "❓"
-    String attachment_key "❓"
-    String attachment_name "❓"
     Boolean draft 
-    ExtractionStatus extraction_status "❓"
     Int workspace_id 
     DateTime created_at 
     DateTime updated_at 
@@ -152,6 +149,20 @@ COMPLETED COMPLETED
     Int created_by 
     Int updated_by 
     Int deleted_by "❓"
+    }
+  
+
+  "source_attachments" {
+    Int id "🗝️"
+    String key 
+    String name 
+    ExtractionStatus extraction_status "❓"
+    Boolean visible_to_assignees 
+    Int source_id 
+    DateTime created_at 
+    DateTime updated_at 
+    Int created_by 
+    Int updated_by 
     }
   
 
@@ -283,12 +294,15 @@ COMPLETED COMPLETED
     "pikuds" }o--|| users : "createdBy"
     "pikuds" }o--|| users : "updatedBy"
     "pikuds" }o--|o users : "deletedBy"
-    "sources" |o--|o "ExtractionStatus" : "enum:extraction_status"
     "sources" }o--|| workspaces : "workspace"
     "sources" }o--|| users : "createdBy"
     "sources" }o--|| users : "updatedBy"
     "sources" }o--|o users : "deletedBy"
     "sources" o{--}o "tags" : ""
+    "source_attachments" |o--|o "ExtractionStatus" : "enum:extraction_status"
+    "source_attachments" }o--|| sources : "source"
+    "source_attachments" }o--|| users : "createdBy"
+    "source_attachments" }o--|| users : "updatedBy"
     "tags" }o--|| users : "createdBy"
     "tags" }o--|| users : "updatedBy"
     "tags" }o--|| workspaces : "workspace"

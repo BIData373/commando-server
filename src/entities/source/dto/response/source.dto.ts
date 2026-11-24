@@ -1,7 +1,7 @@
 import { Exclude, Type } from 'class-transformer';
 import { ExposeProperty } from '../../../../common/decorators/expose-property.decorator';
 import { IdMetaFieldsDto } from '../../../../common/dto/response/id-meta-fields.dto';
-import { ExtractionStatus } from '../../../../types/prisma';
+import { SourceAttachmentDto } from '../../../source-attachment/dto/response/source-attachment.dto';
 import { TagDto } from '../../../tag/dto/response/tag.dto';
 
 @Exclude()
@@ -15,17 +15,12 @@ export class SourceDto extends IdMetaFieldsDto {
   @ExposeProperty()
   workspaceId: number;
 
-  @ExposeProperty({ type: String, nullable: true })
-  attachmentKey: string | null;
-
-  @ExposeProperty({ type: String, nullable: true })
-  attachmentName: string | null;
+  @ExposeProperty({ type: [SourceAttachmentDto] })
+  @Type(() => SourceAttachmentDto)
+  attachments: SourceAttachmentDto[];
 
   @ExposeProperty()
   draft: boolean;
-
-  @ExposeProperty({ enumName: 'ExtractionStatus', enum: ExtractionStatus, nullable: true })
-  extractionStatus: ExtractionStatus | null;
 
   @ExposeProperty({ type: [TagDto] })
   @Type(() => TagDto)

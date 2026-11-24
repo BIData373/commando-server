@@ -6,6 +6,7 @@ import { PrismaService } from '../../common/prisma.service'
 import { ArchivedUserAssigneeTask, ArchivedWorkspaceAssigneeTask, PermissionType, Prisma, Task, User } from '../../types/prisma'
 import { ArchivedWorkspaceAssigneeService } from '../archived-workspace-assignee-task/archived-workspace-assignee-task.service'
 import { MessageRelayService } from '../services/message-relay.service'
+import { SourceAttachmentService } from '../source-attachment/source-attachment.service'
 import { tagsConnectOrCreateArgs, tagsSetOrCreateArgs } from '../tag/functions/tag-args'
 import { WorkspaceWithPermissions } from '../workspace/types/workspace-with-permission.type'
 import { WorkspaceService } from '../workspace/workspace.service'
@@ -81,12 +82,19 @@ export class TaskService {
     private readonly messageRelayService: MessageRelayService
   ) { }
 
-  static baseInclude(userId?: number) {
+  static baseInclude(userId?: number, attachmentsWhere?: Prisma.SourceAttachmentWhereInput) {
     return {
       tags: true,
       source: {
         where: { deletedAt: null },
-        include: { tags: true }
+        include: {
+          tags: true,
+          attachments: {
+            where: attachmentsWhere,
+            include: SourceAttachmentService.include,
+            orderBy: { createdAt: 'asc' }
+          }
+        }
       },
       messages: {
         where: { deletedAt: null },
@@ -124,9 +132,9 @@ export class TaskService {
     return { ...task, updatedAt, updatedBy }
   }
 
-  static withWorkspaceInclude(userId?: number) {
+  static withWorkspaceInclude(userId?: number, attachmentsWhere?: Prisma.SourceAttachmentWhereInput) {
     return {
-      ...TaskService.baseInclude(userId),
+      ...TaskService.baseInclude(userId, attachmentsWhere),
       workspace: {
         include: {
           permissions: userId
@@ -137,18 +145,18 @@ export class TaskService {
     } satisfies Prisma.TaskInclude
   }
 
-  static withArchivedInclude(userId: number) {
+  static withArchivedInclude(userId: number, attachmentsWhere?: Prisma.SourceAttachmentWhereInput) {
     return {
-      ...TaskService.baseInclude(userId),
+      ...TaskService.baseInclude(userId, attachmentsWhere),
       archivedWorkspaceAssigneeTask: true,
       archivedUserAssigneeTask: { where: { userId } }
     } satisfies Prisma.TaskInclude
   }
 
-  static withWorkspaceAndArchivedInclude(userId: number) {
+  static withWorkspaceAndArchivedInclude(userId: number, attachmentsWhere?: Prisma.SourceAttachmentWhereInput) {
     return {
-      ...TaskService.withWorkspaceInclude(userId),
-      ...TaskService.withArchivedInclude(userId)
+      ...TaskService.withWorkspaceInclude(userId, attachmentsWhere),
+      ...TaskService.withArchivedInclude(userId, attachmentsWhere)
     } satisfies Prisma.TaskInclude
   }
 
@@ -398,7 +406,7 @@ export class TaskService {
         workspaceId: workspace.id,
         ...TaskService.commonWhere
       },
-      include: TaskService.withArchivedInclude(user.id),
+      include: TaskService.withArchivedInclude(user.id, SourceAttachmentService.accessibleWhere(user)),
       orderBy: TaskService.orderBy
     })
   }
@@ -521,19 +529,19 @@ export class TaskService {
     ).flat()
   }
 
-  async findBySource(sourceId: number, userId: number, isArchived?: boolean) {
+  async findBySource(sourceId: number, user: User, isArchived?: boolean) {
     return await this.prisma.task.findMany({
       where: {
         sourceId,
         deletedAt: null
       },
-      include: TaskService.withArchivedInclude(userId),
+      include: TaskService.withArchivedInclude(user.id, SourceAttachmentService.accessibleWhere(user)),
       orderBy: { id: 'asc' }
     })
   }
 
   async findFormattedBySource(sourceId: number, workspace: WorkspaceWithPermissions, user: User, isArchived?: boolean) {
-    const tasks = await this.findBySource(sourceId, user.id, isArchived)
+    const tasks = await this.findBySource(sourceId, user, isArchived)
 
     return tasks.flatMap(task => TaskService.formatAdditionalTaskFields(
       task,
@@ -557,7 +565,7 @@ export class TaskService {
         },
         ...TaskService.commonWhere
       },
-      include: TaskService.withWorkspaceAndArchivedInclude(user.id),
+      include: TaskService.withWorkspaceAndArchivedInclude(user.id, SourceAttachmentService.accessibleWhere(user)),
       orderBy: TaskService.orderBy
     })
   }
@@ -594,7 +602,7 @@ export class TaskService {
   async findOne(id: number, user: User) {
     const task = await this.prisma.task.findUnique({
       where: { id, deletedAt: null },
-      include: TaskService.withWorkspaceAndArchivedInclude(user.id)
+      include: TaskService.withWorkspaceAndArchivedInclude(user.id, SourceAttachmentService.accessibleWhere(user))
     })
 
     if (!task) {

@@ -1,15 +1,14 @@
 import { BadRequestException, Injectable } from '@nestjs/common'
 import { countBy, flatMap, intersection, map, uniq } from 'lodash'
 import { chatUrl, discussionNotificationTemplate, messageRelayUsername, vectorUrl } from '../../common/consts/env'
-import { decodeMulterFilename } from '../../common/functions/string'
 import { renderTemplate } from '../../common/functions/template'
 import { PrismaService } from '../../common/prisma.service'
 import { SocketGateway } from '../../socket/socket.gateway'
 import { SocketEventType } from '../../socket/types/socket-event-type.enum'
 import { TaskRunnerService } from '../../task-runner/task-runner.service'
-import { DeadlineType, ExtractionStatus, Prisma, Source, Task, TaskCreationType, User, Workspace } from '../../types/prisma'
-import { S3Service } from '../s3/s3.service'
+import { DeadlineType, ExtractionStatus, Prisma, Source, SourceAttachment, Task, TaskCreationType, User, Workspace } from '../../types/prisma'
 import { MessageRelayService } from '../services/message-relay.service'
+import { SourceAttachmentService } from '../source-attachment/source-attachment.service'
 import { tagsConnectOrCreateArgs, tagsSetOrCreateArgs } from '../tag/functions/tag-args'
 import { taskAssigneeStatusesCreateArgs } from '../task/functions/task-args'
 import { TaskService } from '../task/task.service'
@@ -28,6 +27,10 @@ export class SourceService {
         updatedBy: true
       }
     },
+    attachments: {
+      include: SourceAttachmentService.include,
+      orderBy: { createdAt: 'asc' }
+    },
     createdBy: true,
     updatedBy: true,
     deletedBy: true
@@ -35,7 +38,7 @@ export class SourceService {
 
   constructor(
     private readonly prisma: PrismaService,
-    private readonly s3: S3Service,
+    private readonly sourceAttachmentService: SourceAttachmentService,
     private readonly taskRunner: TaskRunnerService,
     private readonly socket: SocketGateway,
     private readonly taskService: TaskService,
@@ -74,12 +77,15 @@ export class SourceService {
   }
 
   async create(
-    { tags, tasks, workspaceId, context, aiExtraction, draft, ...dto }: CreateSourceDto,
+    { tags, tasks, workspaceId, context, aiExtraction, draft, attachmentVisibleToAssignees, ...dto }: CreateSourceDto,
     userId: number,
     file?: Express.Multer.File
   ) {
-    const attachmentKey = file && await this.s3.upload(file, 'sources')
-    const attachmentName = file ? decodeMulterFilename(file.originalname) : undefined
+    if (aiExtraction && !file) {
+      throw new BadRequestException('An attachment is required for AI extraction')
+    }
+
+    const attachment = file && await this.sourceAttachmentService.upload(file)
 
     let notStartedStatusId: number | undefined
 
@@ -97,10 +103,18 @@ export class SourceService {
         data: {
           ...dto,
           workspaceId,
-          attachmentKey,
-          attachmentName,
+          ...(attachment && {
+            attachments: {
+              create: {
+                ...attachment,
+                extractionStatus: aiExtraction ? ExtractionStatus.PENDING : undefined,
+                visibleToAssignees: attachmentVisibleToAssignees,
+                createdById: userId,
+                updatedById: userId
+              }
+            }
+          }),
           draft: isDraft,
-          extractionStatus: aiExtraction ? ExtractionStatus.PENDING : undefined,
           ...(tags !== undefined && ({
             tags: tagsConnectOrCreateArgs(tags, workspaceId, userId)
           })),
@@ -139,7 +153,7 @@ export class SourceService {
 
 
     if (aiExtraction) {
-      this.taskRunner.sendTask('vector.process_document', [source.id])
+      this.taskRunner.sendTask('vector.process_document', [source.id, source.attachments[0].id])
     }
 
     this.sendNotificationsForNewTasks((tasks ?? []).map(t => map(t.assignees ?? [], 'id')), workspaceId, dto.name, dto.date)
@@ -227,32 +241,10 @@ export class SourceService {
   async update(
     { id, workspaceId, ...source }: Source,
     // TODO - fix
-    { tags, tasks, context, deleteAttachment, workspaceId: _, aiExtraction, draft, ...dto }: UpdateSourceDto,
-    updatedById: number,
-    file?: Express.Multer.File
+    { tags, tasks, context, workspaceId: _, draft, ...dto }: UpdateSourceDto,
+    updatedById: number
   ) {
-    let attachmentKey: string | null | undefined
-    let attachmentName: string | null | undefined
-
-    if (file) {
-      if (source?.attachmentKey) {
-        await this.s3.delete(source.attachmentKey)
-      }
-
-      attachmentKey = await this.s3.upload(file, 'sources')
-      attachmentName = decodeMulterFilename(file.originalname)
-    } else if (deleteAttachment && source?.attachmentKey) {
-      await this.s3.delete(source.attachmentKey)
-      attachmentKey = null
-      attachmentName = null
-    }
-
-    if (aiExtraction) {
-      this.taskRunner.sendTask('vector.process_document', [id])
-    }
-
-    const updatedDraftState = aiExtraction || draft
-    const isPublishing = source.draft && updatedDraftState === false
+    const isPublishing = source.draft && draft === false
 
     if (isPublishing) {
       return await this.prisma.$transaction(async tx => {
@@ -279,8 +271,6 @@ export class SourceService {
           where: { id },
           data: {
             ...dto,
-            attachmentKey,
-            attachmentName,
             updatedById,
             draft: false,
             ...(tags !== undefined && {
@@ -296,10 +286,8 @@ export class SourceService {
       where: { id },
       data: {
         ...dto,
-        attachmentKey,
-        attachmentName,
         updatedById,
-        draft: updatedDraftState,
+        draft,
         ...(tags !== undefined && {
           tags: tagsSetOrCreateArgs(tags, workspaceId, updatedById)
         })
@@ -308,20 +296,25 @@ export class SourceService {
     })
   }
 
-  async extract(source: Source): Promise<SourceDto> {
-    if (source.extractionStatus === ExtractionStatus.PENDING) {
-      throw new BadRequestException('Source extraction is already pending!')
+  async extract(source: Source, sourceAttachment: SourceAttachment): Promise<SourceDto> {
+    if (sourceAttachment.extractionStatus === ExtractionStatus.PENDING) {
+      throw new BadRequestException('Attachment extraction is already pending!')
     }
 
     const updatedSource = await this.prisma.source.update({
       where: { id: source.id },
       data: {
-        extractionStatus: ExtractionStatus.PENDING,
-        draft: true
+        draft: true,
+        attachments: {
+          update: {
+            where: { id: sourceAttachment.id },
+            data: { extractionStatus: ExtractionStatus.PENDING }
+          }
+        }
       },
       include: SourceService.include
     })
-    this.taskRunner.sendTask('vector.process_document', [source.id])
+    this.taskRunner.sendTask('vector.process_document', [source.id, sourceAttachment.id])
     return updatedSource
   }
 
@@ -333,7 +326,7 @@ export class SourceService {
     })
   }
 
-  async processAiResult(source: Source, dto: GetAIExtractionCallbackDto) {
+  async processAiResult(source: Source, { context, attachmentId, ...dto }: GetAIExtractionCallbackDto) {
     const workspace = await this.prisma.workspace.findUniqueOrThrow({
       where: { id: source.workspaceId },
       include: { permissions: { where: { userId: source.createdById } } }
@@ -341,8 +334,8 @@ export class SourceService {
     const user = await this.prisma.user.findUniqueOrThrow({ where: { id: source.createdById } })
 
     if (dto.error) {
-      await this.prisma.source.update({
-        where: { id: source.id },
+      await this.prisma.sourceAttachment.update({
+        where: { id: attachmentId },
         data: { extractionStatus: dto.error }
       })
       return await this.findOneAndEmit(source.id, user, workspace.urlName, SocketEventType.TASK_EXTRACTION_FINISHED)
@@ -416,8 +409,8 @@ export class SourceService {
       ? ExtractionStatus.FINISHED_WITH_TASKS
       : ExtractionStatus.FINISHED_WITHOUT_TASKS
 
-    await this.prisma.source.update({
-      where: { id: source.id },
+    await this.prisma.sourceAttachment.update({
+      where: { id: attachmentId },
       data: { extractionStatus }
     })
 

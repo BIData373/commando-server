@@ -214,6 +214,10 @@ GET {{baseUrl}}/source?workspaceId={{workspaceId}}
 GET {{baseUrl}}/source/{{sourceId}}
 ...headers
 
+{{@response
+  exports.sourceAttachmentId = response.parsedBody.attachments[0]?.id;
+}}
+
 ?? status == 200
 
 ### Get Source by id — insufficient permission (expect 403)
@@ -222,24 +226,6 @@ GET {{baseUrl}}/source/{{sourceId}}
 is-bi: false
 
 ?? status == 403
-
-### Update Source — with new attachment
-PATCH {{baseUrl}}/source/{{sourceId}}
-...formHeaders
-Content-Type: multipart/form-data; boundary={{boundary}}
-
---{{boundary}}
-Content-Disposition: form-data; name="name"
-
-Radio Updated
---{{boundary}}
-Content-Disposition: form-data; name="attachment"; filename="sample-updated.pdf"
-Content-Type: application/pdf
-
-< ./sample-updated.pdf
---{{boundary}}--
-
-?? status == 200
 
 ### Update Source — name only
 PATCH {{baseUrl}}/source/{{sourceId}}
@@ -255,20 +241,17 @@ PATCH {{baseUrl}}/source/{{sourceId}}
 
 ### Update Source — insufficient permission (expect 403)
 PATCH {{baseUrl}}/source/{{sourceId}}
-...formHeaders
+...headers
 is-bi: false
-Content-Type: multipart/form-data; boundary={{boundary}}
 
---{{boundary}}
-Content-Disposition: form-data; name="name"
-
-Radio Updated
---{{boundary}}--
+{
+  "name": "Radio Updated"
+}
 
 ?? status == 403
 
 ### Extract source — insufficient permission (expect 403)
-POST {{baseUrl}}/source/{{sourceId}}/extract
+POST {{baseUrl}}/source/{{sourceId}}/extract/{{sourceAttachmentId}}
 ...headers
 is-bi: false
 
@@ -294,13 +277,19 @@ DELETE {{baseUrl}}/source/{{sourceId}}
 ?? status == 200
 
 ### Extract source — valid
-POST {{baseUrl}}/source/{{sourceId}}/extract
+POST {{baseUrl}}/source/{{sourceId}}/extract/{{sourceAttachmentId}}
 ...headers
 
 ?? status == 201
 
+### Extract source — non-existent attachment id (expect 400)
+POST {{baseUrl}}/source/{{sourceId}}/extract/99999
+...headers
+
+?? status == 400
+
 ### Extract source — non-existent id (expect 400)
-POST {{baseUrl}}/source/99999/extract
+POST {{baseUrl}}/source/99999/extract/{{sourceAttachmentId}}
 ...headers
 
 ?? status == 400
@@ -310,6 +299,7 @@ POST {{baseUrl}}/source/{{sourceId}}/ai-result
 ...headers
 
 {
+  "attachmentId": {{sourceAttachmentId}},
   "tasks": [
     {
       "title": "Review extracted document",
@@ -332,15 +322,26 @@ POST {{baseUrl}}/source/{{sourceId}}/ai-result
 POST {{baseUrl}}/source/{{sourceId}}/ai-result
 ...headers
 
-{}
+{
+  "attachmentId": {{sourceAttachmentId}}
+}
 
 ?? status == 201
+
+### AI Result — missing attachmentId (expect 400)
+POST {{baseUrl}}/source/{{sourceId}}/ai-result
+...headers
+
+{}
+
+?? status == 400
 
 ### AI Result — failure (BACKEND_ERROR)
 POST {{baseUrl}}/source/{{sourceId}}/ai-result
 ...headers
 
 {
+  "attachmentId": {{sourceAttachmentId}},
   "error": "BACKEND_ERROR"
 }
 
@@ -351,6 +352,7 @@ POST {{baseUrl}}/source/{{sourceId}}/ai-result
 ...headers
 
 {
+  "attachmentId": {{sourceAttachmentId}},
   "error": "AI_SERVICE_ERROR"
 }
 

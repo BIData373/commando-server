@@ -18,6 +18,7 @@ import { AssigneeModule } from './entities/assignee/assignee.module';
 import { MessageModule } from './entities/message/message.module';
 import { PermissionModule } from './entities/permission/permission.module';
 import { PikudModule } from './entities/pikud/pikud.module';
+import { SourceAttachmentModule } from './entities/source-attachment/source-attachment.module';
 import { SourceModule } from './entities/source/source.module';
 import { TagModule } from './entities/tag/tag.module';
 import { TaskHistoryModule } from './entities/task-history/task-history.module';
@@ -61,6 +62,7 @@ export const openApiRoute = 'open-api'
     WorkspaceRequestsModule,
     TagModule,
     SourceModule,
+    SourceAttachmentModule,
     TaskModule,
     WorkspaceStatusModule,
     AssigneeModule,

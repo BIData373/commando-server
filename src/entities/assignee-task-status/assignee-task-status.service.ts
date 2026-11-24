@@ -1,17 +1,20 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../common/prisma.service';
-import { Prisma } from '../../types/prisma';
+import { Prisma, User } from '../../types/prisma';
+import { SourceAttachmentService } from '../source-attachment/source-attachment.service';
 import { TaskService } from '../task/task.service';
 import { UpdateAssigneeTaskStatusDto } from './dto/request/update-assignee-task-status.dto';
 
 @Injectable()
 export class AssigneeTaskStatusService {
-  static readonly include: Prisma.AssigneeTaskStatusInclude = {
-    assignee: true,
-    status: true,
-    createdBy: true,
-    updatedBy: true,
-    task: { include: TaskService.baseInclude() }
+  static include(user: User) {
+    return {
+      assignee: true,
+      status: true,
+      createdBy: true,
+      updatedBy: true,
+      task: { include: TaskService.baseInclude(undefined, SourceAttachmentService.accessibleWhere(user)) }
+    } satisfies Prisma.AssigneeTaskStatusInclude
   }
 
   constructor(private readonly prisma: PrismaService) { }
@@ -23,15 +26,15 @@ export class AssigneeTaskStatusService {
     });
   }
 
-  async upsert({ taskId, assigneeId, context, ...dto }: UpdateAssigneeTaskStatusDto, userId: number) {
+  async upsert({ taskId, assigneeId, context, ...dto }: UpdateAssigneeTaskStatusDto, user: User) {
     return await this.prisma.$transaction(async tx => {
-      await TaskService.clearWholeTaskArchiveTx(tx, taskId, userId)
+      await TaskService.clearWholeTaskArchiveTx(tx, taskId, user.id)
 
       return await tx.assigneeTaskStatus.upsert({
         where: { taskId_assigneeId: { taskId, assigneeId } },
-        create: { taskId, assigneeId, ...dto, createdById: userId, updatedById: userId },
-        update: { taskId, assigneeId, ...dto, updatedById: userId },
-        include: AssigneeTaskStatusService.include
+        create: { taskId, assigneeId, ...dto, createdById: user.id, updatedById: user.id },
+        update: { taskId, assigneeId, ...dto, updatedById: user.id },
+        include: AssigneeTaskStatusService.include(user)
       });
     })
   }

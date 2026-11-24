@@ -33,7 +33,7 @@ export class AssigneeTaskStatusController {
     @Req() { user }: Request,
     @Body() dto: UpdateAssigneeTaskStatusDto
   ) {
-    return await this.assigneeTaskStatusService.upsert(dto, user.id);
+    return await this.assigneeTaskStatusService.upsert(dto, user);
   }
 
   @ApiOperation({ operationId: 'deleteAssigneeTaskStatus' })

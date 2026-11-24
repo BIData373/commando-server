@@ -1,11 +1,8 @@
 model Source {
-  id               Int               @id @default(autoincrement())
-  name             String
-  date             DateTime?
-  attachmentKey    String?           @map("attachment_key")
-  attachmentName   String?           @map("attachment_name")
-  draft            Boolean           @default(false)
-  extractionStatus ExtractionStatus? @map("extraction_status")
+  id    Int       @id @default(autoincrement())
+  name  String
+  date  DateTime?
+  draft Boolean   @default(false)
 
   workspaceId Int       @map("workspace_id")
   workspace   Workspace @relation(fields: [workspaceId], references: [id])
@@ -23,18 +20,10 @@ model Source {
   deletedById Int? @map("deleted_by")
   deletedBy   User? @relation("source_deleted_by", fields: [deletedById], references: [id])
 
-  tasks Task[]
+  tasks       Task[]
+  attachments SourceAttachment[]
 
   tags Tag[] @relation("sources_tags")
 
   @@map("sources")
-}
-
-enum ExtractionStatus {
-  PENDING
-  IN_PROGRESS
-  BACKEND_ERROR
-  AI_SERVICE_ERROR
-  FINISHED_WITH_TASKS
-  FINISHED_WITHOUT_TASKS
 }

@@ -2,6 +2,7 @@ import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsArray, IsEnum, IsOptional, ValidateIf, ValidateNested } from 'class-validator';
 import { ExtractionStatus } from '../../../../types/prisma';
+import { GetSourceAttachmentIdFieldDto } from '../../../source-attachment/dto/request/get-source-attachment-id-field.dto';
 import { GetAIExtractedTaskDto } from './get-ai-extracted-task.dto';
 
 export const ExtractionStatusErrors = {
@@ -11,7 +12,7 @@ export const ExtractionStatusErrors = {
 
 export type ExtractionStatusErrorsType = typeof ExtractionStatusErrors[keyof typeof ExtractionStatusErrors];
 
-export class GetAIExtractionCallbackDto {
+export class GetAIExtractionCallbackDto extends GetSourceAttachmentIdFieldDto {
   @ApiPropertyOptional({
     enumName: 'ExtractionErrorStatus',
     enum: ExtractionStatusErrors

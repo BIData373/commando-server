@@ -1,0 +1,94 @@
+# @import ../../../global.http
+
+### Create Source Attachment — valid payload
+POST {{baseUrl}}/source-attachment
+...formHeaders
+Content-Type: multipart/form-data; boundary={{boundary}}
+
+--{{boundary}}
+Content-Disposition: form-data; name="sourceId"
+
+{{sourceId}}
+--{{boundary}}
+Content-Disposition: form-data; name="attachment"; filename="sample.pdf"
+Content-Type: application/pdf
+
+< ../source/sample.pdf
+--{{boundary}}--
+
+{{@response
+  exports.sourceAttachmentId = response.parsedBody.id;
+}}
+
+?? status == 201
+
+### Create Source Attachment — missing file (expect 400)
+POST {{baseUrl}}/source-attachment
+...formHeaders
+Content-Type: multipart/form-data; boundary={{boundary}}
+
+--{{boundary}}
+Content-Disposition: form-data; name="sourceId"
+
+{{sourceId}}
+--{{boundary}}--
+
+?? status == 400
+
+### Create Source Attachment — non-existent source (expect 400)
+POST {{baseUrl}}/source-attachment
+...formHeaders
+Content-Type: multipart/form-data; boundary={{boundary}}
+
+--{{boundary}}
+Content-Disposition: form-data; name="sourceId"
+
+99999
+--{{boundary}}
+Content-Disposition: form-data; name="attachment"; filename="sample.pdf"
+Content-Type: application/pdf
+
+< ../source/sample.pdf
+--{{boundary}}--
+
+?? status == 400
+
+### Get Source Attachment by id
+GET {{baseUrl}}/source-attachment/{{sourceAttachmentId}}
+...headers
+
+?? status == 200
+
+### Get Source Attachment signed url
+GET {{baseUrl}}/source-attachment/{{sourceAttachmentId}}/signed-url
+...headers
+
+?? status == 200
+
+### Get Source Attachment signed url — non-existent id (expect 400)
+GET {{baseUrl}}/source-attachment/99999/signed-url
+...headers
+
+?? status == 400
+
+### Update Source Attachment — visible to assignees
+PATCH {{baseUrl}}/source-attachment/{{sourceAttachmentId}}
+...headers
+
+{
+  "visibleToAssignees": true
+}
+
+?? status == 200
+
+### Delete Source Attachment — non-existent id (expect 400)
+DELETE {{baseUrl}}/source-attachment/99999
+...headers
+
+?? status == 400
+
+### Delete Source Attachment
+DELETE {{baseUrl}}/source-attachment/{{sourceAttachmentId}}
+...headers
+
+?? status == 200

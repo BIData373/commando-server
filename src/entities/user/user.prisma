@@ -31,6 +31,9 @@ model User {
   updatedSources Source[] @relation("source_updated_by")
   deletedSources Source[] @relation("source_deleted_by")
 
+  createdSourceAttachments SourceAttachment[] @relation("source_attachment_created_by")
+  updatedSourceAttachments SourceAttachment[] @relation("source_attachment_updated_by")
+
   createdTags Tag[] @relation("tag_created_by")
   updatedTags Tag[] @relation("tag_updated_by")
 

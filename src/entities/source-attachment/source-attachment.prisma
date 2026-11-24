@@ -1,0 +1,31 @@
+model SourceAttachment {
+  id                 Int               @id @default(autoincrement())
+  key                String            @unique
+  name               String
+  extractionStatus   ExtractionStatus? @map("extraction_status")
+  visibleToAssignees Boolean           @default(false) @map("visible_to_assignees")
+
+  sourceId Int    @map("source_id")
+  source   Source @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  createdById Int  @map("created_by")
+  createdBy   User @relation("source_attachment_created_by", fields: [createdById], references: [id])
+
+  updatedById Int  @map("updated_by")
+  updatedBy   User @relation("source_attachment_updated_by", fields: [updatedById], references: [id])
+
+  @@index([sourceId])
+  @@map("source_attachments")
+}
+
+enum ExtractionStatus {
+  PENDING
+  IN_PROGRESS
+  BACKEND_ERROR
+  AI_SERVICE_ERROR
+  FINISHED_WITH_TASKS
+  FINISHED_WITHOUT_TASKS
+}
