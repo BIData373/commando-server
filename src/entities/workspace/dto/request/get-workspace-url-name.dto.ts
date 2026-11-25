@@ -4,10 +4,13 @@ import { IsOptional } from "class-validator";
 import { EntityExists, IEntityExistsValidationOptions } from "../../../../common/decorators/entity-exists.decorator";
 import { IsUrlName } from "../../../../common/decorators/is-url-name.decorator";
 import { GetContextDto } from "../../../../common/dto/request/get-context.dto";
+import { IUserContext } from "../../../user/interfaces/user-context.interface";
 import { WorkspaceError } from "../../enum/workspace-error";
 import { IWorkspaceContext } from "../../interfaces/workspace-context.interface";
+import { WorkspaceService } from "../../workspace.service";
+import { IContext } from "../../../../common/interfaces/context.interface";
 
-interface IUrlName {
+interface IUrlName extends IContext<IUserContext> {
   urlName: string
 }
 
@@ -39,9 +42,15 @@ export function GetWorkspaceUrlNameMixin(
 
 export class GetWorkspaceUrlNameDto extends GetWorkspaceUrlNameMixin({ contextField: 'workspace' }) { }
 
-export class GetOptionalWorkspaceUrlNameDto extends GetContextDto<Partial<IWorkspaceContext>> {
+export class GetOptionalWorkspaceUrlNameDto extends GetContextDto<IUserContext & Partial<IWorkspaceContext>> {
   @IsOptional()
-  @IsWorkspaceUrlName({ contextField: 'workspace' })
+  @IsWorkspaceUrlName({
+    contextField: 'workspace',
+    findArgs: ({ obj, value }) => ({
+      where: { urlName: value, deletedAt: null },
+      include: WorkspaceService.permissionsInclude(obj.context.user.id)
+    })
+  })
   urlName?: string;
 }
 

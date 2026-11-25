@@ -249,7 +249,7 @@ is-bi: false
 ?? status == 403
 
 ### Update Source — name only
-PATCH {{baseUrl}}/source/{{sourceId}}
+PUT {{baseUrl}}/source/{{sourceId}}
 ...headers
 
 {
@@ -261,7 +261,7 @@ PATCH {{baseUrl}}/source/{{sourceId}}
 ?? status == 200
 
 ### Update Source — insufficient permission (expect 403)
-PATCH {{baseUrl}}/source/{{sourceId}}
+PUT {{baseUrl}}/source/{{sourceId}}
 ...headers
 is-bi: false
 

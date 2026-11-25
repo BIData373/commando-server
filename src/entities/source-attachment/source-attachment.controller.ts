@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, ParseFilePipe, Patch, Post, Req, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseFilePipe, Post, Put, Req, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiBody, ApiConsumes, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiParam } from '@nestjs/swagger';
 import { TransformPlainToInstance } from 'class-transformer';
@@ -62,7 +62,7 @@ export class SourceAttachmentController {
   @ApiOperation({ operationId: 'updateSourceAttachment' })
   @ApiParam({ name: 'id', type: Number })
   @ApiBody({ type: UpdateSourceAttachmentDto })
-  @Patch(':id')
+  @Put(':id')
   @ApiOkResponse({ type: SourceAttachmentDto })
   @TransformPlainToInstance(SourceAttachmentDto)
   async update(

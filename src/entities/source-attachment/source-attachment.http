@@ -93,7 +93,7 @@ GET {{baseUrl}}/source-attachment/99999/signed-url
 ?? status == 400
 
 ### Update Source Attachment — visible to assignees
-PATCH {{baseUrl}}/source-attachment/{{sourceAttachmentId}}
+PUT {{baseUrl}}/source-attachment/{{sourceAttachmentId}}
 ...headers
 
 {

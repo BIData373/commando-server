@@ -46,7 +46,7 @@ GET {{baseUrl}}/workspace/{{workspaceId}}
 ?? status == 200
 
 ### Update Workspace
-PATCH {{baseUrl}}/workspace/{{workspaceId}}
+PUT {{baseUrl}}/workspace/{{workspaceId}}
 ...headers
 
 {

@@ -165,7 +165,7 @@ GET {{baseUrl}}/workspace-requests/9999
 ?? status == 400
 
 ### Update Workspace Request — invalid status enum (expect 400)
-PATCH {{baseUrl}}/workspace-requests/{{workspaceRequestId}}
+PUT {{baseUrl}}/workspace-requests/{{workspaceRequestId}}
 ...headers
 
 {
@@ -175,7 +175,7 @@ PATCH {{baseUrl}}/workspace-requests/{{workspaceRequestId}}
 ?? status == 400
 
 ### Update Workspace Request — details only, no status (merges into details JSON)
-PATCH {{baseUrl}}/workspace-requests/{{workspaceRequestId}}
+PUT {{baseUrl}}/workspace-requests/{{workspaceRequestId}}
 ...headers
 
 {
@@ -186,7 +186,7 @@ PATCH {{baseUrl}}/workspace-requests/{{workspaceRequestId}}
 ?? status == 200
 
 ### Update Workspace Request — status stays PENDING, no decision notification
-PATCH {{baseUrl}}/workspace-requests/{{workspaceRequestId}}
+PUT {{baseUrl}}/workspace-requests/{{workspaceRequestId}}
 ...headers
 
 {
@@ -196,7 +196,7 @@ PATCH {{baseUrl}}/workspace-requests/{{workspaceRequestId}}
 ?? status == 200
 
 ### Update Workspace Request — reject without a decline message (expect 400)
-PATCH {{baseUrl}}/workspace-requests/{{workspaceRequestId}}
+PUT {{baseUrl}}/workspace-requests/{{workspaceRequestId}}
 ...headers
 
 {
@@ -206,7 +206,7 @@ PATCH {{baseUrl}}/workspace-requests/{{workspaceRequestId}}
 ?? status == 400
 
 ### Update Workspace Request — reject with a decline message
-PATCH {{baseUrl}}/workspace-requests/{{workspaceRequestId}}
+PUT {{baseUrl}}/workspace-requests/{{workspaceRequestId}}
 ...headers
 
 {
@@ -217,7 +217,7 @@ PATCH {{baseUrl}}/workspace-requests/{{workspaceRequestId}}
 ?? status == 200
 
 ### Update Workspace Request — re-reject is not a new decision (expect 200, no notification)
-PATCH {{baseUrl}}/workspace-requests/{{workspaceRequestId}}
+PUT {{baseUrl}}/workspace-requests/{{workspaceRequestId}}
 ...headers
 
 {
@@ -280,7 +280,7 @@ POST {{baseUrl}}/workspace-requests
 ?? status == 201
 
 ### Approve the request — upserts the workspace, users and MANAGER permissions in one transaction
-PATCH {{baseUrl}}/workspace-requests/1
+PUT {{baseUrl}}/workspace-requests/1
 ...headers
 
 {
@@ -290,7 +290,7 @@ PATCH {{baseUrl}}/workspace-requests/1
 ?? status == 200
 
 ### Approved request — declineMessage is ignored while status is APPROVED
-PATCH {{baseUrl}}/workspace-requests/{{approveRequestId}}
+PUT {{baseUrl}}/workspace-requests/{{approveRequestId}}
 ...headers
 
 {
@@ -300,7 +300,7 @@ PATCH {{baseUrl}}/workspace-requests/{{approveRequestId}}
 ?? status == 200
 
 ### Re-approve the same request — not a new decision, no second workspace (expect 200)
-PATCH {{baseUrl}}/workspace-requests/{{approveRequestId}}
+PUT {{baseUrl}}/workspace-requests/{{approveRequestId}}
 ...headers
 
 {

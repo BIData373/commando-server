@@ -82,6 +82,20 @@ COMPLETED COMPLETED
     String icon "❓"
     String icon_name "❓"
     Int workspace_id 
+    Boolean status_editable 
+    DateTime created_at 
+    DateTime updated_at 
+    DateTime deleted_at "❓"
+    Int created_by 
+    Int updated_by 
+    Int deleted_by "❓"
+    }
+  
+
+  "assignee_groups" {
+    Int id "🗝️"
+    String name 
+    Int workspace_id 
     DateTime created_at 
     DateTime updated_at 
     DateTime deleted_at "❓"
@@ -100,6 +114,13 @@ COMPLETED COMPLETED
     Int created_by 
     Int updated_by 
     String description "❓"
+    }
+  
+
+  "assignee_users" {
+    Int assignee_id 
+    Int user_id 
+    Boolean status_editable 
     }
   
 
@@ -215,7 +236,16 @@ COMPLETED COMPLETED
   "users" {
     Int id "🗝️"
     String upn 
+    DateTime personal_area_entered_at "❓"
     Json info "❓"
+    Boolean has_onboarded 
+    }
+  
+
+  "user_viewed_tasks" {
+    Int user_id 
+    Int task_id 
+    DateTime viewed_at 
     }
   
 
@@ -224,6 +254,13 @@ COMPLETED COMPLETED
     Int user_id 
     Int workspace_id "❓"
     Json view 
+    }
+  
+
+  "user_workspace_visits" {
+    Int user_id 
+    Int workspace_id 
+    DateTime visited_at 
     }
   
 
@@ -277,12 +314,18 @@ COMPLETED COMPLETED
     "assignees" }o--|| users : "createdBy"
     "assignees" }o--|| users : "updatedBy"
     "assignees" }o--|o users : "deletedBy"
-    "assignees" o{--}o "users" : ""
+    "assignees" o{--}o "assignee_groups" : ""
+    "assignee_groups" }o--|| workspaces : "workspace"
+    "assignee_groups" }o--|| users : "createdBy"
+    "assignee_groups" }o--|| users : "updatedBy"
+    "assignee_groups" }o--|o users : "deletedBy"
     "assignee_task_statuses" }o--|| users : "createdBy"
     "assignee_task_statuses" }o--|| users : "updatedBy"
     "assignee_task_statuses" }o--|| tasks : "task"
     "assignee_task_statuses" }o--|| assignees : "assignee"
     "assignee_task_statuses" }o--|| workspace_statuses : "status"
+    "assignee_users" }o--|| assignees : "assignee"
+    "assignee_users" }o--|| users : "user"
     "messages" }o--|| users : "user"
     "messages" }o--|| tasks : "task"
     "messages" }o--|| users : "createdBy"
@@ -319,8 +362,12 @@ COMPLETED COMPLETED
     "tasks_history" }o--|| tasks : "task"
     "tasks_history" }o--|| workspaces : "workspace"
     "tasks_history" }o--|| users : "user"
+    "user_viewed_tasks" }o--|| users : "user"
+    "user_viewed_tasks" }o--|| tasks : "task"
     "user_views" }o--|| users : "user"
     "user_views" }o--|o workspaces : "workspace"
+    "user_workspace_visits" }o--|| users : "user"
+    "user_workspace_visits" }o--|| workspaces : "workspace"
     "workspaces" }o--|| users : "createdBy"
     "workspaces" }o--|| users : "updatedBy"
     "workspaces" }o--|o users : "deletedBy"

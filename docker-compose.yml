@@ -14,3 +14,23 @@ services:
     image: redis:7-alpine
     ports:
       - 6379:6379
+
+  # Dev-only OIDC provider. Admin console: http://localhost:8180 (admin / admin)
+  # Realm "vector" is imported from ./keycloak on first boot; recreate the container to re-import.
+  # The client secret is read from SSO_CLIENT_SECRET in config/common.env at import time.
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.4.0
+    command: start-dev --import-realm
+    ports:
+      - 8180:8080
+    environment:
+      - KC_BOOTSTRAP_ADMIN_USERNAME=admin
+      - KC_BOOTSTRAP_ADMIN_PASSWORD=admin
+      - KC_HOSTNAME=http://localhost:8180
+      - KC_HTTP_ENABLED=true
+      - KC_HEALTH_ENABLED=true
+    env_file:
+      - path: ./config/common.env
+        required: false
+    volumes:
+      - ./keycloak:/opt/keycloak/data/import:ro

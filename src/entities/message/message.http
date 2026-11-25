@@ -68,7 +68,7 @@ GET {{baseUrl}}/message/{{messageId}}
 ?? status == 200
 
 ### Update Message
-PATCH {{baseUrl}}/message/{{messageId}}
+PUT {{baseUrl}}/message/{{messageId}}
 Content-Type: application/json
 
 {

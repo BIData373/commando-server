@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, Query, Req, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiBody, ApiConsumes, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { TransformPlainToInstance } from 'class-transformer';
@@ -71,7 +71,7 @@ export class SourceController {
   @ApiOperation({ operationId: 'updateSource' })
   @ApiParam({ name: 'id', type: Number })
   @ApiBody({ type: UpdateSourceDto })
-  @Patch(':id')
+  @Put(':id')
   @ApiOkResponse({ type: SourceDto })
   @TransformPlainToInstance(SourceDto)
   async update(

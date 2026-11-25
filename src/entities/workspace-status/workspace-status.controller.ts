@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, Query } from '@nestjs/common';
 import { ApiBody, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { TransformPlainToInstance } from 'class-transformer';
 import { GetAssignedWorkspaceIdDto } from '../workspace/dto/request/get-workspace-id-field.dto';
@@ -48,7 +48,7 @@ export class WorkspaceStatusController {
   @ApiOperation({ operationId: 'updateWorkspaceStatus' })
   @ApiParam({ name: 'id', type: Number })
   @ApiBody({ type: UpdateWorkspaceStatusDto })
-  @Patch(':id')
+  @Put(':id')
   @ApiOkResponse({ type: WorkspaceStatusDto })
   @TransformPlainToInstance(WorkspaceStatusDto)
   async update(

@@ -1,4 +1,4 @@
-import { Controller, HttpCode, Patch, Query, Req } from '@nestjs/common'
+import { Controller, HttpCode, Put, Query, Req } from '@nestjs/common'
 import { ApiNoContentResponse, ApiOperation } from '@nestjs/swagger'
 import { HttpStatusCode } from 'axios'
 import { Request } from 'express'
@@ -10,7 +10,7 @@ export class ArchivedUserAssigneeTaskController {
   constructor(private readonly userTaskArchivesService: ArchivedUserAssigneeTaskService) { }
 
   @ApiOperation({ operationId: 'toggleUserTaskArchive' })
-  @Patch()
+  @Put()
   @HttpCode(HttpStatusCode.NoContent)
   @ApiNoContentResponse()
   async togglePersonal(

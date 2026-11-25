@@ -17,14 +17,18 @@ export class WorkspaceService {
     private readonly prisma: PrismaService
   ) { }
 
-  private permissionsInclude(userId: number): Prisma.WorkspaceInclude {
+  static permissionsInclude(userId: number) {
     return {
       ...WorkspaceService.include,
       permissions: {
         where: { userId },
         select: { type: true }
+      },
+      userWorkspaceVisits: {
+        where: { userId },
+        select: { userId: true }
       }
-    };
+    } satisfies Prisma.WorkspaceInclude
   }
 
   private sortByPermission<T extends { permissions: { type: string }[] }>(workspaces: T[]): T[] {
@@ -87,7 +91,7 @@ export class WorkspaceService {
         deletedAt: null,
         ...extraWhere
       },
-      include: this.permissionsInclude(userId)
+      include: WorkspaceService.permissionsInclude(userId)
     });
 
     return this.sortByPermission(workspaces);
@@ -103,7 +107,7 @@ export class WorkspaceService {
           },
         },
       },
-      include: this.permissionsInclude(userId)
+      include: WorkspaceService.permissionsInclude(userId)
     });
 
     return this.sortByPermission(workspaces);
@@ -116,11 +120,38 @@ export class WorkspaceService {
     });
   }
 
+  static async enableAllAssigneesStatusEditableTx(tx: Prisma.TransactionClient, workspaceId: number) {
+    const assigneeWhere = { workspaceId, deletedAt: null } satisfies Prisma.AssigneeWhereInput;
+
+    const editableAssigneesCount = await tx.assignee.count({
+      where: {
+        ...assigneeWhere,
+        OR: [
+          { statusEditable: true },
+          { users: { some: { statusEditable: true } } }
+        ]
+      }
+    });
+
+    if (editableAssigneesCount > 0) {
+      return;
+    }
+
+    await tx.assignee.updateMany({ where: assigneeWhere, data: { statusEditable: true } });
+    await tx.assigneeUser.updateMany({ where: { assignee: assigneeWhere }, data: { statusEditable: true } });
+  }
+
   async update(id: number, { context, ...dto }: UpdateWorkspaceDto, updatedById: number) {
-    return await this.prisma.workspace.update({
-      where: { id },
-      data: { ...dto, updatedById },
-      include: WorkspaceService.include
+    return await this.prisma.$transaction(async tx => {
+      if (dto.assigneeStatusEditable === true) {
+        await WorkspaceService.enableAllAssigneesStatusEditableTx(tx, id);
+      }
+
+      return await tx.workspace.update({
+        where: { id },
+        data: { ...dto, updatedById },
+        include: WorkspaceService.include
+      });
     });
   }
 

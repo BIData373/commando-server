@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req, UseInterceptors } from '@nestjs/common'
+import { Body, Controller, Delete, Get, Param, Post, Put, Query, Req, UseInterceptors } from '@nestjs/common'
 import { ApiBody, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery } from '@nestjs/swagger'
 import { TransformPlainToInstance } from 'class-transformer'
 import { Request } from 'express'
@@ -99,7 +99,7 @@ export class TaskController {
   @UseInterceptors(
     CopyDtosInRequest<UpdateTaskDto, GetManagerTaskIdDto>({ from: 'params.id', to: 'body.context.task', dto: GetManagerTaskIdDto })
   )
-  @Patch(':id')
+  @Put(':id')
   @ApiOkResponse({ type: TaskWithWorkspaceDto })
   @TransformPlainToInstance(TaskWithWorkspaceDto)
   async update(

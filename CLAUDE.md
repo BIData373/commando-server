@@ -178,6 +178,7 @@ export class TagDto extends PartialMetaFieldsDto {
 Decorator order on each handler: `@ApiOperation` → `@ApiBody`/`@ApiParam`/`@ApiQuery` → `@UseInterceptors` (if any) → HTTP verb → `@ApiOkResponse`/`@ApiCreatedResponse` → `@TransformPlainToInstance`.
 
 * `operationId` is camelCase and verb-first: `createTag`, `listTags`, `getTag`, `updateTag`, `deleteTag`.
+* Updates use `@Put`, never `@Patch` (the deployment platform only accepts PUT). Bodies are still partial (`PartialType`), not full replacements — PUT here is only the verb.
 * Method names: `create`, `findAll` / `findInWorkspace`, `findOne`, `update`, `remove`.
 * Always destructure in the parameter list: `@Req() { user }: Request`, `@Param() { id }: GetManagerTagIdDto`, `@Body() { context, ...dto }: UpdateTagDto`.
 * The current user comes from `@Req() { user }: Request` (populated by `AddUserToContextInterceptor`) and is passed to the service as `user.id`. Never take a `userId` from the body.
@@ -239,6 +240,10 @@ Always export the service. Register the module in `AppModule`'s `imports`.
 * Booleans are normalized at the const (`=== 'true'`), so consumers get real booleans.
 * Document new vars in `config/dev/.env.example`.
 
+### SSO
+
+Login flows (mobile + desktop), the Keycloak dev setup and what's built so far are in `SSO.md`.
+
 ### HTTP Test Files
 
 Each entity folder has a `[entity].http` in httpYac format:
@@ -248,4 +253,4 @@ Each entity folder has a `[entity].http` in httpYac format:
 * `{{@response exports.tagId = response.parsedBody.id; }}` to chain ids between requests.
 * A `?? status == 201` / `== 200` / `== 400` assertion after every request.
 * Cover: create (valid, captures id), create (invalid → 400), list, get by id, update, delete non-existent (→ 400), delete.
-* Composite-PK entities export multiple ids; append-only entities (task-history) omit PATCH/DELETE.
+* Composite-PK entities export multiple ids; append-only entities (task-history) omit PUT/DELETE.

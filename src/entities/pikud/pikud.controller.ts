@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, Req, UseGuards } from '@nestjs/common';
 import { ApiBody, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiParam } from '@nestjs/swagger';
 import { TransformPlainToInstance } from 'class-transformer';
 import { Request } from 'express';
@@ -49,7 +49,7 @@ export class PikudController {
   @UseGuards(BIGuard)
   @ApiParam({ name: 'id', type: Number })
   @ApiBody({ type: UpdatePikudDto })
-  @Patch(':id')
+  @Put(':id')
   @ApiOkResponse({ type: PikudDto })
   @TransformPlainToInstance(PikudDto)
   async update(

@@ -153,6 +153,13 @@ export class UserService {
     });
   }
 
+  async markOnboarded(id: number) {
+    return await this.prisma.user.update({
+      where: { id },
+      data: { hasOnboarded: true }
+    });
+  }
+
   async remove(id: number) {
     return await this.prisma.user.delete({ where: { id } });
   }

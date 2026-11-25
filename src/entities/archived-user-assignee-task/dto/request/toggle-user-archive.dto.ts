@@ -12,7 +12,7 @@ export class ToggleUserArchiveDto extends GetViewerTaskIdFieldDto {
       where: {
         id: value,
         deletedAt: null,
-        users: { some: { id: obj.context.user.id } },
+        users: { some: { userId: obj.context.user.id } },
         workspace: { tasks: { some: { id: obj.taskId } } }
       }
     })

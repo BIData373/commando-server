@@ -2,7 +2,7 @@ import {
     Body,
     Controller,
     Get,
-    Patch,
+    Put,
     Query,
     Req
 } from '@nestjs/common';
@@ -34,7 +34,7 @@ export class UserViewController {
 
     @ApiOperation({ operationId: 'upsertUserView' })
     @ApiBody({ type: UpsertUserViewDto })
-    @Patch()
+    @Put()
     @ApiOkResponse({ type: UserViewDto })
     @TransformPlainToInstance(UserViewDto)
     async upsert(

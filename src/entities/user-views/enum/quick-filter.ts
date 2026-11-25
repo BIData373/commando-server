@@ -3,4 +3,5 @@ export enum QuickFilter {
 	APPROACHING = "approaching",
 	FLAGGED = "flagged",
 	ROLLING = "rolling",
+	UNREAD = "unread",
 }

@@ -1,4 +1,4 @@
-import { Controller, HttpCode, Patch, Query } from '@nestjs/common'
+import { Controller, HttpCode, Put, Query } from '@nestjs/common'
 import { ApiNoContentResponse, ApiOperation } from '@nestjs/swagger'
 import { HttpStatusCode } from 'axios'
 import { ArchivedWorkspaceAssigneeService } from './archived-workspace-assignee-task.service'
@@ -9,7 +9,7 @@ export class ArchivedWorkspaceAssigneeController {
   constructor(private readonly workspaceTaskArchivesService: ArchivedWorkspaceAssigneeService) { }
 
   @ApiOperation({ operationId: 'toggleWorkspaceTaskArchive' })
-  @Patch()
+  @Put()
   @HttpCode(HttpStatusCode.NoContent)
   @ApiNoContentResponse()
   async toggleWorkspace(

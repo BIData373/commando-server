@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsArray, IsOptional, ValidateNested } from 'class-validator';
+import { IsArray, IsNumber, IsOptional, IsPositive, ValidateNested } from 'class-validator';
 import { EntityExists } from '../../../../common/decorators/entity-exists.decorator';
 import { IdExists } from '../../../../common/decorators/id-exists.decorator';
 import { IsIdPermitted } from '../../../../common/decorators/is-permitted-id.decorator';

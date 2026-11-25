@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, Query, Req } from '@nestjs/common';
 import { ApiBody, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { TransformPlainToInstance } from 'class-transformer';
 import { Request } from 'express';
@@ -44,15 +44,16 @@ export class MessageController {
   @ApiOkResponse({ type: MessageDto })
   @TransformPlainToInstance(MessageDto)
   async findOne(
+    @Req() { user }: Request,
     @Param() { id }: GetViewerMessageIdDto
   ) {
-    return await this.messageService.findOne(id);
+    return await this.messageService.findOne(id, user.id);
   }
 
   @ApiOperation({ operationId: 'updateMessage' })
   @ApiParam({ name: 'id', type: Number })
   @ApiBody({ type: UpdateMessageDto })
-  @Patch(':id')
+  @Put(':id')
   @ApiOkResponse({ type: MessageDto })
   @TransformPlainToInstance(MessageDto)
   async update(
@@ -60,7 +61,7 @@ export class MessageController {
     @Param() { id }: GetManagerMessageIdDto,
     @Body() dto: UpdateMessageDto
   ) {
-    return await this.messageService.update(id, dto, user.id);
+    return await this.messageService.updateMessage(id, user.id, { ...dto, updatedById: user.id });
   }
 
   @ApiOperation({ operationId: 'deleteMessage' })

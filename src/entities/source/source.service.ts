@@ -140,7 +140,10 @@ export class SourceService {
           createdById: userId,
           updatedById: userId
         },
-        include: SourceService.include
+        include: {
+          ...SourceService.include,
+          tasks: true
+        }
       })
 
       if (!isDraft) {
@@ -150,6 +153,12 @@ export class SourceService {
       return created
     })
 
+    await this.prisma.userViewedTasks.createMany({
+      data: source.tasks.map(t => ({
+        taskId: t.id,
+        userId,
+      }))
+    })
 
 
     if (aiExtraction) {
@@ -181,13 +190,13 @@ export class SourceService {
       }),
       this.prisma.assignee.findMany({
         where: { id: { in: assigneeIds } },
-        select: { id: true, users: { select: { upn: true } } }
+        select: { id: true, users: { select: { user: { select: { upn: true } } } } }
       })
     ])
 
     // Map each assignee ID to its linked user UPNs
     const upnsByAssigneeId = new Map(
-      assigneesWithUsers.map(a => [a.id, a.users.map(u => u.upn)])
+      assigneesWithUsers.map(a => [a.id, a.users.map(({ user }) => user.upn)])
     )
 
     // Count unique tasks per user — uniq ensures a user with multiple assignees on the same task counts once

@@ -18,6 +18,10 @@ export const swaggerEnabled = process.env.SWAGGER_ENABLED === 'true'
 
 export const ssoEnabled = process.env.VITE_USE_SSO === 'true'
 export const ssoClientSecret = process.env.SSO_CLIENT_SECRET
+export const ssoCodeIssuer = process.env.SSO_CODE_ISSUER
+export const ssoClientId = process.env.SSO_CLIENT_ID
+export const ssoRedirectUri = process.env.SSO_REDIRECT_URI
+export const ssoSite = process.env.SSO_SITE
 
 export const staticToken = process.env.STATIC_TOKEN
 
@@ -83,3 +87,5 @@ export const chatChannel = process.env.VITE_CHAT_CHANNEL
 export const chatChannelUrl = chatUrl && chatChannel
   ? new URL(`/channel/${chatChannel}`, chatUrl).href
   : undefined
+
+export const invalidationDays = Number(process.env.TASK_INVALIDATION_DAYS) || 30

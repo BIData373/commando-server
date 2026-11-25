@@ -1,11 +1,13 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, Query, Req, UseGuards } from '@nestjs/common';
 import { ApiBody, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { TransformPlainToInstance } from 'class-transformer';
+import type { Request } from 'express';
 import { BIGuard } from '../../common/guards/bi.guard';
 import { CreateUserDto } from './dto/request/create-user.dto';
 import { GetSearchDto } from './dto/request/get-search.dto';
 import { GetUserIdDto } from './dto/request/get-user-id.dto';
 import { UpdateUserDto } from './dto/request/update-user.dto';
+import { CurrentUserDto } from './dto/response/current-user.dto';
 import { MirageUserDto } from './dto/response/mirage-user.dto';
 import { UserDto } from './dto/response/user.dto';
 import { UserService } from './user.service';
@@ -46,6 +48,26 @@ export class UserController {
     return await this.userService.search(search);
   }
 
+  @ApiOperation({ operationId: 'getMe' })
+  @Get('me')
+  @ApiOkResponse({ type: CurrentUserDto })
+  @TransformPlainToInstance(CurrentUserDto)
+  async findMe(
+    @Req() { user }: Request
+  ) {
+    return user;
+  }
+
+  @ApiOperation({ operationId: 'completeOnboarding' })
+  @Put('complete-onboarding')
+  @ApiOkResponse({ type: CurrentUserDto })
+  @TransformPlainToInstance(CurrentUserDto)
+  async completeOnboarding(
+    @Req() { user }: Request
+  ) {
+    return await this.userService.markOnboarded(user.id);
+  }
+
   @UseGuards(BIGuard)
   @ApiOperation({ operationId: 'getUser' })
   @ApiParam({ name: 'id', type: Number })
@@ -62,7 +84,7 @@ export class UserController {
   @ApiOperation({ operationId: 'updateUser' })
   @ApiParam({ name: 'id', type: Number })
   @ApiBody({ type: UpdateUserDto })
-  @Patch(':id')
+  @Put(':id')
   @ApiOkResponse({ type: UserDto })
   @TransformPlainToInstance(UserDto)
   async update(

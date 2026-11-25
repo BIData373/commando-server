@@ -1,8 +1,8 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { Type } from "class-transformer";
-import { IsArray, IsOptional, ValidateIf, ValidateNested } from "class-validator";
+import { IsArray, IsBoolean, IsOptional, ValidateIf, ValidateNested } from "class-validator";
 import { IsNotEmptyString } from "../../../../common/decorators/is-not-empty-string.decorator";
-import { CreateUserDto } from "../../../user/dto/request/create-user.dto";
+import { CreateAssigneeUserDto } from "./create-assignee-user.dto";
 
 export class GetAssigneeFieldsDto {
     @ApiProperty()
@@ -23,9 +23,14 @@ export class GetAssigneeFieldsDto {
     @IsNotEmptyString()
     iconName?: string;
 
-    @ApiProperty({ type: [CreateUserDto] })
+    @ApiProperty({ type: Boolean, required: false })
+    @IsOptional()
+    @IsBoolean()
+    statusEditable?: boolean;
+
+    @ApiProperty({ type: [CreateAssigneeUserDto] })
     @IsArray()
     @ValidateNested({ each: true })
-    @Type(() => CreateUserDto)
-    users: CreateUserDto[]
+    @Type(() => CreateAssigneeUserDto)
+    users: CreateAssigneeUserDto[]
 }

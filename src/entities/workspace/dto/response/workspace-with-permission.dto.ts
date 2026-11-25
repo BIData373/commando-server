@@ -8,4 +8,8 @@ export class WorkspaceWithPermissionDto extends WorkspaceDto {
   @ExposeProperty({ enumName: 'PermissionType', enum: PermissionType, nullable: true })
   @Transform(({ obj }) => obj.permissions?.[0]?.type ?? null)
   permissionType: PermissionType | null;
+
+  @ExposeProperty()
+  @Transform(({ obj }) => (obj.userWorkspaceVisits?.length ?? 0) > 0)
+  hasEnteredWorkspace: boolean;
 }

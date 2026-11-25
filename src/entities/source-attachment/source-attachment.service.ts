@@ -42,7 +42,7 @@ export class SourceAttachmentService {
                   some: {
                     assignee: {
                       deletedAt: null,
-                      users: { some: { id: userId } }
+                      users: { some: { userId } }
                     }
                   }
                 }

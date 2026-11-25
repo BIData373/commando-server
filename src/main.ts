@@ -40,6 +40,7 @@ async function bootstrap() {
       .setDescription('The Vector API')
       .setVersion('1.0')
       .addCookieAuth('ssoUser')
+      .addBearerAuth()
       .addApiKey({
         type: 'apiKey',
         name: staticTokenHeader,
