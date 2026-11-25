@@ -1,7 +1,7 @@
 import { PrismaPg } from '@prisma/adapter-pg';
 import { databaseUrl, postgresPrismaUrl } from '../src/common/consts/env';
 import { DEFAULT_STATUSES } from '../src/entities/workspace-status/consts/default-statuses';
-import { DeadlineType, HistoryAction, PermissionType, PrismaClient, TaskCreationType, WorkspaceStatusType } from '../src/types/prisma';
+import { DeadlineType, ExtractionStatus, HistoryAction, PermissionType, PrismaClient, TaskCreationType, WorkspaceStatusType } from '../src/types/prisma';
 
 const connectionString = postgresPrismaUrl ?? databaseUrl
 const adapter = new PrismaPg({ connectionString })
@@ -20,6 +20,7 @@ async function main() {
   await prisma.message.deleteMany();
   await prisma.assigneeTaskStatus.deleteMany();
   await prisma.task.deleteMany();
+  await prisma.sourceAttachment.deleteMany();
   await prisma.source.deleteMany();
   await prisma.tag.deleteMany();
   await prisma.permission.deleteMany();
@@ -97,7 +98,7 @@ async function main() {
     // workspace 2
     prisma.assignee.create({ data: { name: 'צוות פיתוח', color: '#06B6D4', workspaceId: ws2.id, createdById: u2.id, updatedById: u2.id, users: { connect: [{ id: u2.id }, { id: u4.id }, { id: u5.id }] } } }),
     // workspace 3
-    prisma.assignee.create({ data: { name: 'צוות לוגיסטי', color: '#F97316', workspaceId: ws3.id, createdById: u3.id, updatedById: u3.id, users: { connect: [{ id: u3.id }, { id: u6.id }] } } }),
+    prisma.assignee.create({ data: { name: 'צוות לוגיסטי', color: '#F97316', workspaceId: ws3.id, createdById: u3.id, updatedById: u3.id, users: { connect: [{ id: u3.id }, { id: u6.id }, { id: u7.id }] } } }),
   ]);
 
   console.log('* Creating Permissions')
@@ -158,6 +159,29 @@ async function main() {
     prisma.source.create({ data: { date: new Date(), name: 'ישיבת שיווק', draft: false, workspaceId: ws3.id, createdById: u3.id, updatedById: u3.id } }),
     prisma.source.create({ data: { date: new Date(), name: 'ישיבת הנהלה', draft: false, workspaceId: ws3.id, createdById: u3.id, updatedById: u3.id } }),
   ]);
+
+  console.log('* Creating Source Attachments')
+  // ── SourceAttachments ─────────────────────────────────────────────────────
+  const attachmentDefs = [
+    { key: 'sources/seed-01.pdf', name: 'סיכום ישיבת הנהלה.pdf', source: src01, visibleToAssignees: true },
+    { key: 'sources/seed-02.pptx', name: 'מצגת תקציב.pptx', source: src01, visibleToAssignees: false },
+    { key: 'sources/seed-03.pdf', name: 'פרוטוקול דירקטוריון.pdf', source: src05, extractionStatus: ExtractionStatus.FINISHED_WITH_TASKS },
+    { key: 'sources/seed-04.docx', name: 'טיוטת דוח ביקורת.docx', source: src07, visibleToAssignees: true, extractionStatus: ExtractionStatus.PENDING },
+    { key: 'sources/seed-05.pdf', name: 'Sprint Planning.pdf', source: src13, extractionStatus: ExtractionStatus.FINISHED_WITHOUT_TASKS },
+    { key: 'sources/seed-06.pdf', name: 'Retro Notes.pdf', source: src14, visibleToAssignees: true, extractionStatus: ExtractionStatus.FINISHED_WITH_TASKS },
+    { key: 'sources/seed-07.pdf', name: 'Code Review.pdf', source: src15, extractionStatus: ExtractionStatus.AI_SERVICE_ERROR },
+    { key: 'sources/seed-08.pdf', name: 'תכנית כנס.pdf', source: src16, visibleToAssignees: true },
+    { key: 'sources/seed-09.xlsx', name: 'תוצאות סקר.xlsx', source: src17, visibleToAssignees: false },
+  ];
+
+  await prisma.sourceAttachment.createMany({
+    data: attachmentDefs.map(({ source, ...def }) => ({
+      ...def,
+      sourceId: source.id,
+      createdById: source.createdById,
+      updatedById: source.createdById,
+    })),
+  });
 
   const RANDOM_DESCRIPTIONS = [
     'ממתין לאישור מהגורם המוסמך',
@@ -487,7 +511,7 @@ async function main() {
   • 12 users
   • 1 pikud, 3 workspaces, 9 workspace statuses
   • 8 assignees, ${taskDefs.reduce((s, d) => s + (d.tagIds?.length ?? 0), 0)} tag links
-  • 7 tags, 17 sources
+  • 7 tags, 17 sources, ${attachmentDefs.length} source attachments
   • 17 tasks with ${totalAssigneeStatuses} assignee statuses and history entries`);
 }
 
