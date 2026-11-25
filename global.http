@@ -20,4 +20,7 @@
     exports.boundary = '----CommandoFormBoundary7MA4YWxkTrZu0gW';
 
     exports.workspaceId = 41;
+
+    exports.sampleFile = 'C:/Users/share/Desktop/commando-server/src/entities/source/sample.pdf';
+    exports.sampleFileName = exports.sampleFile.split(/[\\/]/).pop();
 }}

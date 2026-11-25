@@ -22,10 +22,10 @@ Content-Disposition: form-data; name="tags[0]"
 
 tag1
 --{{boundary}}
-Content-Disposition: form-data; name="attachment"; filename="sample.pdf"
+Content-Disposition: form-data; name="attachment"; filename="{{sampleFileName}}"
 Content-Type: application/pdf
 
-< ./sample.pdf
+< {{sampleFile}}
 --{{boundary}}--
 
 {{@response
@@ -161,13 +161,34 @@ Content-Disposition: form-data; name="aiExtraction"
 
 true
 --{{boundary}}
-Content-Disposition: form-data; name="attachment"; filename="sample.pdf"
+Content-Disposition: form-data; name="attachment"; filename="{{sampleFileName}}"
 Content-Type: application/pdf
 
-< ./sample.pdf
+< {{sampleFile}}
 --{{boundary}}--
 
 ?? status == 201
+
+### Create Source — AI extraction without attachment (expect 400)
+POST {{baseUrl}}/source
+...formHeaders
+Content-Type: multipart/form-data; boundary={{boundary}}
+
+--{{boundary}}
+Content-Disposition: form-data; name="name"
+
+AI Without Attachment
+--{{boundary}}
+Content-Disposition: form-data; name="workspaceId"
+
+{{workspaceId}}
+--{{boundary}}
+Content-Disposition: form-data; name="aiExtraction"
+
+true
+--{{boundary}}--
+
+?? status == 400
 
 ### Create Source — missing required field (expect 400)
 POST {{baseUrl}}/source
@@ -264,18 +285,6 @@ is-bi: false
 
 ?? status == 403
 
-### Delete Source — non-existent id (expect 400)
-DELETE {{baseUrl}}/source/99999
-...headers
-
-?? status == 400
-
-### Delete Source
-DELETE {{baseUrl}}/source/{{sourceId}}
-...headers
-
-?? status == 200
-
 ### Extract source — valid
 POST {{baseUrl}}/source/{{sourceId}}/extract/{{sourceAttachmentId}}
 ...headers
@@ -357,3 +366,15 @@ POST {{baseUrl}}/source/{{sourceId}}/ai-result
 }
 
 ?? status == 201
+
+### Delete Source — non-existent id (expect 400)
+DELETE {{baseUrl}}/source/99999
+...headers
+
+?? status == 400
+
+### Delete Source
+DELETE {{baseUrl}}/source/{{sourceId}}
+...headers
+
+?? status == 200

@@ -1,5 +1,26 @@
 # @import ../../../global.http
 
+### Setup — create parent source
+POST {{baseUrl}}/source
+...formHeaders
+Content-Type: multipart/form-data; boundary={{boundary}}
+
+--{{boundary}}
+Content-Disposition: form-data; name="name"
+
+Attachment Test Source
+--{{boundary}}
+Content-Disposition: form-data; name="workspaceId"
+
+{{workspaceId}}
+--{{boundary}}--
+
+{{@response
+  exports.sourceId = response.parsedBody.id;
+}}
+
+?? status == 201
+
 ### Create Source Attachment — valid payload
 POST {{baseUrl}}/source-attachment
 ...formHeaders
@@ -10,10 +31,10 @@ Content-Disposition: form-data; name="sourceId"
 
 {{sourceId}}
 --{{boundary}}
-Content-Disposition: form-data; name="attachment"; filename="sample.pdf"
+Content-Disposition: form-data; name="attachment"; filename="{{sampleFileName}}"
 Content-Type: application/pdf
 
-< ../source/sample.pdf
+< {{sampleFile}}
 --{{boundary}}--
 
 {{@response
@@ -45,10 +66,10 @@ Content-Disposition: form-data; name="sourceId"
 
 99999
 --{{boundary}}
-Content-Disposition: form-data; name="attachment"; filename="sample.pdf"
+Content-Disposition: form-data; name="attachment"; filename="{{sampleFileName}}"
 Content-Type: application/pdf
 
-< ../source/sample.pdf
+< {{sampleFile}}
 --{{boundary}}--
 
 ?? status == 400
@@ -87,8 +108,27 @@ DELETE {{baseUrl}}/source-attachment/99999
 
 ?? status == 400
 
+### Get Source — attachment listed on source
+GET {{baseUrl}}/source/{{sourceId}}
+...headers
+
+?? status == 200
+?? js response.parsedBody.attachments.some(a => a.id === sourceAttachmentId) == true
+
 ### Delete Source Attachment
 DELETE {{baseUrl}}/source-attachment/{{sourceAttachmentId}}
+...headers
+
+?? status == 200
+
+### Get Source Attachment — after delete (expect 400)
+GET {{baseUrl}}/source-attachment/{{sourceAttachmentId}}
+...headers
+
+?? status == 400
+
+### Teardown — delete parent source
+DELETE {{baseUrl}}/source/{{sourceId}}
 ...headers
 
 ?? status == 200
