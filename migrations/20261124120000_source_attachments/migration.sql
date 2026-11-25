@@ -30,11 +30,12 @@ ALTER TABLE "source_attachments" ADD CONSTRAINT "source_attachments_created_by_f
 ALTER TABLE "source_attachments" ADD CONSTRAINT "source_attachments_updated_by_fkey" FOREIGN KEY ("updated_by") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- Move each source's single attachment, with its extraction status, into its own row
-INSERT INTO "source_attachments" ("key", "name", "extraction_status", "source_id", "created_at", "updated_at", "created_by", "updated_by")
+INSERT INTO "source_attachments" ("key", "name", "extraction_status", "visible_to_assignees", "source_id", "created_at", "updated_at", "created_by", "updated_by")
 SELECT
   s."attachment_key",
   COALESCE(s."attachment_name", s."attachment_key"),
   s."extraction_status",
+  true,
   s."id",
   s."created_at",
   s."updated_at",
