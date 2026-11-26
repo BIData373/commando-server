@@ -16,6 +16,8 @@ import { SourceWithTasksDto } from './dto/response/source-with-tasks.dto';
 import { SourceDto } from './dto/response/source.dto';
 import { SourceService } from './source.service';
 
+// FileInterceptor (multer) replaces req.body with a new object when it parses multipart data, which wipes out
+// the context.user set by the global AddUserToContextInterceptor, so routes using FileInterceptor (create) run AddUserToContextInterceptor again after it.
 @Controller('source')
 export class SourceController {
   constructor(private readonly sourceService: SourceService) { }

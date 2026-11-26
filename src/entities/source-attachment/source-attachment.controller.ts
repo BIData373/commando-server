@@ -12,6 +12,8 @@ import { UpdateSourceAttachmentDto } from './dto/request/update-source-attachmen
 import { SourceAttachmentDto } from './dto/response/source-attachment.dto';
 import { SourceAttachmentService } from './source-attachment.service';
 
+// FileInterceptor (multer) replaces req.body with a new object when it parses multipart data, which wipes out
+// the context.user set by the global AddUserToContextInterceptor, so routes using FileInterceptor (create) run AddUserToContextInterceptor again after it.
 @Controller('source-attachment')
 export class SourceAttachmentController {
   constructor(private readonly sourceAttachmentService: SourceAttachmentService) { }

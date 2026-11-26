@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common'
+import { BadRequestException, Injectable, InternalServerErrorException } from '@nestjs/common'
 import { countBy, flatMap, intersection, map, uniq } from 'lodash'
 import { chatUrl, discussionNotificationTemplate, messageRelayUsername, vectorUrl } from '../../common/consts/env'
 import { renderTemplate } from '../../common/functions/template'
@@ -86,6 +86,10 @@ export class SourceService {
     }
 
     const attachment = file && await this.sourceAttachmentService.upload(file)
+
+    if (aiExtraction && !attachment) {
+      throw new InternalServerErrorException('Attachment upload failed')
+    }
 
     let notStartedStatusId: number | undefined
 

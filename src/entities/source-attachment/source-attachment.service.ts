@@ -1,4 +1,4 @@
-import { Injectable, ServiceUnavailableException } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { decodeMulterFilename } from '../../common/functions/string';
 import { PrismaService } from '../../common/prisma.service';
 import { Prisma, SourceAttachment, User } from '../../types/prisma';
@@ -63,7 +63,7 @@ export class SourceAttachmentService {
     const key = await this.s3.upload(file, SourceAttachmentService.folder);
 
     if (!key) {
-      throw new ServiceUnavailableException('Attachment upload failed');
+      return undefined;
     }
 
     return { key, name: decodeMulterFilename(file.originalname) };
@@ -74,7 +74,13 @@ export class SourceAttachmentService {
     file: Express.Multer.File,
     userId: number
   ) {
-    const { key, name } = await this.upload(file);
+    const attachment = await this.upload(file);
+
+    if (!attachment) {
+      throw new InternalServerErrorException('Attachment upload failed');
+    }
+
+    const { key, name } = attachment;
 
     return await this.prisma.sourceAttachment.create({
       data: {
